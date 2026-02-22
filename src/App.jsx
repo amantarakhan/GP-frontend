@@ -8,6 +8,7 @@ import ReportsPage from "./pages/ReportsPage";
 import WelcomePage from "./pages/WelcomePage";
 import SignupPage from './pages/SignupPage';
 import LoginPage from './pages/LoginPage';
+import ForgotPassword from "./pages/ForgotPassword";
 
 
 export default function App() {
@@ -19,7 +20,8 @@ export default function App() {
           <Route path="/" element={<WelcomePage />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/login" element={<LoginPage />} />
-          
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+
           {/* ZONE 2: Dashboard Pages (Wrapped in MainLayout for Sidebar & TopBar) */}
           <Route element={<MainLayout />}>
             <Route path="/dashboard" element={<DashboardPage />} />
