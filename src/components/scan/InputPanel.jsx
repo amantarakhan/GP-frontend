@@ -9,12 +9,17 @@ export default function InputPanel() {
     category,     setCategory,
     radius,       setRadius,
     location,     setLocation,
+    pin,
     isAnalyzing,  canRun,
     runAnalysis,
+    scanError,    // <-- from updated AnalysisContext
   } = useLocationAnalysis();
 
   const sliderPct = ((radius - 250) / (5000 - 250)) * 100;
   const sliderBg  = `linear-gradient(to right, var(--color-brand) 0%, var(--color-brand) ${sliderPct}%, var(--color-accent) ${sliderPct}%, var(--color-accent) 100%)`;
+
+  // canRun requires businessType (from hook) AND a pin on the map
+  const readyToRun = canRun && Boolean(pin);
 
   return (
     <div style={{
@@ -120,32 +125,71 @@ export default function InputPanel() {
             onBlur={(e)  => { e.target.style.borderColor="var(--color-accent)"; e.target.style.boxShadow="none"; }}
           />
         </div>
+
+        {/* No-pin warning — shown only if businessType selected but map not clicked */}
+        {businessType && !pin && (
+          <div style={{
+            marginTop:    "8px",
+            display:      "flex",
+            alignItems:   "center",
+            gap:          "6px",
+            fontFamily:   "var(--font-body)",
+            fontSize:     "11.5px",
+            color:        "#b45309",
+          }}>
+            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            Click the map to set your target coordinates.
+          </div>
+        )}
       </div>
+
+      {/* ── API error banner ── */}
+      {scanError && (
+        <div style={{
+          borderRadius: "var(--radius-md)",
+          background:   "#fee2e2",
+          border:       "1px solid rgba(220,38,38,.25)",
+          padding:      "12px 14px",
+          display:      "flex",
+          gap:          "10px",
+          alignItems:   "flex-start",
+        }}>
+          <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="#dc2626" strokeWidth={2} style={{ flexShrink:0, marginTop:"1px" }}>
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          <div style={{ fontFamily:"var(--font-body)", fontSize:"12px", color:"#991b1b", lineHeight:1.5 }}>
+            <strong style={{ display:"block", marginBottom:"2px" }}>Scan failed</strong>
+            {scanError}
+          </div>
+        </div>
+      )}
 
       {/* Run button */}
       <button
         onClick={runAnalysis}
-        disabled={!canRun || isAnalyzing}
+        disabled={!readyToRun || isAnalyzing}
         style={{
           width:         "100%",
           padding:       "14px 20px",
           borderRadius:  "var(--radius-md)",
           border:        "none",
-          background:    (!canRun || isAnalyzing) ? "var(--color-text)" : "linear-gradient(135deg,var(--color-brand) 0%,var(--color-brand-dark) 100%)",
+          background:    (!readyToRun || isAnalyzing) ? "var(--color-text)" : "linear-gradient(135deg,var(--color-brand) 0%,var(--color-brand-dark) 100%)",
           color:         "var(--color-card)",
           fontSize:      "14px",
           fontWeight:    700,
           fontFamily:    "var(--font-body)",
           letterSpacing: ".7px",
-          cursor:        (!canRun || isAnalyzing) ? "not-allowed" : "pointer",
+          cursor:        (!readyToRun || isAnalyzing) ? "not-allowed" : "pointer",
           display:       "flex",
           alignItems:    "center",
           justifyContent:"center",
           gap:           "9px",
-          boxShadow:     (!canRun || isAnalyzing) ? "none" : "0 4px 18px rgba(63,125,88,.38)",
+          boxShadow:     (!readyToRun || isAnalyzing) ? "none" : "0 4px 18px rgba(63,125,88,.38)",
           transition:    "all .2s",
         }}
-        onMouseEnter={(e) => { if (canRun && !isAnalyzing) e.currentTarget.style.transform="translateY(-1px)"; }}
+        onMouseEnter={(e) => { if (readyToRun && !isAnalyzing) e.currentTarget.style.transform="translateY(-1px)"; }}
         onMouseLeave={(e) => { e.currentTarget.style.transform="none"; }}
       >
         {isAnalyzing ? (

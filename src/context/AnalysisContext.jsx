@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useCallback } from "react";
+import { apiService } from "../services/apiService";
 
 const AnalysisContext = createContext(null);
 
@@ -8,40 +9,68 @@ export function AnalysisProvider({ children }) {
   const [category,     setCategory]     = useState("");
   const [radius,       setRadius]       = useState(750);
   const [location,     setLocation]     = useState("");
-  const [pin,          setPin]          = useState(null); // { x, y, lat, lng }
+  const [pin,          setPin]          = useState(null); // { lat, lng }
 
   // ── Result state ────────────────────────────────────────────────────────────
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [hasResults,  setHasResults]  = useState(false);
-  const [results,     setResults]     = useState(null);
+  const [results,     setResults]     = useState(null);   // normalised metrics
+  const [scanError,   setScanError]   = useState(null);
 
   // ── Actions ─────────────────────────────────────────────────────────────────
-  const runAnalysis = useCallback(() => {
-    if (!businessType) return;
+  const runAnalysis = useCallback(async () => {
+    if (!businessType || !pin) return;
+
     setIsAnalyzing(true);
     setHasResults(false);
+    setScanError(null);
 
-    // Simulate API call — swap with apiService.runScan() when ready
-    setTimeout(() => {
-      setResults({
-        feasibility:  Math.floor(65 + Math.random() * 30),
-        competitors:  Math.floor(5  + Math.random() * 20),
-        saturation:   Math.floor(20 + Math.random() * 60),
-        footTraffic:  Math.floor(60 + Math.random() * 35),
-        demandSignal: Math.floor(55 + Math.random() * 40),
-        dataPoints:   `${(20000 + Math.floor(Math.random() * 8000)).toLocaleString()} POIs`,
-        coverage:     `${(1.2 + Math.random()).toFixed(2)} km²`,
+    try {
+      const data = await apiService.runScan({
+        businessType,
+        category,
+        radius,
+        lat: pin.lat,
+        lng: pin.lng,
       });
-      setIsAnalyzing(false);
+
+      setResults(data);
       setHasResults(true);
-    }, 1800);
-  }, [businessType]);
+    } catch (err) {
+      console.error("[AnalysisContext] runAnalysis error:", err);
+      setScanError(err.message ?? "An unexpected error occurred. Please try again.");
+    } finally {
+      setIsAnalyzing(false);
+    }
+  }, [businessType, category, radius, pin]);
 
   const resetAnalysis = useCallback(() => {
     setResults(null);
     setHasResults(false);
     setIsAnalyzing(false);
+    setScanError(null);
   }, []);
+
+  // ── Save current scan as a report ─────────────────────────────────────────
+  const saveCurrentReport = useCallback(() => {
+    if (!results || !pin) return null;
+    const report = {
+      title:       `${businessType.charAt(0).toUpperCase() + businessType.slice(1)} — ${results.districtName}`,
+      location:    results.districtName,
+      date:        new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+      score:       results.feasibility,
+      competitors: results.competitors,
+      saturation:  results.saturation,
+      status:      results.feasibility >= 75 ? "strong" : results.feasibility >= 55 ? "moderate" : "weak",
+      businessType,
+      lat:         pin.lat,
+      lng:         pin.lng,
+      radius,
+      // Store full results so reports page can show details
+      fullResults: results,
+    };
+    return apiService.saveReport(report);
+  }, [results, pin, businessType, radius]);
 
   const value = {
     // form
@@ -54,9 +83,11 @@ export function AnalysisProvider({ children }) {
     isAnalyzing,
     hasResults,
     results,
+    scanError,
     // actions
     runAnalysis,
     resetAnalysis,
+    saveCurrentReport,
   };
 
   return (
