@@ -42,6 +42,32 @@ const Icons = {
   ),
 };
 
+// ── Shared NavLink style fn — used by both NavItem and Settings ───────────────
+const navLinkStyle = (isActive, expanded) => ({
+  display:        "flex",
+  alignItems:     "center",
+  justifyContent: expanded ? "flex-start" : "center",
+  gap:            expanded ? "11px" : "0",
+  padding:        expanded ? "10px 12px" : "10px 0",
+  width:          "100%",
+  borderRadius:   "10px",
+  textDecoration: "none",
+  fontFamily:     "var(--font-body)",
+  fontSize:       "13.5px",
+  fontWeight:     isActive ? 600 : 400,
+  color:          isActive ? "#F5F2E1" : "#687280",
+  background:     isActive
+    ? "linear-gradient(90deg,rgba(63,125,88,.22) 0%,rgba(63,125,88,.06) 100%)"
+    : "transparent",
+  position:       "relative",
+  border:         "none",
+  overflow:       "hidden",
+  whiteSpace:     "nowrap",
+  boxSizing:      "border-box",
+  transition:     "background .18s, color .18s",
+  cursor:         "pointer",
+});
+
 // ── NavItem ──────────────────────────────────────────────────────────────────
 function NavItem({ item, expanded }) {
   return (
@@ -49,75 +75,29 @@ function NavItem({ item, expanded }) {
       to={item.path}
       title={!expanded ? item.label : undefined}
       style={({ isActive }) => ({
-        display:        "flex",
-        alignItems:     "center",
-        justifyContent: expanded ? "flex-start" : "center",
-        gap:            expanded ? "11px" : "0",
-        padding:        expanded ? "10px 12px" : "10px 0",
-        width:          "100%",
-        borderRadius:   "10px",
-        textDecoration: "none",
-        fontFamily:     "var(--font-body)",
-        fontSize:       "13.5px",
-        fontWeight:     isActive ? 600 : 400,
-        color:          isActive ? "#F5F2E1" : "#687280",
-        background:     isActive
-          ? "linear-gradient(90deg,rgba(63,125,88,.22) 0%,rgba(63,125,88,.06) 100%)"
-          : "transparent",
-        marginBottom:   "4px",
-        position:       "relative",
-        border:         "none",
-        overflow:       "hidden",
-        whiteSpace:     "nowrap",
-        boxSizing:      "border-box",
-        transition:     "background .18s, padding .26s, justify-content .26s",
+        ...navLinkStyle(isActive, expanded),
+        marginBottom: "4px",
       })}
+      onMouseEnter={e => { if (!e.currentTarget.style.background.includes("linear")) e.currentTarget.style.background = "rgba(255,255,255,.06)"; }}
+      onMouseLeave={e => { if (!e.currentTarget.style.background.includes("linear")) e.currentTarget.style.background = "transparent"; }}
     >
       {({ isActive }) => (
         <>
           {isActive && expanded && (
             <span style={{
-              position:     "absolute",
-              left:         0,
-              top:          "50%",
-              transform:    "translateY(-50%)",
-              width:        "3px",
-              height:       "54%",
-              background:   "var(--color-brand)",
-              borderRadius: "0 3px 3px 0",
+              position: "absolute", left: 0, top: "50%",
+              transform: "translateY(-50%)", width: "3px", height: "54%",
+              background: "var(--color-brand)", borderRadius: "0 3px 3px 0",
             }} />
           )}
-          {/* Icon always visible */}
-          <span style={{
-            color:      isActive ? "var(--color-brand)" : "#687280",
-            flexShrink: 0,
-            display:    "flex",
-            alignItems: "center",
-            minWidth:   "18px",
-          }}>
+          <span style={{ color: isActive ? "var(--color-brand)" : "#687280", flexShrink: 0, display: "flex", alignItems: "center", minWidth: "18px" }}>
             {Icons[item.id]}
           </span>
-          {/* Label only in DOM when expanded */}
           {expanded && (
-            <span style={{
-              display:    "flex",
-              alignItems: "center",
-              flex:       1,
-              gap:        "8px",
-              animation:  "sbFadeIn .18s ease both",
-            }}>
+            <span style={{ display: "flex", alignItems: "center", flex: 1, gap: "8px", animation: "sbFadeIn .18s ease both" }}>
               <span style={{ flex: 1 }}>{item.label}</span>
               {item.badge && (
-                <span style={{
-                  background:   "rgba(63,125,88,.22)",
-                  color:        "var(--color-brand)",
-                  fontSize:     "10px",
-                  fontWeight:   700,
-                  padding:      "2px 7px",
-                  borderRadius: "10px",
-                  fontFamily:   "monospace",
-                  flexShrink:   0,
-                }}>
+                <span style={{ background: "rgba(63,125,88,.22)", color: "var(--color-brand)", fontSize: "10px", fontWeight: 700, padding: "2px 7px", borderRadius: "10px", fontFamily: "monospace", flexShrink: 0 }}>
                   {item.badge}
                 </span>
               )}
@@ -144,7 +124,6 @@ export default function Sidebar({ expanded, setExpanded }) {
         onMouseEnter={() => setExpanded(true)}
         onMouseLeave={() => setExpanded(false)}
         style={{
-          /* ── KEY: in normal flex flow, NOT fixed ── */
           flexShrink:    0,
           width:         expanded ? EXPANDED_W : COLLAPSED_W,
           minHeight:     "100vh",
@@ -152,122 +131,45 @@ export default function Sidebar({ expanded, setExpanded }) {
           display:       "flex",
           flexDirection: "column",
           overflow:      "hidden",
-          /* Animate width — content in flex row resizes naturally */
           transition:    "width .26s cubic-bezier(.4,0,.2,1)",
           position:      "relative",
           zIndex:        10,
         }}
       >
         {/* Ambient glow */}
-        <div style={{
-          position:      "absolute",
-          bottom:        "-70px",
-          left:          "-60px",
-          width:         "230px",
-          height:        "230px",
-          background:    "radial-gradient(circle,rgba(63,125,88,.13) 0%,transparent 70%)",
-          pointerEvents: "none",
-        }} />
+        <div style={{ position: "absolute", bottom: "-70px", left: "-60px", width: "230px", height: "230px", background: "radial-gradient(circle,rgba(63,125,88,.13) 0%,transparent 70%)", pointerEvents: "none" }} />
 
         {/* ── Logo ── */}
         <div style={{
-          height:         "66px",
-          padding:        "0 13px",
-          borderBottom:   "1px solid rgba(255,255,255,.06)",
-          display:        "flex",
-          alignItems:     "center",
+          height: "66px", padding: "0 13px",
+          borderBottom: "1px solid rgba(255,255,255,.06)",
+          display: "flex", alignItems: "center",
           justifyContent: expanded ? "flex-start" : "center",
-          gap:            "11px",
-          flexShrink:     0,
-          overflow:       "hidden",
+          gap: "11px", flexShrink: 0, overflow: "hidden",
         }}>
           <div style={{
-            width:          "38px",
-            height:         "38px",
-            borderRadius:   "10px",
-            background:     "rgba(63,125,88,.18)",
-            border:         "1px solid rgba(63,125,88,.4)",
-            display:        "flex",
-            alignItems:     "center",
-            justifyContent: "center",
-            flexShrink:     0,
-            overflow:       "hidden",
-            boxShadow:      "0 0 16px rgba(63,125,88,.35)",
+            width: "38px", height: "38px", borderRadius: "10px",
+            background: "rgba(63,125,88,.18)", border: "1px solid rgba(63,125,88,.4)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            flexShrink: 0, overflow: "hidden", boxShadow: "0 0 16px rgba(63,125,88,.35)",
           }}>
-            <img
-              src={globeIcon}
-              alt=""
-              style={{
-                width:        "34px",
-                height:       "34px",
-                objectFit:    "contain",
-                mixBlendMode: "screen",
-                filter:       "brightness(1.8) saturate(1.3)",
-              }}
-            />
+            <img src={globeIcon} alt="" style={{ width: "34px", height: "34px", objectFit: "contain", mixBlendMode: "screen", filter: "brightness(1.8) saturate(1.3)" }}/>
           </div>
           {expanded && (
-            <div style={{
-              display:       "flex",
-              flexDirection: "column",
-              gap:           "3px",
-              overflow:      "hidden",
-              flex:          1,
-              animation:     "sbFadeIn .2s ease .05s both",
-              whiteSpace:    "nowrap",
-            }}>
-              <img
-                src={wordmark}
-                alt="Localyze"
-                style={{
-                  height:         "18px",
-                  width:          "auto",
-                  maxWidth:       "150px",
-                  objectFit:      "contain",
-                  objectPosition: "left center",
-                  mixBlendMode:   "screen",
-                  filter:         "brightness(1.8) saturate(1.3)",
-                  display:        "block",
-                }}
-              />
-              <span style={{
-                fontFamily:   "var(--font-body)",
-                fontSize:     "9px",
-                fontWeight:   700,
-                color:        "var(--color-brand)",
-                letterSpacing:"2.5px",
-                textTransform:"uppercase",
-                lineHeight:   1,
-              }}>Pro</span>
+            <div style={{ display: "flex", flexDirection: "column", gap: "3px", overflow: "hidden", flex: 1, animation: "sbFadeIn .2s ease .05s both", whiteSpace: "nowrap" }}>
+              <img src={wordmark} alt="Localyze" style={{ height: "18px", width: "auto", maxWidth: "150px", objectFit: "contain", objectPosition: "left center", mixBlendMode: "screen", filter: "brightness(1.8) saturate(1.3)", display: "block" }}/>
+              <span style={{ fontFamily: "var(--font-body)", fontSize: "9px", fontWeight: 700, color: "var(--color-brand)", letterSpacing: "2.5px", textTransform: "uppercase", lineHeight: 1 }}>Pro</span>
             </div>
           )}
         </div>
 
         {/* ── Nav label ── */}
-        {expanded ? (
-          <div style={{
-            padding:       "18px 16px 6px",
-            fontFamily:    "var(--font-body)",
-            fontSize:      "9px",
-            fontWeight:    600,
-            color:         "#687280",
-            letterSpacing: "2.5px",
-            textTransform: "uppercase",
-            whiteSpace:    "nowrap",
-            animation:     "sbFadeIn .18s ease both",
-          }}>Main Menu</div>
-        ) : (
-          <div style={{ height: "18px" }} />
-        )}
+        {expanded
+          ? <div style={{ padding: "18px 16px 6px", fontFamily: "var(--font-body)", fontSize: "9px", fontWeight: 600, color: "#687280", letterSpacing: "2.5px", textTransform: "uppercase", whiteSpace: "nowrap", animation: "sbFadeIn .18s ease both" }}>Main Menu</div>
+          : <div style={{ height: "18px" }} />}
 
-        {/* ── Nav ── */}
-        <nav style={{
-          padding:       expanded ? "4px 8px" : "4px 0",
-          flex:          1,
-          display:       "flex",
-          flexDirection: "column",
-          alignItems:    expanded ? "stretch" : "center",
-        }}>
+        {/* ── Main nav ── */}
+        <nav style={{ padding: expanded ? "4px 8px" : "4px 0", flex: 1, display: "flex", flexDirection: "column", alignItems: expanded ? "stretch" : "center" }}>
           {NAV_ITEMS.map((item) => (
             <NavItem key={item.id} item={item} expanded={expanded} />
           ))}
@@ -276,80 +178,62 @@ export default function Sidebar({ expanded, setExpanded }) {
         {/* ── Divider ── */}
         <div style={{ margin: "0 10px", height: "1px", background: "rgba(255,255,255,.06)", flexShrink: 0 }} />
 
-        {/* ── Settings ── */}
-        <div style={{ padding: "8px", flexShrink: 0, display: "flex", justifyContent: expanded ? "flex-start" : "center" }}>
-          <button
+        {/* ════════════════════════════════════════
+            SETTINGS — NavLink replacing <button>
+            Identical style function to NavItem
+        ════════════════════════════════════════ */}
+        <div style={{ padding: expanded ? "8px 8px" : "8px 0", flexShrink: 0 }}>
+          <NavLink
+            to="/settings"
             title={!expanded ? "Settings" : undefined}
-            style={{
-              width:          expanded ? "100%" : "38px",
-              height:         "38px",
-              display:        "flex",
-              alignItems:     "center",
-              justifyContent: expanded ? "flex-start" : "center",
-              gap:            "11px",
-              padding:        expanded ? "0 12px" : "0",
-              borderRadius:   "10px",
-              border:         "none",
-              background:     "transparent",
-              color:          "#687280",
-              fontSize:       "13px",
-              fontFamily:     "var(--font-body)",
-              cursor:         "pointer",
-              transition:     "background .18s",
-              overflow:       "hidden",
-              whiteSpace:     "nowrap",
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.background = "rgba(255,255,255,.06)"}
-            onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+            style={({ isActive }) => navLinkStyle(isActive, expanded)}
+            onMouseEnter={e => { if (!e.currentTarget.style.background.includes("linear")) e.currentTarget.style.background = "rgba(255,255,255,.06)"; }}
+            onMouseLeave={e => { if (!e.currentTarget.style.background.includes("linear")) e.currentTarget.style.background = "transparent"; }}
           >
-            <span style={{ flexShrink: 0, display: "flex", alignItems: "center" }}>{Icons.settings}</span>
-            {expanded && <span style={{ animation: "sbFadeIn .18s ease both" }}>Settings</span>}
-          </button>
+            {({ isActive }) => (
+              <>
+                {isActive && expanded && (
+                  <span style={{
+                    position: "absolute", left: 0, top: "50%",
+                    transform: "translateY(-50%)", width: "3px", height: "54%",
+                    background: "var(--color-brand)", borderRadius: "0 3px 3px 0",
+                  }} />
+                )}
+                <span style={{ color: isActive ? "var(--color-brand)" : "#687280", flexShrink: 0, display: "flex", alignItems: "center", minWidth: "16px" }}>
+                  {Icons.settings}
+                </span>
+                {expanded && (
+                  <span style={{ animation: "sbFadeIn .18s ease both", flex: 1 }}>Settings</span>
+                )}
+              </>
+            )}
+          </NavLink>
         </div>
 
         {/* ── User card ── */}
         <div style={{
-          margin:         "4px 8px 16px",
-          padding:        expanded ? "10px 12px" : "10px 0",
-          borderRadius:   "12px",
-          background:     "rgba(255,255,255,.04)",
-          border:         "1px solid rgba(255,255,255,.07)",
-          display:        "flex",
-          alignItems:     "center",
+          margin: "4px 8px 16px", padding: expanded ? "10px 12px" : "10px 0",
+          borderRadius: "12px", background: "rgba(255,255,255,.04)",
+          border: "1px solid rgba(255,255,255,.07)",
+          display: "flex", alignItems: "center",
           justifyContent: expanded ? "flex-start" : "center",
-          gap:            "10px",
-          cursor:         "pointer",
-          flexShrink:     0,
-          overflow:       "hidden",
+          gap: "10px", cursor: "pointer", flexShrink: 0, overflow: "hidden",
         }}>
           <div style={{
-            width:          "34px",
-            height:         "34px",
-            borderRadius:   "50%",
-            background:     "linear-gradient(135deg,var(--color-brand),var(--color-brand-dark))",
-            display:        "flex",
-            alignItems:     "center",
-            justifyContent: "center",
-            fontSize:       "13px",
-            fontWeight:     700,
-            color:          "var(--color-accent)",
-            flexShrink:     0,
-            fontFamily:     "var(--font-display)",
+            width: "34px", height: "34px", borderRadius: "50%",
+            background: "linear-gradient(135deg,var(--color-brand),var(--color-brand-dark))",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: "13px", fontWeight: 700, color: "var(--color-accent)",
+            flexShrink: 0, fontFamily: "var(--font-display)",
           }}>A</div>
           {expanded && (
             <>
               <div style={{ overflow: "hidden", flex: 1, animation: "sbFadeIn .18s ease both", whiteSpace: "nowrap" }}>
-                <div style={{ color: "#F5F2E1", fontSize: "13px", fontWeight: 600, fontFamily: "var(--font-body)", overflow: "hidden", textOverflow: "ellipsis" }}>
-                  Analyst Pro
-                </div>
-                <div style={{ color: "#687280", fontSize: "11px", fontFamily: "var(--font-body)" }}>
-                  Pro Plan Active
-                </div>
+                <div style={{ color: "#F5F2E1", fontSize: "13px", fontWeight: 600, fontFamily: "var(--font-body)", overflow: "hidden", textOverflow: "ellipsis" }}>Analyst Pro</div>
+                <div style={{ color: "#687280", fontSize: "11px", fontFamily: "var(--font-body)" }}>Pro Plan Active</div>
               </div>
               <span style={{ animation: "sbFadeIn .18s ease both", flexShrink: 0, display: "flex" }}>
-                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#687280" strokeWidth={2}>
-                  <path d="M9 18l6-6-6-6" />
-                </svg>
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#687280" strokeWidth={2}><path d="M9 18l6-6-6-6" /></svg>
               </span>
             </>
           )}

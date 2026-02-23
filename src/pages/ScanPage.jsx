@@ -19,7 +19,7 @@ export default function ScanPage() {
         flex:          1,
         display:       "flex",
         flexDirection: "column",
-        overflow:      "hidden",
+        overflow:      "auto",
         padding:       "20px",
         gap:           "16px",
         minWidth:      0,
