@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { createUserWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { auth, googleProvider } from "../firebase";
 import logo from "../assets/logo.png";
 import logo1 from "../assets/logo1.png";
 import globeHero from "../assets/logo2.png";
@@ -385,7 +387,80 @@ const WelcomePage = () => {
     document.getElementById("about")?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const handleAnalyze = () => navigate("/scan");
+  // ── Signup modal state ──
+  const [showSignupModal, setShowSignupModal] = useState(false);
+  const [modalName,       setModalName]       = useState("");
+  const [modalEmail,      setModalEmail]      = useState("");
+  const [modalPassword,   setModalPassword]   = useState("");
+  const [modalShowPw,     setModalShowPw]     = useState(false);
+  const [modalLoading,    setModalLoading]    = useState(false);
+  const [modalGLoading,   setModalGLoading]   = useState(false);
+  const [modalDone,       setModalDone]       = useState(false);
+  const [modalErrors,     setModalErrors]     = useState({});
+  const [modalFirebaseErr,setModalFirebaseErr]= useState("");
+  const [modalBtnHov,     setModalBtnHov]     = useState(false);
+  const [modalGBtnHov,    setModalGBtnHov]    = useState(false);
+
+  const mapAuthError = code => ({
+    "auth/email-already-in-use"   : "An account with this email already exists.",
+    "auth/invalid-email"          : "Please enter a valid email address.",
+    "auth/weak-password"          : "Password must be at least 6 characters.",
+    "auth/network-request-failed" : "Network error — check your connection.",
+    "auth/too-many-requests"      : "Too many attempts. Please try again later.",
+  }[code] ?? "Something went wrong. Please try again.");
+
+  const closeModal = () => {
+    setShowSignupModal(false);
+    setModalName(""); setModalEmail(""); setModalPassword("");
+    setModalErrors({}); setModalFirebaseErr(""); setModalDone(false);
+  };
+
+  const modalValidate = () => {
+    const e = {};
+    if (!modalName.trim())                 e.name     = "Full name required.";
+    if (!/\S+@\S+\.\S+/.test(modalEmail))  e.email    = "Valid email required.";
+    if (modalPassword.length < 8)          e.password = "Minimum 8 characters.";
+    return e;
+  };
+
+  const modalSubmit = async () => {
+    const e = modalValidate();
+    if (Object.keys(e).length) { setModalErrors(e); return; }
+    setModalErrors({}); setModalFirebaseErr(""); setModalLoading(true);
+    try {
+      await createUserWithEmailAndPassword(auth, modalEmail, modalPassword);
+      setModalDone(true);
+      setTimeout(() => { closeModal(); navigate("/scan"); }, 1600);
+    } catch (err) {
+      setModalFirebaseErr(mapAuthError(err.code));
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  const modalGoogleSignup = async () => {
+    setModalFirebaseErr(""); setModalGLoading(true);
+    try {
+      await signInWithPopup(auth, googleProvider);
+      setModalDone(true);
+      setTimeout(() => { closeModal(); navigate("/scan"); }, 1600);
+    } catch (err) {
+      setModalFirebaseErr(mapAuthError(err.code));
+    } finally {
+      setModalGLoading(false);
+    }
+  };
+
+  // ── Gatekeeper: open modal for guests, navigate for logged-in users ──
+  const handleProtectedAction = () => {
+    if (auth.currentUser) {
+      navigate("/scan");
+    } else {
+      setShowSignupModal(true);
+    }
+  };
+
+  const handleAnalyze = () => handleProtectedAction();
 
   return (
     <>
@@ -1171,7 +1246,7 @@ const WelcomePage = () => {
             color: "var(--color-text)", margin: "0 auto 38px",
             maxWidth: "380px", lineHeight: 1.75,
           }}>Run your first scan in minutes. No setup required.</p>
-          <button onClick={() => navigate("/scan")} style={{
+          <button onClick={handleProtectedAction} style={{
             fontFamily: "var(--font-body)", fontSize: "1rem",
             fontWeight: 700, color: "#fff",
             background: "linear-gradient(135deg, var(--color-brand) 0%, var(--color-brand-dark) 100%)",
@@ -1276,6 +1351,335 @@ const WelcomePage = () => {
         </footer>
 
       </div>
+
+      {/* ════════════════════════════════════════
+          SIGNUP MODAL OVERLAY
+      ════════════════════════════════════════ */}
+      {showSignupModal && (
+        <div
+          onClick={e => { if (e.target === e.currentTarget) closeModal(); }}
+          style={{
+            position:"fixed", inset:0, zIndex:999,
+            background:"rgba(10,24,15,.72)",
+            backdropFilter:"blur(12px)", WebkitBackdropFilter:"blur(12px)",
+            display:"flex", alignItems:"center", justifyContent:"center",
+            padding:"20px",
+            animation:"modalFadeIn .25s ease both",
+          }}
+        >
+          <style>{`
+            @keyframes modalFadeIn {
+              from { opacity:0; }
+              to   { opacity:1; }
+            }
+            @keyframes modalSlideUp {
+              from { opacity:0; transform:translateY(32px) scale(.97); }
+              to   { opacity:1; transform:translateY(0) scale(1); }
+            }
+            @keyframes modal-spin { to { transform:rotate(360deg); } }
+            @keyframes modal-bloom {
+              0%  { opacity:0; transform:scale(.5) rotate(-15deg); }
+              70% { transform:scale(1.12) rotate(3deg); }
+              100%{ opacity:1; transform:scale(1) rotate(0deg); }
+            }
+            @keyframes field-rise {
+              from { opacity:0; transform:translateY(14px); }
+              to   { opacity:1; transform:translateY(0); }
+            }
+            @keyframes seg-fill {
+              from { transform:scaleX(0); }
+              to   { transform:scaleX(1); }
+            }
+            @keyframes btn-glow {
+              0%,100% { box-shadow:0 8px 28px rgba(63,125,88,.38),0 0 0 0 rgba(63,125,88,0); }
+              50%     { box-shadow:0 14px 44px rgba(63,125,88,.56),0 0 0 10px rgba(63,125,88,.06); }
+            }
+          `}</style>
+
+          <div style={{
+            position:"relative", width:"100%", maxWidth:"420px",
+            background:"rgba(255,255,255,.08)",
+            backdropFilter:"blur(65px) saturate(180%)",
+            WebkitBackdropFilter:"blur(65px) saturate(180%)",
+            border:"1px solid rgba(63,125,88,.18)",
+            borderRadius:"32px", padding:"48px 40px 40px",
+            boxShadow:
+              "0 48px 120px rgba(0,0,0,.28)," +
+              "0 12px 40px rgba(0,0,0,.18)," +
+              "inset 0 2px 0 rgba(255,255,255,.7)," +
+              "inset 0 -1px 0 rgba(63,125,88,.07)",
+            animation:"modalSlideUp .35s cubic-bezier(.34,1.28,.64,1) both",
+          }}>
+
+            {/* Close button */}
+            <button onClick={closeModal} style={{
+              position:"absolute", top:"18px", right:"20px",
+              background:"none", border:"none", cursor:"pointer",
+              color:"var(--color-text)", opacity:.45, padding:"4px",
+              fontSize:"1.2rem", lineHeight:1,
+              transition:"opacity .2s",
+            }}
+              onMouseEnter={e=>e.currentTarget.style.opacity="1"}
+              onMouseLeave={e=>e.currentTarget.style.opacity=".45"}
+            >✕</button>
+
+            {/* Header lockup */}
+            <div style={{ textAlign:"center", marginBottom:"36px" }}>
+              <div style={{ display:"inline-flex", alignItems:"center", gap:"8px", marginBottom:"16px" }}>
+                <img src={logo1} alt="Localyze" style={{
+                  height:"22px", width:"auto", objectFit:"contain",
+                  filter:"drop-shadow(0 0 8px rgba(63,125,88,.3))",
+                }}/>
+                <span style={{
+                  fontFamily:"var(--font-display)", fontSize:"1rem", fontWeight:700,
+                  color:"var(--color-brand-dark)", letterSpacing:".04em",
+                  textShadow:"0 0 12px rgba(63,125,88,.25)",
+                }}>Network</span>
+              </div>
+              <h2 style={{
+                fontFamily:"var(--font-display)",
+                fontSize:"clamp(1.7rem,4vw,2.1rem)",
+                fontWeight:800, color:"var(--color-dark)",
+                margin:"0 0 10px", letterSpacing:"-.03em", lineHeight:1.1,
+                textShadow:"0 1px 24px rgba(255,255,255,.65)",
+              }}>
+                Create your{"\u00A0"}
+                <span style={{
+                  background:"linear-gradient(130deg,var(--color-brand) 0%,var(--color-brand-dark) 100%)",
+                  WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent",
+                  backgroundClip:"text",
+                }}>account.</span>
+              </h2>
+              <p style={{
+                fontFamily:"var(--font-body)", fontSize:".85rem",
+                color:"var(--color-dark)", margin:0, opacity:.6, lineHeight:1.6,
+              }}>Location intelligence, ready in minutes.</p>
+            </div>
+
+            {/* Success state */}
+            {modalDone ? (
+              <div style={{
+                display:"flex", flexDirection:"column", alignItems:"center", gap:"16px",
+                padding:"8px 0", animation:"modal-bloom .6s cubic-bezier(.34,1.56,.64,1) both",
+              }}>
+                <div style={{
+                  width:68, height:68, borderRadius:"50%",
+                  background:"rgba(63,125,88,.1)", border:"2.5px solid var(--color-brand)",
+                  display:"flex", alignItems:"center", justifyContent:"center",
+                  boxShadow:"0 0 40px rgba(63,125,88,.35)",
+                }}>
+                  <svg width="30" height="30" viewBox="0 0 24 24" fill="none"
+                    stroke="var(--color-brand)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                </div>
+                <p style={{
+                  fontFamily:"var(--font-display)", fontSize:"1.2rem",
+                  fontWeight:800, color:"var(--color-dark)", margin:0,
+                }}>You're in. Launching scan…</p>
+              </div>
+            ) : (
+              <>
+                {/* Firebase error banner */}
+                {modalFirebaseErr && (
+                  <div style={{
+                    marginBottom:"18px", padding:"11px 16px", borderRadius:"12px",
+                    background:"rgba(231,76,60,.08)", border:"1px solid rgba(231,76,60,.2)",
+                  }}>
+                    <p style={{ fontFamily:"var(--font-body)", fontSize:".78rem", fontWeight:600, color:"#e74c3c", margin:0, textAlign:"center" }}>
+                      {modalFirebaseErr}
+                    </p>
+                  </div>
+                )}
+
+                {/* ── Fields — matching SignUp.jsx Field component style ── */}
+                {(() => {
+                  // Inline helpers scoped to modal
+                  const getPw = pw => {
+                    if (!pw) return null;
+                    let s = 0;
+                    if (pw.length >= 8)          s++;
+                    if (/[A-Z]/.test(pw))        s++;
+                    if (/[0-9]/.test(pw))        s++;
+                    if (/[^A-Za-z0-9]/.test(pw)) s++;
+                    return [
+                      { s, label:"Too short",  color:"#e74c3c" },
+                      { s, label:"Weak",       color:"#e67e22" },
+                      { s, label:"Fair",       color:"#e6c329" },
+                      { s, label:"Good",       color:"var(--color-brand)" },
+                      { s, label:"Strong ✦",   color:"var(--color-brand-dark)" },
+                    ][s];
+                  };
+                  const pw = getPw(modalPassword);
+
+                  // Icon set
+                  const IUser = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
+                  const IMail = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>;
+                  const ILock = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>;
+                  const IEye  = ({ show }) => show
+                    ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>;
+
+                  const ModalField = ({ label, icon, type="text", value, onChange, delay="0s", suffix, errKey }) => {
+                    const [focus, setFocus] = React.useState(false);
+                    const up = focus || value.length > 0;
+                    return (
+                      <div>
+                        <div style={{ position:"relative", paddingTop:"20px", animation:"field-rise .48s ease both", animationDelay:delay }}>
+                          <label style={{
+                            position:"absolute", left:"26px",
+                            top: up ? "1px" : "25px",
+                            fontFamily:"var(--font-body)",
+                            fontSize: up ? "0.63rem" : "0.88rem", fontWeight:700,
+                            letterSpacing: up ? ".1em" : ".02em",
+                            textTransform: up ? "uppercase" : "none",
+                            color: focus ? "var(--color-brand)" : up ? "rgba(63,125,88,.65)" : "var(--color-dark)",
+                            opacity: up ? 1 : .6, pointerEvents:"none",
+                            transition:"all .22s cubic-bezier(.4,0,.2,1)",
+                            textShadow: focus ? "0 0 14px rgba(63,125,88,.3)" : "none",
+                          }}>{label}</label>
+                          <div style={{
+                            display:"flex", alignItems:"center",
+                            borderBottom:`1.5px solid ${modalErrors[errKey] ? "rgba(231,76,60,.5)" : focus ? "var(--color-brand)" : "rgba(255,255,255,.3)"}`,
+                            boxShadow: focus ? "0 2px 0 rgba(63,125,88,.2)" : "none",
+                            transition:"border-color .22s, box-shadow .22s",
+                          }}>
+                            <span style={{
+                              color: focus ? "var(--color-brand)" : "rgba(63,125,88,.4)",
+                              marginRight:"10px", marginLeft:"2px",
+                              display:"flex", alignItems:"center",
+                              transition:"color .2s", flexShrink:0,
+                            }}>{icon}</span>
+                            <input type={type} value={value} onChange={onChange}
+                              onFocus={()=>setFocus(true)} onBlur={()=>setFocus(false)}
+                              style={{
+                                flex:1, border:"none", outline:"none", background:"transparent",
+                                fontFamily:"var(--font-body)", fontSize:"0.95rem",
+                                color:"var(--color-dark)", padding:"9px 0 10px",
+                                caretColor:"var(--color-brand)",
+                              }}
+                            />
+                            {suffix}
+                          </div>
+                        </div>
+                        {modalErrors[errKey] && (
+                          <p style={{ fontFamily:"var(--font-body)", fontSize:".7rem", color:"#e74c3c", margin:"5px 0 0" }}>
+                            {modalErrors[errKey]}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  };
+
+                  return (
+                    <div style={{ display:"flex", flexDirection:"column", gap:"26px", marginBottom:"28px" }}>
+                      <ModalField
+                        label="Full Name" icon={<IUser/>} errKey="name"
+                        value={modalName} delay=".06s"
+                        onChange={e=>{ setModalName(e.target.value); setModalErrors(p=>({...p,name:""})); }}
+                      />
+                      <ModalField
+                        label="Email Address" icon={<IMail/>} type="email" errKey="email"
+                        value={modalEmail} delay=".14s"
+                        onChange={e=>{ setModalEmail(e.target.value); setModalErrors(p=>({...p,email:""})); }}
+                      />
+                      <div>
+                        <ModalField
+                          label="Password" icon={<ILock/>} errKey="password"
+                          type={modalShowPw ? "text" : "password"}
+                          value={modalPassword} delay=".22s"
+                          onChange={e=>{ setModalPassword(e.target.value); setModalErrors(p=>({...p,password:""})); }}
+                          suffix={
+                            <button type="button" onClick={()=>setModalShowPw(v=>!v)}
+                              style={{ background:"none", border:"none", cursor:"pointer", padding:"0 0 0 8px", color:"var(--color-text)", opacity:.45, display:"flex", alignItems:"center", transition:"opacity .2s" }}
+                              onMouseEnter={e=>e.currentTarget.style.opacity="1"}
+                              onMouseLeave={e=>e.currentTarget.style.opacity=".45"}
+                            ><IEye show={modalShowPw}/></button>
+                          }
+                        />
+                        {/* Password strength bar */}
+                        {pw && (
+                          <div style={{ marginTop:"11px", animation:"field-rise .3s ease both" }}>
+                            <div style={{ display:"flex", gap:"5px", marginBottom:"5px" }}>
+                              {[1,2,3,4].map(i=>(
+                                <div key={i} style={{ flex:1, height:"3px", borderRadius:"999px", background:"rgba(255,255,255,.18)", overflow:"hidden" }}>
+                                  <div style={{ width:"100%", height:"100%", background: i<=pw.s ? pw.color : "transparent", transformOrigin:"left", animation: i<=pw.s ? "seg-fill .3s ease both" : "none", animationDelay:`${i*.07}s` }}/>
+                                </div>
+                              ))}
+                            </div>
+                            <span style={{ fontFamily:"var(--font-body)", fontSize:".66rem", fontWeight:700, letterSpacing:".07em", color:pw.color, textShadow:`0 0 10px ${pw.color}55` }}>{pw.label}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* Create Account CTA */}
+                <button onClick={modalSubmit} disabled={modalLoading||modalGLoading}
+                  onMouseEnter={()=>setModalBtnHov(true)} onMouseLeave={()=>setModalBtnHov(false)}
+                  style={{
+                    width:"100%", fontFamily:"var(--font-body)", fontSize:"1rem",
+                    fontWeight:700, color:"#fff",
+                    background: modalLoading ? "rgba(63,125,88,.48)" : "linear-gradient(135deg,var(--color-brand) 0%,var(--color-brand-dark) 100%)",
+                    border:"none", borderRadius:"999px", padding:"15px 32px",
+                    cursor: modalLoading||modalGLoading ? "not-allowed" : "pointer",
+                    display:"flex", alignItems:"center", justifyContent:"center", gap:"10px",
+                    animation: modalLoading ? "none" : "btn-glow 6s ease-in-out infinite",
+                    transform: modalBtnHov&&!modalLoading&&!modalGLoading ? "translateY(-2px) scale(1.025)" : "translateY(0) scale(1)",
+                    transition:"transform .26s cubic-bezier(.34,1.56,.64,1), background .2s",
+                    letterSpacing:".02em", marginBottom:"14px",
+                  }}>
+                  {modalLoading
+                    ? <><span style={{ width:14, height:14, border:"2px solid rgba(255,255,255,.3)", borderTop:"2px solid #fff", borderRadius:"50%", display:"inline-block", animation:"modal-spin .7s linear infinite" }}/>Creating account…</>
+                    : <>Create Account <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></>}
+                </button>
+
+                {/* OR divider */}
+                <div style={{ display:"flex", alignItems:"center", gap:"14px", margin:"4px 0 14px" }}>
+                  <div style={{ flex:1, height:1, background:"rgba(255,255,255,.22)" }}/>
+                  <span style={{ fontFamily:"var(--font-body)", fontSize:".66rem", letterSpacing:".08em", color:"var(--color-text)", opacity:.35 }}>OR</span>
+                  <div style={{ flex:1, height:1, background:"rgba(255,255,255,.22)" }}/>
+                </div>
+
+                {/* Sign up with Google */}
+                <button onClick={modalGoogleSignup} disabled={modalLoading||modalGLoading}
+                  onMouseEnter={()=>setModalGBtnHov(true)} onMouseLeave={()=>setModalGBtnHov(false)}
+                  style={{
+                    width:"100%", fontFamily:"var(--font-body)", fontSize:".9rem",
+                    fontWeight:600, color:"var(--color-dark)",
+                    background: modalGBtnHov ? "rgba(255,255,255,.25)" : "rgba(255,255,255,.12)",
+                    border:"1px solid rgba(255,255,255,.35)", borderRadius:"999px", padding:"13px 32px",
+                    cursor: modalLoading||modalGLoading ? "not-allowed" : "pointer",
+                    display:"flex", alignItems:"center", justifyContent:"center", gap:"10px",
+                    backdropFilter:"blur(8px)",
+                    transform: modalGBtnHov&&!modalLoading&&!modalGLoading ? "translateY(-1px)" : "translateY(0)",
+                    transition:"all .22s ease", marginBottom:"22px",
+                    boxShadow: modalGBtnHov ? "0 6px 20px rgba(0,0,0,.08)" : "none",
+                  }}>
+                  {modalGLoading
+                    ? <><span style={{ width:14, height:14, border:"2px solid rgba(63,125,88,.3)", borderTop:"2px solid var(--color-brand)", borderRadius:"50%", display:"inline-block", animation:"modal-spin .7s linear infinite" }}/>Connecting…</>
+                    : <><svg width="17" height="17" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Sign up with Google</>}
+                </button>
+
+                {/* Log in link */}
+                <p style={{ fontFamily:"var(--font-body)", fontSize:".82rem", textAlign:"center", margin:0, color:"var(--color-dark)", opacity:.7 }}>
+                  Already have an account?{" "}
+                  <button onClick={()=>{ closeModal(); navigate("/login"); }} style={{
+                    fontFamily:"var(--font-body)", fontSize:".82rem", fontWeight:700,
+                    color:"var(--color-brand-dark)", background:"none", border:"none",
+                    padding:0, cursor:"pointer", textDecoration:"underline",
+                    textDecorationColor:"rgba(63,125,88,.3)", transition:"color .18s",
+                  }}
+                    onMouseEnter={e=>e.currentTarget.style.color="var(--color-brand)"}
+                    onMouseLeave={e=>e.currentTarget.style.color="var(--color-brand-dark)"}
+                  >Log In</button>
+                </p>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </>
   );
 };

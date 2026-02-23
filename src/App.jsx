@@ -9,6 +9,7 @@ import WelcomePage from "./pages/WelcomePage";
 import SignupPage from './pages/SignupPage';
 import LoginPage from './pages/LoginPage';
 import ForgotPassword from "./pages/ForgotPassword";
+import SettingsPage from "./pages/SettingsPage";
 
 
 export default function App() {
@@ -27,6 +28,7 @@ export default function App() {
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/scan" element={<ScanPage />} />
             <Route path="/reports" element={<ReportsPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
           </Route>
 
           {/* Fallback: If a user types a random URL, send them to the Welcome page */}
