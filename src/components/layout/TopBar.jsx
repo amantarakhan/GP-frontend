@@ -25,31 +25,56 @@ export default function TopBar() {
   };
 
   return (
-    <header style={{
-      height: "56px", padding: "0 28px",
-      display: "flex", alignItems: "center", justifyContent: "space-between",
-      background: "var(--color-app-bg)", borderBottom: "1px solid rgba(230,211,173,.5)",
-      flexShrink: 0, zIndex: 10,
-    }}>
+    <header
+      className="topbar-wrapper"
+      style={{
+        height: "56px", padding: "0 28px",
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        background: "var(--color-app-bg)", borderBottom: "1px solid rgba(230,211,173,.5)",
+        flexShrink: 0, zIndex: 10,
+      }}
+    >
       {/* Breadcrumb */}
       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-        <span style={{ fontFamily: "var(--font-body)", fontSize: "12px", color: "var(--color-text)", cursor: "pointer" }}
-          onClick={() => navigate("/dashboard")}>
+        <span
+          style={{
+            fontFamily: "var(--font-body)", fontSize: "12px",
+            color: "var(--color-text)", cursor: "pointer",
+          }}
+          onClick={() => navigate("/dashboard")}
+        >
           Home
         </span>
         <span style={{ color: "var(--color-accent)", fontSize: "14px" }}>/</span>
-        <span style={{ fontFamily: "var(--font-body)", fontSize: "12px", fontWeight: 600, color: "var(--color-dark)" }}>
+        <span style={{
+          fontFamily: "var(--font-body)", fontSize: "12px",
+          fontWeight: 600, color: "var(--color-dark)",
+        }}>
           {title}
         </span>
       </div>
 
       {/* Right controls */}
-      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+      <div
+        className="topbar-right-actions"
+        style={{ display: "flex", alignItems: "center", gap: "10px" }}
+      >
         {/* Analysis ready badge */}
         {hasResults && (
-          <div style={{ display: "flex", alignItems: "center", gap: "6px", background: "var(--color-success)", padding: "5px 12px", borderRadius: "20px", border: "1px solid rgba(63,125,88,.2)" }}>
-            <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "var(--color-brand)", animation: "pulse-dot 1.8s ease infinite", display: "inline-block" }} />
-            <span style={{ fontFamily: "var(--font-body)", fontSize: "11px", fontWeight: 700, color: "var(--color-brand)" }}>
+          <div style={{
+            display: "flex", alignItems: "center", gap: "6px",
+            background: "var(--color-success)", padding: "5px 12px",
+            borderRadius: "20px", border: "1px solid rgba(63,125,88,.2)",
+          }}>
+            <span style={{
+              width: "6px", height: "6px", borderRadius: "50%",
+              background: "var(--color-brand)",
+              animation: "pulse-dot 1.8s ease infinite", display: "inline-block",
+            }} />
+            <span style={{
+              fontFamily: "var(--font-body)", fontSize: "11px",
+              fontWeight: 700, color: "var(--color-brand)",
+            }}>
               Analysis Ready
             </span>
           </div>
@@ -58,21 +83,31 @@ export default function TopBar() {
         {/* Export */}
         <button
           onClick={() => window.print()}
-          style={{ display: "flex", alignItems: "center", gap: "6px", padding: "7px 14px", borderRadius: "8px", border: "1.5px solid var(--color-accent)", background: "var(--color-card)", color: "var(--color-text)", fontSize: "12px", fontWeight: 600, fontFamily: "var(--font-body)", cursor: "pointer" }}
+          style={{
+            display: "flex", alignItems: "center", gap: "6px",
+            padding: "7px 14px", borderRadius: "8px",
+            border: "1.5px solid var(--color-accent)",
+            background: "var(--color-card)", color: "var(--color-text)",
+            fontSize: "12px", fontWeight: 600, fontFamily: "var(--font-body)", cursor: "pointer",
+          }}
         >
           <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/>
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+            <polyline points="7,10 12,15 17,10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
           </svg>
           Export
         </button>
 
-        {/* Save Report — only active when there are results */}
+        {/* Save Report */}
         <button
           onClick={hasResults ? handleSave : () => navigate("/reports")}
           style={{
             display: "flex", alignItems: "center", gap: "6px",
             padding: "7px 14px", borderRadius: "8px", border: "none",
-            background: saved ? "var(--color-success)" : hasResults ? "var(--color-brand)" : "var(--color-text)",
+            background: saved
+              ? "var(--color-success)"
+              : hasResults ? "var(--color-brand)" : "var(--color-text)",
             color: saved ? "var(--color-brand)" : "var(--color-card)",
             fontSize: "12px", fontWeight: 600, fontFamily: "var(--font-body)",
             cursor: "pointer", transition: "all .2s",
