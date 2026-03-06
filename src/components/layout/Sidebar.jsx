@@ -42,7 +42,7 @@ const Icons = {
   ),
 };
 
-// ── Shared NavLink style fn — used by both NavItem and Settings ───────────────
+// ── Shared NavLink style fn ───────────────────────────────────────────────────
 const navLinkStyle = (isActive, expanded) => ({
   display:        "flex",
   alignItems:     "center",
@@ -74,6 +74,7 @@ function NavItem({ item, expanded }) {
     <NavLink
       to={item.path}
       title={!expanded ? item.label : undefined}
+      className="sidebar-nav-item"
       style={({ isActive }) => ({
         ...navLinkStyle(isActive, expanded),
         marginBottom: "4px",
@@ -83,24 +84,50 @@ function NavItem({ item, expanded }) {
     >
       {({ isActive }) => (
         <>
+          {/* Active accent bar */}
           {isActive && expanded && (
-            <span style={{
-              position: "absolute", left: 0, top: "50%",
-              transform: "translateY(-50%)", width: "3px", height: "54%",
-              background: "var(--color-brand)", borderRadius: "0 3px 3px 0",
-            }} />
+            <span
+              className="sidebar-active-bar"
+              style={{
+                position: "absolute", left: 0, top: "50%",
+                transform: "translateY(-50%)", width: "3px", height: "54%",
+                background: "var(--color-brand)", borderRadius: "0 3px 3px 0",
+              }}
+            />
           )}
-          <span style={{ color: isActive ? "var(--color-brand)" : "#687280", flexShrink: 0, display: "flex", alignItems: "center", minWidth: "18px" }}>
+
+          {/* Icon */}
+          <span style={{
+            color: isActive ? "var(--color-brand)" : "#687280",
+            flexShrink: 0, display: "flex", alignItems: "center", minWidth: "18px",
+          }}>
             {Icons[item.id]}
           </span>
-          {expanded && (
-            <span style={{ display: "flex", alignItems: "center", flex: 1, gap: "8px", animation: "sbFadeIn .18s ease both" }}>
-              <span style={{ flex: 1 }}>{item.label}</span>
+
+          {/* Label + badge — shown when expanded, tiny label always present for tab-bar */}
+          {expanded ? (
+            <span style={{
+              display: "flex", alignItems: "center", flex: 1, gap: "8px",
+              animation: "sbFadeIn .18s ease both",
+            }}>
+              <span className="sidebar-label" style={{ flex: 1 }}>{item.label}</span>
               {item.badge && (
-                <span style={{ background: "rgba(63,125,88,.22)", color: "var(--color-brand)", fontSize: "10px", fontWeight: 700, padding: "2px 7px", borderRadius: "10px", fontFamily: "monospace", flexShrink: 0 }}>
+                <span style={{
+                  background: "rgba(63,125,88,.22)", color: "var(--color-brand)",
+                  fontSize: "10px", fontWeight: 700, padding: "2px 7px",
+                  borderRadius: "10px", fontFamily: "monospace", flexShrink: 0,
+                }}>
                   {item.badge}
                 </span>
               )}
+            </span>
+          ) : (
+            /* Tiny label rendered for the mobile tab-bar (hidden on desktop via CSS) */
+            <span
+              className="sidebar-label"
+              style={{ display: "none", fontSize: "9px", fontWeight: 600 }}
+            >
+              {item.label}
             </span>
           )}
         </>
@@ -121,6 +148,7 @@ export default function Sidebar({ expanded, setExpanded }) {
       `}</style>
 
       <aside
+        className="localyze-sidebar"
         onMouseEnter={() => setExpanded(true)}
         onMouseLeave={() => setExpanded(false)}
         style={{
@@ -137,55 +165,112 @@ export default function Sidebar({ expanded, setExpanded }) {
         }}
       >
         {/* Ambient glow */}
-        <div style={{ position: "absolute", bottom: "-70px", left: "-60px", width: "230px", height: "230px", background: "radial-gradient(circle,rgba(63,125,88,.13) 0%,transparent 70%)", pointerEvents: "none" }} />
+        <div
+          className="sidebar-ambient-glow"
+          style={{
+            position: "absolute", bottom: "-70px", left: "-60px",
+            width: "230px", height: "230px",
+            background: "radial-gradient(circle,rgba(63,125,88,.13) 0%,transparent 70%)",
+            pointerEvents: "none",
+          }}
+        />
 
-        {/* ── Logo ── */}
-        <div style={{
-          height: "66px", padding: "0 13px",
-          borderBottom: "1px solid rgba(255,255,255,.06)",
-          display: "flex", alignItems: "center",
-          justifyContent: expanded ? "flex-start" : "center",
-          gap: "11px", flexShrink: 0, overflow: "hidden",
-        }}>
+        {/* ── Logo header ── */}
+        <div
+          className="sidebar-logo-header"
+          style={{
+            height: "66px", padding: "0 13px",
+            borderBottom: "1px solid rgba(255,255,255,.06)",
+            display: "flex", alignItems: "center",
+            justifyContent: expanded ? "flex-start" : "center",
+            gap: "11px", flexShrink: 0, overflow: "hidden",
+          }}
+        >
           <div style={{
             width: "38px", height: "38px", borderRadius: "10px",
             background: "rgba(63,125,88,.18)", border: "1px solid rgba(63,125,88,.4)",
             display: "flex", alignItems: "center", justifyContent: "center",
             flexShrink: 0, overflow: "hidden", boxShadow: "0 0 16px rgba(63,125,88,.35)",
           }}>
-            <img src={globeIcon} alt="" style={{ width: "34px", height: "34px", objectFit: "contain", mixBlendMode: "screen", filter: "brightness(1.8) saturate(1.3)" }}/>
+            <img
+              src={globeIcon} alt=""
+              style={{
+                width: "34px", height: "34px", objectFit: "contain",
+                mixBlendMode: "screen", filter: "brightness(1.8) saturate(1.3)",
+              }}
+            />
           </div>
           {expanded && (
-            <div style={{ display: "flex", flexDirection: "column", gap: "3px", overflow: "hidden", flex: 1, animation: "sbFadeIn .2s ease .05s both", whiteSpace: "nowrap" }}>
-              <img src={wordmark} alt="Localyze" style={{ height: "18px", width: "auto", maxWidth: "150px", objectFit: "contain", objectPosition: "left center", mixBlendMode: "screen", filter: "brightness(1.8) saturate(1.3)", display: "block" }}/>
-              <span style={{ fontFamily: "var(--font-body)", fontSize: "9px", fontWeight: 700, color: "var(--color-brand)", letterSpacing: "2.5px", textTransform: "uppercase", lineHeight: 1 }}>Pro</span>
+            <div style={{
+              display: "flex", flexDirection: "column", gap: "3px",
+              overflow: "hidden", flex: 1,
+              animation: "sbFadeIn .2s ease .05s both", whiteSpace: "nowrap",
+            }}>
+              <img
+                src={wordmark} alt="Localyze"
+                style={{
+                  height: "18px", width: "auto", maxWidth: "150px",
+                  objectFit: "contain", objectPosition: "left center",
+                  mixBlendMode: "screen", filter: "brightness(1.8) saturate(1.3)",
+                  display: "block",
+                }}
+              />
+              <span style={{
+                fontFamily: "var(--font-body)", fontSize: "9px", fontWeight: 700,
+                color: "var(--color-brand)", letterSpacing: "2.5px",
+                textTransform: "uppercase", lineHeight: 1,
+              }}>Pro</span>
             </div>
           )}
         </div>
 
-        {/* ── Nav label ── */}
+        {/* ── Nav section label ── */}
         {expanded
-          ? <div style={{ padding: "18px 16px 6px", fontFamily: "var(--font-body)", fontSize: "9px", fontWeight: 600, color: "#687280", letterSpacing: "2.5px", textTransform: "uppercase", whiteSpace: "nowrap", animation: "sbFadeIn .18s ease both" }}>Main Menu</div>
-          : <div style={{ height: "18px" }} />}
+          ? (
+            <div
+              className="sidebar-nav-label"
+              style={{
+                padding: "18px 16px 6px",
+                fontFamily: "var(--font-body)", fontSize: "9px", fontWeight: 600,
+                color: "#687280", letterSpacing: "2.5px", textTransform: "uppercase",
+                whiteSpace: "nowrap", animation: "sbFadeIn .18s ease both",
+              }}
+            >
+              Main Menu
+            </div>
+          )
+          : <div className="sidebar-nav-label" style={{ height: "18px" }} />
+        }
 
         {/* ── Main nav ── */}
-        <nav style={{ padding: expanded ? "4px 8px" : "4px 0", flex: 1, display: "flex", flexDirection: "column", alignItems: expanded ? "stretch" : "center" }}>
+        <nav
+          className="sidebar-nav"
+          style={{
+            padding: expanded ? "4px 8px" : "4px 0",
+            flex: 1, display: "flex", flexDirection: "column",
+            alignItems: expanded ? "stretch" : "center",
+          }}
+        >
           {NAV_ITEMS.map((item) => (
             <NavItem key={item.id} item={item} expanded={expanded} />
           ))}
         </nav>
 
         {/* ── Divider ── */}
-        <div style={{ margin: "0 10px", height: "1px", background: "rgba(255,255,255,.06)", flexShrink: 0 }} />
+        <div
+          className="sidebar-divider"
+          style={{
+            margin: "0 10px", height: "1px",
+            background: "rgba(255,255,255,.06)", flexShrink: 0,
+          }}
+        />
 
-        {/* ════════════════════════════════════════
-            SETTINGS — NavLink replacing <button>
-            Identical style function to NavItem
-        ════════════════════════════════════════ */}
+        {/* ── Settings ── */}
         <div style={{ padding: expanded ? "8px 8px" : "8px 0", flexShrink: 0 }}>
           <NavLink
             to="/settings"
             title={!expanded ? "Settings" : undefined}
+            className="sidebar-settings-item"
             style={({ isActive }) => navLinkStyle(isActive, expanded)}
             onMouseEnter={e => { if (!e.currentTarget.style.background.includes("linear")) e.currentTarget.style.background = "rgba(255,255,255,.06)"; }}
             onMouseLeave={e => { if (!e.currentTarget.style.background.includes("linear")) e.currentTarget.style.background = "transparent"; }}
@@ -193,17 +278,36 @@ export default function Sidebar({ expanded, setExpanded }) {
             {({ isActive }) => (
               <>
                 {isActive && expanded && (
-                  <span style={{
-                    position: "absolute", left: 0, top: "50%",
-                    transform: "translateY(-50%)", width: "3px", height: "54%",
-                    background: "var(--color-brand)", borderRadius: "0 3px 3px 0",
-                  }} />
+                  <span
+                    className="sidebar-active-bar"
+                    style={{
+                      position: "absolute", left: 0, top: "50%",
+                      transform: "translateY(-50%)", width: "3px", height: "54%",
+                      background: "var(--color-brand)", borderRadius: "0 3px 3px 0",
+                    }}
+                  />
                 )}
-                <span style={{ color: isActive ? "var(--color-brand)" : "#687280", flexShrink: 0, display: "flex", alignItems: "center", minWidth: "16px" }}>
+                <span style={{
+                  color: isActive ? "var(--color-brand)" : "#687280",
+                  flexShrink: 0, display: "flex", alignItems: "center", minWidth: "16px",
+                }}>
                   {Icons.settings}
                 </span>
-                {expanded && (
-                  <span style={{ animation: "sbFadeIn .18s ease both", flex: 1 }}>Settings</span>
+                {expanded ? (
+                  <span
+                    className="sidebar-label"
+                    style={{ animation: "sbFadeIn .18s ease both", flex: 1 }}
+                  >
+                    Settings
+                  </span>
+                ) : (
+                  /* Tiny label for mobile tab-bar */
+                  <span
+                    className="sidebar-label"
+                    style={{ display: "none", fontSize: "9px", fontWeight: 600 }}
+                  >
+                    Settings
+                  </span>
                 )}
               </>
             )}
@@ -211,14 +315,18 @@ export default function Sidebar({ expanded, setExpanded }) {
         </div>
 
         {/* ── User card ── */}
-        <div style={{
-          margin: "4px 8px 16px", padding: expanded ? "10px 12px" : "10px 0",
-          borderRadius: "12px", background: "rgba(255,255,255,.04)",
-          border: "1px solid rgba(255,255,255,.07)",
-          display: "flex", alignItems: "center",
-          justifyContent: expanded ? "flex-start" : "center",
-          gap: "10px", cursor: "pointer", flexShrink: 0, overflow: "hidden",
-        }}>
+        <div
+          className="sidebar-user-card"
+          style={{
+            margin: "4px 8px 16px",
+            padding: expanded ? "10px 12px" : "10px 0",
+            borderRadius: "12px", background: "rgba(255,255,255,.04)",
+            border: "1px solid rgba(255,255,255,.07)",
+            display: "flex", alignItems: "center",
+            justifyContent: expanded ? "flex-start" : "center",
+            gap: "10px", cursor: "pointer", flexShrink: 0, overflow: "hidden",
+          }}
+        >
           <div style={{
             width: "34px", height: "34px", borderRadius: "50%",
             background: "linear-gradient(135deg,var(--color-brand),var(--color-brand-dark))",
@@ -228,12 +336,22 @@ export default function Sidebar({ expanded, setExpanded }) {
           }}>A</div>
           {expanded && (
             <>
-              <div style={{ overflow: "hidden", flex: 1, animation: "sbFadeIn .18s ease both", whiteSpace: "nowrap" }}>
-                <div style={{ color: "#F5F2E1", fontSize: "13px", fontWeight: 600, fontFamily: "var(--font-body)", overflow: "hidden", textOverflow: "ellipsis" }}>Analyst Pro</div>
-                <div style={{ color: "#687280", fontSize: "11px", fontFamily: "var(--font-body)" }}>Pro Plan Active</div>
+              <div style={{
+                overflow: "hidden", flex: 1,
+                animation: "sbFadeIn .18s ease both", whiteSpace: "nowrap",
+              }}>
+                <div style={{
+                  color: "#F5F2E1", fontSize: "13px", fontWeight: 600,
+                  fontFamily: "var(--font-body)", overflow: "hidden", textOverflow: "ellipsis",
+                }}>Analyst Pro</div>
+                <div style={{ color: "#687280", fontSize: "11px", fontFamily: "var(--font-body)" }}>
+                  Pro Plan Active
+                </div>
               </div>
               <span style={{ animation: "sbFadeIn .18s ease both", flexShrink: 0, display: "flex" }}>
-                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#687280" strokeWidth={2}><path d="M9 18l6-6-6-6" /></svg>
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#687280" strokeWidth={2}>
+                  <path d="M9 18l6-6-6-6" />
+                </svg>
               </span>
             </>
           )}

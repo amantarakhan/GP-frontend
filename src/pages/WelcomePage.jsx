@@ -279,7 +279,7 @@ const FeatureCard = ({ icon, title, description, index }) => {
   const [hovered, setHovered] = useState(false);
   return (
     <div
-      className={`fade-in fade-in-${index + 2}`}
+      className={`fade-in fade-in-${index + 2} feature-card`}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
@@ -324,7 +324,7 @@ const FeatureCard = ({ icon, title, description, index }) => {
 
 // ─── Stat Badge ───────────────────────────────────────────────────────────────
 const StatBadge = ({ value, label }) => (
-  <div style={{
+  <div className="stat-badge" style={{
     display: "flex", flexDirection: "column", alignItems: "center", gap: "5px",
     padding: "22px 32px",
     background: "rgba(255,255,255,0.06)",
@@ -349,21 +349,14 @@ const StatBadge = ({ value, label }) => (
 const WelcomePage = () => {
   const navigate = useNavigate();
 
-  // ── Scrolled state for glass nav ──
   const [scrolled, setScrolled] = useState(false);
-
-  // ── Hover states ──
   const [learnHovered,  setLearnHovered]  = useState(false);
   const [loginHovered,  setLoginHovered]  = useState(false);
   const [signupHovered, setSignupHovered] = useState(false);
   const [analyzeHovered, setAnalyzeHovered] = useState(false);
   const [inputFocused, setInputFocused]   = useState(false);
-
-  // ── Rotating headline state ──
   const [nicheIndex,   setNicheIndex]   = useState(0);
-  const [wordKey,      setWordKey]      = useState(0); // forces re-animation
-
-  // ── Location input ──
+  const [wordKey,      setWordKey]      = useState(0);
   const [locationVal, setLocationVal] = useState("");
   const inputRef = useRef(null);
 
@@ -373,7 +366,6 @@ const WelcomePage = () => {
     return () => window.removeEventListener("scroll", fn);
   }, []);
 
-  // Rotate niche word every 2.5s
   useEffect(() => {
     const interval = setInterval(() => {
       setNicheIndex(i => (i + 1) % NICHES.length);
@@ -451,7 +443,6 @@ const WelcomePage = () => {
     }
   };
 
-  // ── Gatekeeper: open modal for guests, navigate for logged-in users ──
   const handleProtectedAction = () => {
     if (auth.currentUser) {
       navigate("/scan");
@@ -486,7 +477,7 @@ const WelcomePage = () => {
           transition: "all 0.28s ease",
           overflow: "visible",
         }}>
-          {/* Hanging oversized logo — overflows below the nav bar */}
+          {/* Hanging oversized logo */}
           <div
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             style={{
@@ -513,34 +504,46 @@ const WelcomePage = () => {
             />
           </div>
 
-          {/* Spacer so nav links don't slide under the logo */}
-          <div style={{ width: "180px", flexShrink: 0 }} />
+          {/* Spacer — class added for responsive shrink */}
+          <div className="nav-logo-spacer" style={{ width: "180px", flexShrink: 0 }} />
 
           <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-            <a href="#about" onClick={scrollToAbout} style={{
-              fontFamily: "var(--font-body)", fontSize: "0.875rem",
-              fontWeight: 500, color: "var(--color-text)",
-              textDecoration: "none", padding: "8px 14px",
-              borderRadius: "10px", transition: "all 0.2s",
-            }}
+            {/* About link — hidden on mobile */}
+            <a
+              href="#about"
+              onClick={scrollToAbout}
+              className="nav-learn-link"
+              style={{
+                fontFamily: "var(--font-body)", fontSize: "0.875rem",
+                fontWeight: 500, color: "var(--color-text)",
+                textDecoration: "none", padding: "8px 14px",
+                borderRadius: "10px", transition: "all 0.2s",
+              }}
               onMouseEnter={e => { e.target.style.color = "var(--color-dark)"; e.target.style.background = "rgba(63,125,88,0.07)"; }}
               onMouseLeave={e => { e.target.style.color = "var(--color-text)"; e.target.style.background = "transparent"; }}
             >About</a>
 
-            <button onClick={() => navigate("/login")}
+            {/* Log In — hidden on mobile */}
+            <button
+              onClick={() => navigate("/login")}
               onMouseEnter={() => setLoginHovered(true)}
               onMouseLeave={() => setLoginHovered(false)}
+              className="nav-login-btn"
               style={{
                 fontFamily: "var(--font-body)", fontSize: "0.875rem", fontWeight: 500,
                 color: loginHovered ? "var(--color-dark)" : "var(--color-text)",
                 background: loginHovered ? "rgba(63,125,88,0.07)" : "transparent",
                 border: "none", padding: "8px 14px",
                 borderRadius: "10px", cursor: "pointer", transition: "all 0.2s",
-              }}>Log In</button>
+              }}
+            >Log In</button>
 
-            <button onClick={() => navigate("/signup")}
+            {/* Sign Up */}
+            <button
+              onClick={() => navigate("/signup")}
               onMouseEnter={() => setSignupHovered(true)}
               onMouseLeave={() => setSignupHovered(false)}
+              className="nav-signup-btn"
               style={{
                 fontFamily: "var(--font-body)", fontSize: "0.875rem", fontWeight: 700,
                 color: "#fff",
@@ -550,19 +553,23 @@ const WelcomePage = () => {
                 boxShadow: signupHovered ? "0 6px 20px rgba(63,125,88,0.42)" : "0 3px 12px rgba(63,125,88,0.28)",
                 transform: signupHovered ? "translateY(-1px)" : "translateY(0)",
                 transition: "all 0.22s ease",
-              }}>Sign Up</button>
+              }}
+            >Sign Up</button>
           </div>
         </nav>
 
         {/* ════════════════════════════════════════
             HERO — ASYMMETRIC SPLIT
         ════════════════════════════════════════ */}
-        <section style={{
-          minHeight: "100vh",
-          padding: "120px 5% 80px",
-          display: "flex", alignItems: "center",
-          position: "relative", overflow: "hidden",
-        }}>
+        <section
+          className="hero-section"
+          style={{
+            minHeight: "100vh",
+            padding: "120px 5% 80px",
+            display: "flex", alignItems: "center",
+            position: "relative", overflow: "hidden",
+          }}
+        >
           <DotGrid />
 
           {/* Ambient background glow */}
@@ -574,14 +581,17 @@ const WelcomePage = () => {
           }} />
 
           {/* Two-column grid */}
-          <div style={{
-            width: "100%",
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "52px",
-            alignItems: "center",
-            position: "relative", zIndex: 1,
-          }}>
+          <div
+            className="hero-grid"
+            style={{
+              width: "100%",
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: "52px",
+              alignItems: "center",
+              position: "relative", zIndex: 1,
+            }}
+          >
 
             {/* ── LEFT: Copy ── */}
             <div style={{
@@ -590,15 +600,17 @@ const WelcomePage = () => {
             }}>
 
               {/* ── Rotating headline ── */}
-              <h1 className="fade-in fade-in-1" style={{
-                fontFamily: "var(--font-display)",
-                fontSize: "clamp(2.3rem, 4.2vw, 3.8rem)",
-                fontWeight: 800, color: "var(--color-dark)",
-                margin: "0 0 22px", lineHeight: 1.12,
-                letterSpacing: "-0.028em", maxWidth: "540px",
-              }}>
+              <h1
+                className="fade-in fade-in-1 hero-h1"
+                style={{
+                  fontFamily: "var(--font-display)",
+                  fontSize: "clamp(2.3rem, 4.2vw, 3.8rem)",
+                  fontWeight: 800, color: "var(--color-dark)",
+                  margin: "0 0 22px", lineHeight: 1.12,
+                  letterSpacing: "-0.028em", maxWidth: "540px",
+                }}
+              >
                 Find the Perfect Spot for Your Next{" "}
-                {/* Dynamic word container — fixed height to prevent layout shift */}
                 <span style={{
                   display: "inline-block",
                   position: "relative",
@@ -633,19 +645,25 @@ const WelcomePage = () => {
               </p>
 
               {/* ── Quick Start Location Input ── */}
-              <div className="fade-in fade-in-3" style={{ width: "100%", maxWidth: "480px", marginBottom: "20px" }}>
-                <div style={{
-                  display: "flex",
-                  alignItems: "center",
-                  background: "var(--color-card)",
-                  borderRadius: "14px",
-                  border: `1.5px solid ${inputFocused ? "rgba(63,125,88,0.45)" : "rgba(230,211,173,.7)"}`,
-                  boxShadow: inputFocused
-                    ? "0 0 0 4px rgba(63,125,88,0.08), 0 8px 32px rgba(0,0,0,0.08)"
-                    : "0 4px 20px rgba(0,0,0,0.07)",
-                  transition: "all 0.22s ease",
-                  overflow: "hidden",
-                }}>
+              <div
+                className="fade-in fade-in-3 hero-input-wrapper"
+                style={{ width: "100%", maxWidth: "480px", marginBottom: "20px" }}
+              >
+                <div
+                  className="hero-input-inner"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    background: "var(--color-card)",
+                    borderRadius: "14px",
+                    border: `1.5px solid ${inputFocused ? "rgba(63,125,88,0.45)" : "rgba(230,211,173,.7)"}`,
+                    boxShadow: inputFocused
+                      ? "0 0 0 4px rgba(63,125,88,0.08), 0 8px 32px rgba(0,0,0,0.08)"
+                      : "0 4px 20px rgba(0,0,0,0.07)",
+                    transition: "all 0.22s ease",
+                    overflow: "hidden",
+                  }}
+                >
                   {/* Search icon */}
                   <div style={{ padding: "0 0 0 16px", display: "flex", alignItems: "center", flexShrink: 0 }}>
                     <IconSearch />
@@ -679,6 +697,7 @@ const WelcomePage = () => {
                     onClick={handleAnalyze}
                     onMouseEnter={() => setAnalyzeHovered(true)}
                     onMouseLeave={() => setAnalyzeHovered(false)}
+                    className="hero-analyze-btn"
                     style={{
                       flexShrink: 0,
                       fontFamily: "var(--font-body)",
@@ -717,7 +736,9 @@ const WelcomePage = () => {
 
               {/* Learn more link */}
               <div className="fade-in fade-in-3" style={{ marginBottom: "40px" }}>
-                <a href="#about" onClick={scrollToAbout}
+                <a
+                  href="#about"
+                  onClick={scrollToAbout}
                   onMouseEnter={() => setLearnHovered(true)}
                   onMouseLeave={() => setLearnHovered(false)}
                   style={{
@@ -734,11 +755,14 @@ const WelcomePage = () => {
               </div>
 
               {/* Social proof strip */}
-              <div className="fade-in fade-in-4" style={{
-                display: "flex", alignItems: "center",
-                paddingTop: "22px",
-                borderTop: "1px solid rgba(230,211,173,.45)",
-              }}>
+              <div
+                className="fade-in fade-in-4 hero-proof-strip"
+                style={{
+                  display: "flex", alignItems: "center",
+                  paddingTop: "22px",
+                  borderTop: "1px solid rgba(230,211,173,.45)",
+                }}
+              >
                 {[
                   { val: "3×",      label: "Data signals"    },
                   { val: "360°",    label: "Location view"   },
@@ -764,11 +788,14 @@ const WelcomePage = () => {
             </div>
 
             {/* ── RIGHT: Globe + floating cards ── */}
-            <div style={{
-              position: "relative", display: "flex",
-              alignItems: "center", justifyContent: "center",
-              minHeight: "520px",
-            }}>
+            <div
+              className="hero-globe-col"
+              style={{
+                position: "relative", display: "flex",
+                alignItems: "center", justifyContent: "center",
+                minHeight: "520px",
+              }}
+            >
               {/* Globe glow backdrop */}
               <div style={{
                 position: "absolute",
@@ -777,7 +804,7 @@ const WelcomePage = () => {
                 pointerEvents: "none", zIndex: 1,
               }} />
 
-              {/* Globe image — breathing float */}
+              {/* Globe image */}
               <img src={globeHero} alt="Globe" style={{
                 width: "85%", maxWidth: "480px",
                 opacity: 0.6,
@@ -798,12 +825,15 @@ const WelcomePage = () => {
         {/* ════════════════════════════════════════
             DATA PIPELINE SECTION
         ════════════════════════════════════════ */}
-        <section style={{
-          background: "linear-gradient(180deg, var(--color-card) 0%, rgba(252,252,250,0.6) 100%)",
-          borderTop: "1px solid rgba(230,211,173,.4)",
-          borderBottom: "1px solid rgba(230,211,173,.4)",
-          padding: "72px 5%",
-        }}>
+        <section
+          className="pipeline-section"
+          style={{
+            background: "linear-gradient(180deg, var(--color-card) 0%, rgba(252,252,250,0.6) 100%)",
+            borderTop: "1px solid rgba(230,211,173,.4)",
+            borderBottom: "1px solid rgba(230,211,173,.4)",
+            padding: "72px 5%",
+          }}
+        >
           <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
             {/* Section label */}
             <div style={{ textAlign: "center", marginBottom: "52px" }}>
@@ -821,13 +851,16 @@ const WelcomePage = () => {
               }}>How Localyze works</h2>
             </div>
 
-            {/* 3 pipeline steps */}
-            <div style={{
-              display: "grid",
-              gridTemplateColumns: "1fr auto 1fr auto 1fr",
-              alignItems: "center",
-              gap: "0",
-            }}>
+            {/* 3 pipeline steps — class added for responsive stacking */}
+            <div
+              className="pipeline-steps-grid"
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr auto 1fr auto 1fr",
+                alignItems: "center",
+                gap: "0",
+              }}
+            >
               {/* Step 1 */}
               <div style={{
                 background: "#fff",
@@ -873,11 +906,14 @@ const WelcomePage = () => {
                 </div>
               </div>
 
-              {/* Connector arrow 1 */}
-              <div style={{
-                display: "flex", alignItems: "center", justifyContent: "center",
-                padding: "0 16px", flexShrink: 0,
-              }}>
+              {/* Connector arrow 1 — class added to hide on mobile */}
+              <div
+                className="pipeline-arrow-connector"
+                style={{
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  padding: "0 16px", flexShrink: 0,
+                }}
+              >
                 <div style={{
                   display: "flex", flexDirection: "column", alignItems: "center", gap: "6px",
                 }}>
@@ -934,11 +970,14 @@ const WelcomePage = () => {
                 </div>
               </div>
 
-              {/* Connector arrow 2 */}
-              <div style={{
-                display: "flex", alignItems: "center", justifyContent: "center",
-                padding: "0 16px", flexShrink: 0,
-              }}>
+              {/* Connector arrow 2 — class added to hide on mobile */}
+              <div
+                className="pipeline-arrow-connector"
+                style={{
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  padding: "0 16px", flexShrink: 0,
+                }}
+              >
                 <div style={{
                   display: "flex", flexDirection: "column", alignItems: "center", gap: "6px",
                 }}>
@@ -1001,14 +1040,20 @@ const WelcomePage = () => {
         {/* ════════════════════════════════════════
             FEATURES GRID
         ════════════════════════════════════════ */}
-        <section style={{ padding: "96px 5%", maxWidth: "1280px", margin: "0 auto" }}>
+        <section
+          className="features-section"
+          style={{ padding: "96px 5%", maxWidth: "1280px", margin: "0 auto" }}
+        >
           <div className="fade-in" style={{ textAlign: "center", marginBottom: "54px" }}>
-            <div style={{
-              display: "inline-flex", alignItems: "center", gap: "8px",
-              background: "rgba(63,125,88,0.08)",
-              border: "1px solid rgba(63,125,88,0.18)",
-              borderRadius: "999px", padding: "5px 15px", marginBottom: "18px",
-            }}>
+            <div
+              className="section-label-chip"
+              style={{
+                display: "inline-flex", alignItems: "center", gap: "8px",
+                background: "rgba(63,125,88,0.08)",
+                border: "1px solid rgba(63,125,88,0.18)",
+                borderRadius: "999px", padding: "5px 15px", marginBottom: "18px",
+              }}
+            >
               <span style={{
                 fontFamily: "var(--font-body)", fontSize: "0.72rem",
                 fontWeight: 700, color: "var(--color-brand-dark)",
@@ -1028,11 +1073,14 @@ const WelcomePage = () => {
             }}>Three powerful lenses on any location — unified in one seamless analysis flow.</p>
           </div>
 
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-            gap: "22px",
-          }}>
+          <div
+            className="features-grid"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+              gap: "22px",
+            }}
+          >
             <FeatureCard index={0} icon={<IconFootTraffic />}
               title="Foot Traffic Analysis"
               description="Visualize pedestrian and vehicle flow patterns throughout the day and week — pinpoint peak visibility before you commit." />
@@ -1048,10 +1096,13 @@ const WelcomePage = () => {
         {/* ════════════════════════════════════════
             DARK STATS BAND
         ════════════════════════════════════════ */}
-        <section style={{
-          background: "linear-gradient(140deg, var(--color-dark) 0%, #162a1f 55%, var(--color-brand-dark) 100%)",
-          padding: "76px 5%", position: "relative", overflow: "hidden",
-        }}>
+        <section
+          className="stats-band"
+          style={{
+            background: "linear-gradient(140deg, var(--color-dark) 0%, #162a1f 55%, var(--color-brand-dark) 100%)",
+            padding: "76px 5%", position: "relative", overflow: "hidden",
+          }}
+        >
           <svg style={{
             position: "absolute", inset: 0, width: "100%", height: "100%",
             opacity: 0.05, pointerEvents: "none",
@@ -1088,7 +1139,11 @@ const WelcomePage = () => {
                 maxWidth: "440px", lineHeight: 1.72,
               }}>Location analytics that used to cost thousands — now at your fingertips.</p>
             </div>
-            <div style={{ display: "flex", gap: "16px", flexWrap: "wrap", justifyContent: "center" }}>
+            {/* Badges row — class added for responsive stacking */}
+            <div
+              className="stats-band-badges"
+              style={{ display: "flex", gap: "16px", flexWrap: "wrap", justifyContent: "center" }}
+            >
               <StatBadge value="3×"        label="Signals Analyzed" />
               <StatBadge value="Real-time" label="Demand Data"      />
               <StatBadge value="360°"      label="Location View"    />
@@ -1099,7 +1154,11 @@ const WelcomePage = () => {
         {/* ════════════════════════════════════════
             ABOUT SECTION
         ════════════════════════════════════════ */}
-        <section id="about" style={{ padding: "96px 5%", maxWidth: "1280px", margin: "0 auto" }}>
+        <section
+          id="about"
+          className="about-section"
+          style={{ padding: "96px 5%", maxWidth: "1280px", margin: "0 auto" }}
+        >
           <div className="fade-in" style={{ marginBottom: "50px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "14px", marginBottom: "14px" }}>
               <div style={{
@@ -1123,14 +1182,17 @@ const WelcomePage = () => {
           </div>
 
           {/* Mission card */}
-          <div className="fade-in fade-in-1" style={{
-            background: "var(--color-card)",
-            border: "1px solid rgba(230,211,173,.6)",
-            borderRadius: "24px", padding: "44px 40px",
-            marginBottom: "22px",
-            boxShadow: "0 4px 24px rgba(0,0,0,0.04)",
-            position: "relative", overflow: "hidden",
-          }}>
+          <div
+            className="fade-in fade-in-1 about-mission-card"
+            style={{
+              background: "var(--color-card)",
+              border: "1px solid rgba(230,211,173,.6)",
+              borderRadius: "24px", padding: "44px 40px",
+              marginBottom: "22px",
+              boxShadow: "0 4px 24px rgba(0,0,0,0.04)",
+              position: "relative", overflow: "hidden",
+            }}
+          >
             <div style={{
               position: "absolute", top: 0, right: 0, width: 220, height: 220,
               background: "radial-gradient(circle at top right, rgba(230,211,173,0.18) 0%, transparent 65%)",
@@ -1165,15 +1227,18 @@ const WelcomePage = () => {
           </div>
 
           {/* Graduation banner */}
-          <div className="fade-in fade-in-2" style={{
-            background: "linear-gradient(135deg, #1a3a2a 0%, #243d30 50%, #1e4535 100%)",
-            border: "1px solid rgba(230,211,173,.17)",
-            borderRadius: "20px", padding: "30px 34px",
-            display: "flex", alignItems: "center",
-            gap: "22px", flexWrap: "wrap",
-            boxShadow: "0 8px 32px rgba(0,0,0,0.13)",
-            position: "relative", overflow: "hidden",
-          }}>
+          <div
+            className="fade-in fade-in-2 about-grad-banner"
+            style={{
+              background: "linear-gradient(135deg, #1a3a2a 0%, #243d30 50%, #1e4535 100%)",
+              border: "1px solid rgba(230,211,173,.17)",
+              borderRadius: "20px", padding: "30px 34px",
+              display: "flex", alignItems: "center",
+              gap: "22px", flexWrap: "wrap",
+              boxShadow: "0 8px 32px rgba(0,0,0,0.13)",
+              position: "relative", overflow: "hidden",
+            }}
+          >
             <div style={{
               position: "absolute", top: 0, right: 0, width: 280, height: "100%",
               background: "radial-gradient(ellipse at right center, rgba(230,211,173,0.07) 0%, transparent 65%)",
@@ -1217,43 +1282,54 @@ const WelcomePage = () => {
         {/* ════════════════════════════════════════
             FINAL CTA BAND
         ════════════════════════════════════════ */}
-        <section style={{
-          padding: "88px 5%", textAlign: "center",
-          background: "var(--color-card)",
-          borderTop: "1px solid rgba(230,211,173,.35)",
-        }}>
-          <div style={{
-            display: "inline-flex", alignItems: "center", gap: "8px",
-            background: "rgba(63,125,88,0.08)",
-            border: "1px solid rgba(63,125,88,0.18)",
-            borderRadius: "999px", padding: "5px 15px", marginBottom: "20px",
-          }}>
+        <section
+          className="cta-section"
+          style={{
+            padding: "88px 5%", textAlign: "center",
+            background: "var(--color-card)",
+            borderTop: "1px solid rgba(230,211,173,.35)",
+          }}
+        >
+          <div
+            className="section-label-chip"
+            style={{
+              display: "inline-flex", alignItems: "center", gap: "8px",
+              background: "rgba(63,125,88,0.08)",
+              border: "1px solid rgba(63,125,88,0.18)",
+              borderRadius: "999px", padding: "5px 15px", marginBottom: "20px",
+            }}
+          >
             <span style={{
               fontFamily: "var(--font-body)", fontSize: "0.72rem",
               fontWeight: 700, color: "var(--color-brand-dark)",
               letterSpacing: "0.09em", textTransform: "uppercase",
             }}>Ready to start?</span>
           </div>
-          <h2 style={{
-            fontFamily: "var(--font-display)",
-            fontSize: "clamp(1.6rem, 3.5vw, 2.6rem)",
-            fontWeight: 800, color: "var(--color-dark)",
-            margin: "0 auto 16px", letterSpacing: "-0.022em",
-            maxWidth: "520px", lineHeight: 1.2,
-          }}>Your next great location is waiting to be found.</h2>
+          <h2
+            className="cta-h2"
+            style={{
+              fontFamily: "var(--font-display)",
+              fontSize: "clamp(1.6rem, 3.5vw, 2.6rem)",
+              fontWeight: 800, color: "var(--color-dark)",
+              margin: "0 auto 16px", letterSpacing: "-0.022em",
+              maxWidth: "520px", lineHeight: 1.2,
+            }}
+          >Your next great location is waiting to be found.</h2>
           <p style={{
             fontFamily: "var(--font-body)", fontSize: "1rem",
             color: "var(--color-text)", margin: "0 auto 38px",
             maxWidth: "380px", lineHeight: 1.75,
           }}>Run your first scan in minutes. No setup required.</p>
-          <button onClick={handleProtectedAction} style={{
-            fontFamily: "var(--font-body)", fontSize: "1rem",
-            fontWeight: 700, color: "#fff",
-            background: "linear-gradient(135deg, var(--color-brand) 0%, var(--color-brand-dark) 100%)",
-            border: "none", padding: "16px 40px", borderRadius: "14px", cursor: "pointer",
-            display: "inline-flex", alignItems: "center", gap: "10px",
-            boxShadow: "0 8px 24px rgba(63,125,88,0.3)", transition: "all 0.24s ease",
-          }}
+          <button
+            onClick={handleProtectedAction}
+            style={{
+              fontFamily: "var(--font-body)", fontSize: "1rem",
+              fontWeight: 700, color: "#fff",
+              background: "linear-gradient(135deg, var(--color-brand) 0%, var(--color-brand-dark) 100%)",
+              border: "none", padding: "16px 40px", borderRadius: "14px", cursor: "pointer",
+              display: "inline-flex", alignItems: "center", gap: "10px",
+              boxShadow: "0 8px 24px rgba(63,125,88,0.3)", transition: "all 0.24s ease",
+            }}
             onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 14px 36px rgba(63,125,88,0.44)"; }}
             onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 8px 24px rgba(63,125,88,0.3)"; }}
           >Start a new scan <IconArrow /></button>
@@ -1270,10 +1346,14 @@ const WelcomePage = () => {
             maxWidth: "1280px", margin: "0 auto",
             display: "flex", flexDirection: "column", gap: "28px",
           }}>
-            <div style={{
-              display: "flex", alignItems: "flex-start",
-              justifyContent: "space-between", flexWrap: "wrap", gap: "28px",
-            }}>
+            {/* Top row — logo + link groups */}
+            <div
+              className="footer-top-row"
+              style={{
+                display: "flex", alignItems: "flex-start",
+                justifyContent: "space-between", flexWrap: "wrap", gap: "28px",
+              }}
+            >
               <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                 <img src={logo} alt="Localyze" style={{
                   height: "34px", objectFit: "contain",
@@ -1286,7 +1366,11 @@ const WelcomePage = () => {
                 }}>Location intelligence for entrepreneurs who move fast and think smart.</p>
               </div>
 
-              <div style={{ display: "flex", gap: "48px", flexWrap: "wrap" }}>
+              {/* Link groups */}
+              <div
+                className="footer-links-group"
+                style={{ display: "flex", gap: "48px", flexWrap: "wrap" }}
+              >
                 <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                   <p style={{
                     fontFamily: "var(--font-body)", fontSize: "0.68rem",
@@ -1326,10 +1410,14 @@ const WelcomePage = () => {
 
             <div style={{ height: 1, background: "rgba(255,255,255,0.06)" }} />
 
-            <div style={{
-              display: "flex", alignItems: "center",
-              justifyContent: "space-between", flexWrap: "wrap", gap: "10px",
-            }}>
+            {/* Bottom row */}
+            <div
+              className="footer-bottom-row"
+              style={{
+                display: "flex", alignItems: "center",
+                justifyContent: "space-between", flexWrap: "wrap", gap: "10px",
+              }}
+            >
               <p style={{
                 fontFamily: "var(--font-body)", fontSize: "0.78rem",
                 color: "rgba(255,255,255,0.25)", margin: 0,
@@ -1396,20 +1484,24 @@ const WelcomePage = () => {
             }
           `}</style>
 
-          <div style={{
-            position:"relative", width:"100%", maxWidth:"420px",
-            background:"rgba(255,255,255,.08)",
-            backdropFilter:"blur(65px) saturate(180%)",
-            WebkitBackdropFilter:"blur(65px) saturate(180%)",
-            border:"1px solid rgba(63,125,88,.18)",
-            borderRadius:"32px", padding:"48px 40px 40px",
-            boxShadow:
-              "0 48px 120px rgba(0,0,0,.28)," +
-              "0 12px 40px rgba(0,0,0,.18)," +
-              "inset 0 2px 0 rgba(255,255,255,.7)," +
-              "inset 0 -1px 0 rgba(63,125,88,.07)",
-            animation:"modalSlideUp .35s cubic-bezier(.34,1.28,.64,1) both",
-          }}>
+          {/* Modal card — class added for responsive sizing */}
+          <div
+            className="signup-modal-card"
+            style={{
+              position:"relative", width:"100%", maxWidth:"420px",
+              background:"rgba(255,255,255,.08)",
+              backdropFilter:"blur(65px) saturate(180%)",
+              WebkitBackdropFilter:"blur(65px) saturate(180%)",
+              border:"1px solid rgba(63,125,88,.18)",
+              borderRadius:"32px", padding:"48px 40px 40px",
+              boxShadow:
+                "0 48px 120px rgba(0,0,0,.28)," +
+                "0 12px 40px rgba(0,0,0,.18)," +
+                "inset 0 2px 0 rgba(255,255,255,.7)," +
+                "inset 0 -1px 0 rgba(63,125,88,.07)",
+              animation:"modalSlideUp .35s cubic-bezier(.34,1.28,.64,1) both",
+            }}
+          >
 
             {/* Close button */}
             <button onClick={closeModal} style={{
@@ -1492,9 +1584,8 @@ const WelcomePage = () => {
                   </div>
                 )}
 
-                {/* ── Fields — matching SignUp.jsx Field component style ── */}
+                {/* ── Fields ── */}
                 {(() => {
-                  // Inline helpers scoped to modal
                   const getPw = pw => {
                     if (!pw) return null;
                     let s = 0;
@@ -1512,7 +1603,6 @@ const WelcomePage = () => {
                   };
                   const pw = getPw(modalPassword);
 
-                  // Icon set
                   const IUser = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
                   const IMail = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>;
                   const ILock = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>;
@@ -1597,7 +1687,6 @@ const WelcomePage = () => {
                             ><IEye show={modalShowPw}/></button>
                           }
                         />
-                        {/* Password strength bar */}
                         {pw && (
                           <div style={{ marginTop:"11px", animation:"field-rise .3s ease both" }}>
                             <div style={{ display:"flex", gap:"5px", marginBottom:"5px" }}>
