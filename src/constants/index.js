@@ -14,14 +14,12 @@ export const COLORS = {
 
 // ── Business types ───────────────────────────────────────────────────────────
 export const BUSINESS_TYPES = [
-  { value: "cafe",        label: "Café / Coffee Shop",  emoji: "☕" },
+  { value: "cafe",        label: "Café / Coffee Shop",   emoji: "☕"  },
   { value: "restaurant",  label: "Restaurant",           emoji: "🍽️" },
-  { value: "bar",         label: "Bar & Lounge",         emoji: "🍸" },
   { value: "bakery",      label: "Bakery",               emoji: "🥐" },
-  { value: "retail",      label: "Retail Store",         emoji: "🛍️" },
-  { value: "fitness",     label: "Fitness Studio",       emoji: "💪" },
-  { value: "salon",       label: "Salon & Beauty",       emoji: "💇" },
-  { value: "medical",     label: "Medical / Dental",     emoji: "🏥" },
+  { value: "gym",         label: "Fitness Studio",       emoji: "💪" },
+  { value: "clinic",      label: "Medical",              emoji: "🏥" },
+  { value: "pharmacy",    label: "Pharmacy",             emoji: "💊" },
   { value: "grocery",     label: "Grocery / Supermarket",emoji: "🛒" },
 ];
 
