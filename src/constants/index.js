@@ -17,7 +17,7 @@ export const BUSINESS_TYPES = [
   { value: "cafe",        label: "Café / Coffee Shop",   emoji: "☕"  },
   { value: "restaurant",  label: "Restaurant",           emoji: "🍽️" },
   { value: "bakery",      label: "Bakery",               emoji: "🥐" },
-  { value: "gym",         label: "Fitness Studio",       emoji: "💪" },
+  { value: "gym",         label: "Gym",       emoji: "💪" },
   { value: "clinic",      label: "Medical",              emoji: "🏥" },
   { value: "pharmacy",    label: "Pharmacy",             emoji: "💊" },
   { value: "grocery",     label: "Grocery / Supermarket",emoji: "🛒" },
