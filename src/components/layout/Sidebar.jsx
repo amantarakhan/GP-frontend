@@ -1,5 +1,5 @@
 import React from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { NAV_ITEMS } from "../../constants";
 
 import globeIcon from "../../assets/logo2.png";
@@ -138,6 +138,7 @@ function NavItem({ item, expanded }) {
 
 // ── Sidebar ──────────────────────────────────────────────────────────────────
 export default function Sidebar({ expanded, setExpanded }) {
+  const navigate = useNavigate();
   return (
     <>
       <style>{`
@@ -175,17 +176,21 @@ export default function Sidebar({ expanded, setExpanded }) {
           }}
         />
 
-        {/* ── Logo header ── */}
+        {/* ── Logo ── */}
         <div
-          className="sidebar-logo-header"
+          onClick={() => navigate("/")}
           style={{
-            height: "66px", padding: "0 13px",
-            borderBottom: "1px solid rgba(255,255,255,.06)",
-            display: "flex", alignItems: "center",
+            height:         "66px",
+            padding:        "0 13px",
+            borderBottom:   "1px solid rgba(255,255,255,.06)",
+            display:        "flex",
+            alignItems:     "center",
             justifyContent: expanded ? "flex-start" : "center",
-            gap: "11px", flexShrink: 0, overflow: "hidden",
-          }}
-        >
+            gap:            "11px",
+            flexShrink:     0,
+            overflow:       "hidden",
+            cursor:         "pointer",
+          }}>
           <div style={{
             width: "38px", height: "38px", borderRadius: "10px",
             background: "rgba(63,125,88,.18)", border: "1px solid rgba(63,125,88,.4)",
@@ -270,48 +275,32 @@ export default function Sidebar({ expanded, setExpanded }) {
           <NavLink
             to="/settings"
             title={!expanded ? "Settings" : undefined}
-            className="sidebar-settings-item"
-            style={({ isActive }) => navLinkStyle(isActive, expanded)}
-            onMouseEnter={e => { if (!e.currentTarget.style.background.includes("linear")) e.currentTarget.style.background = "rgba(255,255,255,.06)"; }}
-            onMouseLeave={e => { if (!e.currentTarget.style.background.includes("linear")) e.currentTarget.style.background = "transparent"; }}
+            onClick={() => navigate("/settings")}
+            style={{
+              width:          expanded ? "100%" : "38px",
+              height:         "38px",
+              display:        "flex",
+              alignItems:     "center",
+              justifyContent: expanded ? "flex-start" : "center",
+              gap:            "11px",
+              padding:        expanded ? "0 12px" : "0",
+              borderRadius:   "10px",
+              border:         "none",
+              background:     "transparent",
+              color:          "#687280",
+              fontSize:       "13px",
+              fontFamily:     "var(--font-body)",
+              cursor:         "pointer",
+              transition:     "background .18s",
+              overflow:       "hidden",
+              whiteSpace:     "nowrap",
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = "rgba(255,255,255,.06)"}
+            onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
           >
-            {({ isActive }) => (
-              <>
-                {isActive && expanded && (
-                  <span
-                    className="sidebar-active-bar"
-                    style={{
-                      position: "absolute", left: 0, top: "50%",
-                      transform: "translateY(-50%)", width: "3px", height: "54%",
-                      background: "var(--color-brand)", borderRadius: "0 3px 3px 0",
-                    }}
-                  />
-                )}
-                <span style={{
-                  color: isActive ? "var(--color-brand)" : "#687280",
-                  flexShrink: 0, display: "flex", alignItems: "center", minWidth: "16px",
-                }}>
-                  {Icons.settings}
-                </span>
-                {expanded ? (
-                  <span
-                    className="sidebar-label"
-                    style={{ animation: "sbFadeIn .18s ease both", flex: 1 }}
-                  >
-                    Settings
-                  </span>
-                ) : (
-                  /* Tiny label for mobile tab-bar */
-                  <span
-                    className="sidebar-label"
-                    style={{ display: "none", fontSize: "9px", fontWeight: 600 }}
-                  >
-                    Settings
-                  </span>
-                )}
-              </>
-            )}
-          </NavLink>
+            <span style={{ flexShrink: 0, display: "flex", alignItems: "center" }}>{Icons.settings}</span>
+            {expanded && <span style={{ animation: "sbFadeIn .18s ease both" }}>Settings</span>}
+          </button>
         </div>
 
         {/* ── User card ── */}

@@ -1,7 +1,105 @@
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useLocationAnalysis } from "../../hooks/useLocationAnalysis";
-import { getRadiusLabel, formatRadius } from "../../constants";
+import { getRadiusLabel, formatRadius, SUBCATEGORIES } from "../../constants";
 import BusinessTypeDropdown from "./BusinessTypeDropdown";
+
+// ── Sub-category dropdown ─────────────────────────────────────────────────────
+function SubCategoryDropdown({ businessType, value, onChange }) {
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef(null);
+  const options = businessType ? (SUBCATEGORIES[businessType] ?? []) : [];
+  const selected = options.find((o) => o.value === value);
+
+  useEffect(() => {
+    function handler(e) {
+      if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  // No business type selected yet
+  if (!businessType) {
+    return (
+      <div style={{
+        padding: "12px 14px", borderRadius: "var(--radius-md)",
+        border: "1.5px solid var(--color-accent)", background: "var(--color-app-bg)",
+        fontFamily: "var(--font-body)", fontSize: "13px", color: "var(--color-text)",
+        opacity: 0.6,
+      }}>
+        Select a business type first…
+      </div>
+    );
+  }
+
+  return (
+    <div ref={wrapRef} style={{ position: "relative" }}>
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        style={{
+          width: "100%", display: "flex", alignItems: "center",
+          justifyContent: "space-between", padding: "12px 14px",
+          borderRadius: "var(--radius-md)",
+          border: `1.5px solid ${open ? "var(--color-brand)" : "var(--color-accent)"}`,
+          background: "var(--color-app-bg)",
+          color: selected ? "var(--color-dark)" : "var(--color-text)",
+          fontSize: "13.5px", fontFamily: "var(--font-body)",
+          fontWeight: selected ? 500 : 400, cursor: "pointer",
+          boxShadow: open ? "0 0 0 3px rgba(63,125,88,.12)" : "none",
+          transition: "all .2s",
+        }}
+      >
+        <span>{selected ? selected.label : "Select a category…"}</span>
+        <svg width="15" height="15" fill="none" viewBox="0 0 24 24"
+          stroke="var(--color-text)" strokeWidth={2.5}
+          style={{ transform: open ? "rotate(180deg)" : "none", transition: "transform .2s", flexShrink: 0 }}>
+          <polyline points="6,9 12,15 18,9" />
+        </svg>
+      </button>
+
+      {open && (
+        <div style={{
+          position: "absolute", top: "calc(100% + 5px)", left: 0, right: 0,
+          background: "var(--color-app-bg)", border: "1.5px solid var(--color-accent)",
+          borderRadius: "var(--radius-md)", overflow: "hidden", zIndex: 200,
+          boxShadow: "var(--shadow-lg)", maxHeight: "240px", overflowY: "auto",
+        }}>
+          {options.map((opt, i) => {
+            const isSelected = value === opt.value;
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => { onChange(opt.value); setOpen(false); }}
+                style={{
+                  width: "100%", display: "flex", alignItems: "center",
+                  justifyContent: "space-between", gap: "10px",
+                  padding: "11px 14px",
+                  background: isSelected ? "rgba(63,125,88,.08)" : "transparent",
+                  color: isSelected ? "var(--color-brand)" : "var(--color-dark)",
+                  fontSize: "13px", fontFamily: "var(--font-body)",
+                  fontWeight: isSelected ? 600 : 400, border: "none",
+                  borderBottom: i < options.length - 1 ? "1px solid rgba(230,211,173,.4)" : "none",
+                  cursor: "pointer", textAlign: "left", transition: "background .14s",
+                }}
+                onMouseEnter={(e) => { if (!isSelected) e.currentTarget.style.background = "rgba(63,125,88,.05)"; }}
+                onMouseLeave={(e) => { if (!isSelected) e.currentTarget.style.background = "transparent"; }}
+              >
+                {opt.label}
+                {isSelected && (
+                  <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="var(--color-brand)" strokeWidth={2.5}>
+                    <polyline points="20,6 9,17 4,12" />
+                  </svg>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function InputPanel() {
   const {
@@ -56,28 +154,17 @@ export default function InputPanel() {
       {/* Business Type */}
       <div>
         <Label>Business Type</Label>
-        <BusinessTypeDropdown value={businessType} onChange={setBusinessType} />
+        <BusinessTypeDropdown value={businessType} onChange={(val) => { setBusinessType(val); setCategory(""); }} />
       </div>
 
       {/* Category */}
       <div>
         <Label>Target Cuisine / Category</Label>
-        <div style={{ position:"relative" }}>
-          <span style={{ position:"absolute", left:"13px", top:"50%", transform:"translateY(-50%)", color:"var(--color-text)" }}>
-            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
-          </span>
-          <input
-            type="text"
-            placeholder="e.g. Italian, Sushi, Vegan…"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            style={inputStyle({ paddingLeft:"37px" })}
-            onFocus={(e) => { e.target.style.borderColor="var(--color-brand)"; e.target.style.boxShadow="0 0 0 3px rgba(63,125,88,.12)"; }}
-            onBlur={(e)  => { e.target.style.borderColor="var(--color-accent)"; e.target.style.boxShadow="none"; }}
-          />
-        </div>
+        <SubCategoryDropdown
+          businessType={businessType}
+          value={category}
+          onChange={(val) => { setCategory(val); }}
+        />
       </div>
 
       {/* Radius slider */}

@@ -9,14 +9,181 @@ const STATUS_STYLES = {
   weak:     { bg: "#fee2e2",              color: "#991b1b",            label: "Weak"     },
 };
 
+// ── Minimal inline markdown renderer for the reports view ────────────────────
+function inlineFormat(text) {
+  const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith("**") && part.endsWith("**"))
+      return <strong key={i} style={{ fontWeight: 700, color: "var(--color-dark)" }}>{part.slice(2, -2)}</strong>;
+    if (part.startsWith("*") && part.endsWith("*"))
+      return <em key={i}>{part.slice(1, -1)}</em>;
+    return part;
+  });
+}
+
+function renderMarkdownCompact(text) {
+  if (!text) return null;
+  const lines = text.split("\n");
+  const elements = [];
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i];
+    if (!line.trim()) { i++; continue; }
+
+    if (line.startsWith("## ") || line.startsWith("# ")) {
+      const clean = line.replace(/^#+\s/, "");
+      elements.push(
+        <div key={i} style={{
+          fontFamily: "var(--font-body)", fontSize: "11px", fontWeight: 700,
+          color: "var(--color-brand)", textTransform: "uppercase",
+          letterSpacing: "1.5px", margin: "12px 0 5px",
+        }}>
+          {inlineFormat(clean)}
+        </div>
+      );
+      i++; continue;
+    }
+
+    if (/^[\*\-]\s+/.test(line) && !line.startsWith("**")) {
+      const items = [];
+      while (i < lines.length && /^[\*\-]\s+/.test(lines[i]) && !lines[i].startsWith("**")) {
+        items.push(lines[i].replace(/^[\*\-]\s+/, ""));
+        i++;
+      }
+      elements.push(
+        <ul key={`ul-${i}`} style={{ margin: "5px 0", padding: 0, listStyle: "none" }}>
+          {items.map((item, idx) => (
+            <li key={idx} style={{ display: "flex", gap: "8px", marginBottom: "5px", alignItems: "flex-start" }}>
+              <span style={{ flexShrink: 0, marginTop: "5px", width: "4px", height: "4px", borderRadius: "50%", background: "var(--color-brand)", opacity: 0.65 }} />
+              <span style={{ fontFamily: "var(--font-body)", fontSize: "12px", color: "var(--color-text)", lineHeight: 1.65 }}>
+                {inlineFormat(item)}
+              </span>
+            </li>
+          ))}
+        </ul>
+      );
+      continue;
+    }
+
+    if (/^\d+\.\s+/.test(line)) {
+      const items = [];
+      while (i < lines.length && /^\d+\.\s+/.test(lines[i])) {
+        items.push(lines[i].replace(/^\d+\.\s+/, ""));
+        i++;
+      }
+      elements.push(
+        <ol key={`ol-${i}`} style={{ margin: "5px 0", padding: 0, listStyle: "none" }}>
+          {items.map((item, idx) => (
+            <li key={idx} style={{ display: "flex", gap: "10px", marginBottom: "6px", alignItems: "flex-start" }}>
+              <span style={{
+                flexShrink: 0, minWidth: "20px", height: "20px", borderRadius: "5px",
+                background: "rgba(63,125,88,.1)", border: "1px solid rgba(63,125,88,.2)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontFamily: "var(--font-body)", fontSize: "9px", fontWeight: 700, color: "var(--color-brand)", marginTop: "1px",
+              }}>{idx + 1}</span>
+              <span style={{ fontFamily: "var(--font-body)", fontSize: "12px", color: "var(--color-text)", lineHeight: 1.65, flex: 1 }}>
+                {inlineFormat(item)}
+              </span>
+            </li>
+          ))}
+        </ol>
+      );
+      continue;
+    }
+
+    elements.push(
+      <p key={i} style={{ fontFamily: "var(--font-body)", fontSize: "12.5px", color: "var(--color-text)", lineHeight: 1.7, margin: "4px 0" }}>
+        {inlineFormat(line)}
+      </p>
+    );
+    i++;
+  }
+  return elements;
+}
+
+// ── AI Analysis accordion for report cards ────────────────────────────────────
+function AiAnalysisAccordion({ analysis }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div style={{
+      marginTop:    "12px",
+      borderRadius: "var(--radius-md)",
+      border:       "1px solid rgba(63,125,88,.18)",
+      overflow:     "hidden",
+      background:   "rgba(63,125,88,.02)",
+    }}>
+      {/* Toggle header */}
+      <button
+        onClick={() => setOpen(o => !o)}
+        style={{
+          width:          "100%",
+          display:        "flex",
+          alignItems:     "center",
+          justifyContent: "space-between",
+          padding:        "10px 14px",
+          background:     "transparent",
+          border:         "none",
+          cursor:         "pointer",
+          gap:            "8px",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="var(--color-brand)" strokeWidth={2}>
+            <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/>
+          </svg>
+          <span style={{ fontFamily: "var(--font-body)", fontSize: "12px", fontWeight: 700, color: "var(--color-brand)" }}>
+            AI Market Insights
+          </span>
+          <span style={{
+            background: "rgba(63,125,88,.12)", color: "var(--color-brand)",
+            fontSize: "9px", fontWeight: 700, padding: "2px 7px",
+            borderRadius: "10px", fontFamily: "var(--font-body)", textTransform: "uppercase", letterSpacing: "0.5px",
+          }}>
+            Saved
+          </span>
+        </div>
+        <svg
+          width="13" height="13" fill="none" viewBox="0 0 24 24"
+          stroke="var(--color-text)" strokeWidth={2}
+          style={{ transform: open ? "rotate(180deg)" : "none", transition: "transform .2s", flexShrink: 0 }}
+        >
+          <polyline points="6,9 12,15 18,9" />
+        </svg>
+      </button>
+
+      {/* Content */}
+      {open && (
+        <div style={{
+          padding:     "4px 14px 14px",
+          borderTop:   "1px solid rgba(63,125,88,.1)",
+          animation:   "reportsAiFade .3s ease both",
+        }}>
+          {renderMarkdownCompact(analysis)}
+        </div>
+      )}
+
+      <style>{`
+        @keyframes reportsAiFade {
+          from { opacity: 0; transform: translateY(6px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MAIN PAGE
+// ═══════════════════════════════════════════════════════════════════════════════
 export default function ReportsPage() {
   const navigate                = useNavigate();
   const { hasResults, saveCurrentReport } = useAnalysis();
   const [reports, setReports]   = useState([]);
   const [search,  setSearch]    = useState("");
-  const [saved,   setSaved]     = useState(false); // flash feedback
+  const [saved,   setSaved]     = useState(false);
 
-  // Load from localStorage on mount
   useEffect(() => {
     setReports(apiService.getReports());
   }, []);
@@ -32,8 +199,8 @@ export default function ReportsPage() {
   };
 
   const handleSaveCurrent = () => {
-    const saved = saveCurrentReport();
-    if (saved) {
+    const result = saveCurrentReport();
+    if (result) {
       setReports(apiService.getReports());
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
@@ -41,7 +208,7 @@ export default function ReportsPage() {
   };
 
   return (
-    <div style={{ padding: "28px", maxWidth: "900px" }}>
+    <div style={{ padding: "28px" }}>
       {/* Header */}
       <div className="fade-in" style={{ marginBottom: "28px" }}>
         <div style={{ fontFamily: "var(--font-body)", fontSize: "9.5px", fontWeight: 600, color: "var(--color-brand)", letterSpacing: "2.5px", textTransform: "uppercase", marginBottom: "6px" }}>
@@ -57,7 +224,6 @@ export default function ReportsPage() {
             </p>
           </div>
           <div style={{ display: "flex", gap: "10px", flexShrink: 0 }}>
-            {/* Save current scan (if one is active) */}
             {hasResults && (
               <button
                 onClick={handleSaveCurrent}
@@ -128,7 +294,7 @@ export default function ReportsPage() {
       )}
 
       {/* Reports list */}
-      <div className="fade-in fade-in-2" style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+      <div className="fade-in fade-in-2" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(480px, 1fr))", gap: "14px" }}>
         {filtered.length === 0 && reports.length > 0 && (
           <div style={{ textAlign: "center", padding: "48px 20px", background: "var(--color-card)", borderRadius: "var(--radius-lg)", border: "1px dashed var(--color-accent)", color: "var(--color-text)", fontFamily: "var(--font-body)", fontSize: "14px" }}>
             No reports match your search.
@@ -152,6 +318,20 @@ export default function ReportsPage() {
                     <span style={{ background: s.bg, color: s.color, fontSize: "10px", fontWeight: 700, padding: "2px 8px", borderRadius: "20px", fontFamily: "var(--font-body)", flexShrink: 0 }}>
                       {s.label}
                     </span>
+                    {/* AI badge — shown if analysis was saved */}
+                    {r.aiAnalysis && (
+                      <span style={{
+                        background: "rgba(63,125,88,.1)", color: "var(--color-brand)",
+                        fontSize: "9.5px", fontWeight: 700, padding: "2px 7px",
+                        borderRadius: "10px", fontFamily: "var(--font-body)",
+                        display: "flex", alignItems: "center", gap: "4px", flexShrink: 0,
+                      }}>
+                        <svg width="9" height="9" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                          <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/>
+                        </svg>
+                        AI
+                      </span>
+                    )}
                   </div>
                   <div style={{ fontFamily: "var(--font-body)", fontSize: "12px", color: "var(--color-text)" }}>
                     📍 {r.location} · {r.date}
@@ -197,6 +377,11 @@ export default function ReportsPage() {
                   {r.fullResults.youthPercentage && ` · Youth: ${r.fullResults.youthPercentage.toFixed(1)}%`}
                   {r.fullResults.avgRating && ` · Avg Rating: ★ ${r.fullResults.avgRating}`}
                 </div>
+              )}
+
+              {/* AI analysis accordion — only shown if analysis was saved with the report */}
+              {r.aiAnalysis && (
+                <AiAnalysisAccordion analysis={r.aiAnalysis} />
               )}
             </div>
           );
