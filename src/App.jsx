@@ -10,8 +10,6 @@ import WelcomePage from "./pages/WelcomePage";
 import SignupPage from './pages/SignupPage';
 import LoginPage from './pages/LoginPage';
 import ForgotPassword from "./pages/ForgotPassword";
-import SettingsPage from "./pages/SettingsPage";
-
 
 export default function App() {
   return (

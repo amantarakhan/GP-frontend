@@ -18,7 +18,7 @@ export const BUSINESS_TYPES = [
   { value: "restaurant",  label: "Restaurant",            emoji: "🍽️" },
   { value: "bakery",      label: "Bakery",                emoji: "🥐" },
   { value: "retail",      label: "Retail Store",          emoji: "🛍️" },
-  { value: "fitness",     label: "Fitness Studio",        emoji: "💪" },
+  { value: "gym",         label: "Gym",        emoji: "💪" },
   { value: "salon",       label: "Salon & Beauty",        emoji: "💇" },
   { value: "medical",     label: "Medical / Dental",      emoji: "🏥" },
   { value: "grocery",     label: "Grocery / Supermarket", emoji: "🛒" },
@@ -61,10 +61,10 @@ export const SUBCATEGORIES = {
     { value: "gifts",       label: "Gifts & Accessories" },
     { value: "sports",      label: "Sports & Outdoors" },
   ],
-  fitness: [
+  gym: [
     { value: "mixed",       label: "Mixed (Men & Women)" },
-    { value: "women_only",  label: "Women Only" },
-    { value: "men_only",    label: "Men Only" },
+    { value: "women",  label: "Women Only" },
+    { value: "men",    label: "Men Only" },
     { value: "yoga",        label: "Yoga / Pilates Studio" },
     { value: "crossfit",    label: "CrossFit / Functional" },
     { value: "martial",     label: "Martial Arts" },

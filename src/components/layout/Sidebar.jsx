@@ -300,7 +300,7 @@ export default function Sidebar({ expanded, setExpanded }) {
           >
             <span style={{ flexShrink: 0, display: "flex", alignItems: "center" }}>{Icons.settings}</span>
             {expanded && <span style={{ animation: "sbFadeIn .18s ease both" }}>Settings</span>}
-          </button>
+          </NavLink>
         </div>
 
         {/* ── User card ── */}
