@@ -6,7 +6,8 @@ import CompetitorList  from "../components/scan/CompetitorList";
 import AiInsightsPanel from "../components/scan/AiInsightsPanel";
 import CompareModal    from "../components/scan/CompareModal";
 import { useLocationAnalysis } from "../hooks/useLocationAnalysis";
-
+import { auth } from "../firebase"; // Use two dots to go up to src
+import { saveReport as firestoreSaveReport } from "../services/dbService"; // Use two dots to go up to src
 // ── Floating Compare Button ───────────────────────────────────────────────────
 function CompareButton() {
   const { hasResults, compareMode, setCompareMode, comparePicking } = useLocationAnalysis();
