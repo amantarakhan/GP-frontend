@@ -100,7 +100,9 @@ function deriveStatus(rating, reviews) {
 export const apiService = {
   /**
    * Run a market scan.
+   * Returns both the normalised UI data AND the raw API response.
    * @param {{ businessType, category, radius, lat, lng }} params
+   * @returns {{ normalised: object, raw: object }}
    */
   async runScan({ businessType, category, radius, lat, lng }) {
     const url = new URL(`${SCAN_BASE_URL}/scan-location`);
@@ -121,11 +123,37 @@ export const apiService = {
     }
 
     const raw = await response.json();
-    return normaliseResponse(raw, { radius });
+    // Return both so context can store raw for AI analysis
+    return {
+      normalised: normaliseResponse(raw, { radius }),
+      raw,
+    };
+  },
+
+  /**
+   * Run AI analysis on the raw scan result.
+   * POST /analyze-results with the entire raw scan JSON as the body.
+   * @param {object} rawScanData - the raw response from /scan-location
+   * @returns {string} - AI analysis markdown string
+   */
+  async analyzeResults(rawScanData) {
+    const response = await fetch(`${SCAN_BASE_URL}/analyze`, {
+      method:  "POST",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify({ scan_result: rawScanData }),
+    });
+
+    if (!response.ok) {
+      const text = await response.text().catch(() => response.statusText);
+      throw new Error(`AI analysis failed (${response.status}): ${text}`);
+    }
+
+    const data = await response.json();
+    // API returns either a plain string or { analysis: "..." }
+    return typeof data === "string" ? data : (data.analysis ?? "");
   },
 
   // ── Report persistence via localStorage ────────────────────────────────────
-  // These replace the mock delay functions. No backend endpoint needed.
 
   getReports() {
     try {
@@ -136,11 +164,15 @@ export const apiService = {
     }
   },
 
+  /**
+   * Save a report including optional AI analysis text.
+   * @param {object} report - report data including optional aiAnalysis string
+   */
   saveReport(report) {
     try {
-      const reports  = this.getReports();
+      const reports   = this.getReports();
       const newReport = { ...report, id: Date.now() };
-      const updated  = [newReport, ...reports];
+      const updated   = [newReport, ...reports];
       localStorage.setItem("localyze_reports", JSON.stringify(updated));
       return newReport;
     } catch (err) {

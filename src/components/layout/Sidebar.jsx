@@ -1,5 +1,5 @@
 import React from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { NAV_ITEMS } from "../../constants";
 
 import globeIcon from "../../assets/logo2.png";
@@ -131,6 +131,7 @@ function NavItem({ item, expanded }) {
 
 // ── Sidebar ──────────────────────────────────────────────────────────────────
 export default function Sidebar({ expanded, setExpanded }) {
+  const navigate = useNavigate();
   return (
     <>
       <style>{`
@@ -170,17 +171,20 @@ export default function Sidebar({ expanded, setExpanded }) {
         }} />
 
         {/* ── Logo ── */}
-        <div style={{
-          height:         "66px",
-          padding:        "0 13px",
-          borderBottom:   "1px solid rgba(255,255,255,.06)",
-          display:        "flex",
-          alignItems:     "center",
-          justifyContent: expanded ? "flex-start" : "center",
-          gap:            "11px",
-          flexShrink:     0,
-          overflow:       "hidden",
-        }}>
+        <div
+          onClick={() => navigate("/")}
+          style={{
+            height:         "66px",
+            padding:        "0 13px",
+            borderBottom:   "1px solid rgba(255,255,255,.06)",
+            display:        "flex",
+            alignItems:     "center",
+            justifyContent: expanded ? "flex-start" : "center",
+            gap:            "11px",
+            flexShrink:     0,
+            overflow:       "hidden",
+            cursor:         "pointer",
+          }}>
           <div style={{
             width:          "38px",
             height:         "38px",
@@ -280,6 +284,7 @@ export default function Sidebar({ expanded, setExpanded }) {
         <div style={{ padding: "8px", flexShrink: 0, display: "flex", justifyContent: expanded ? "flex-start" : "center" }}>
           <button
             title={!expanded ? "Settings" : undefined}
+            onClick={() => navigate("/settings")}
             style={{
               width:          expanded ? "100%" : "38px",
               height:         "38px",

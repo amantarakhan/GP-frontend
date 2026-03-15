@@ -14,16 +14,86 @@ export const COLORS = {
 
 // ── Business types ───────────────────────────────────────────────────────────
 export const BUSINESS_TYPES = [
-  { value: "cafe",        label: "Café / Coffee Shop",  emoji: "☕" },
-  { value: "restaurant",  label: "Restaurant",           emoji: "🍽️" },
-  { value: "bar",         label: "Bar & Lounge",         emoji: "🍸" },
-  { value: "bakery",      label: "Bakery",               emoji: "🥐" },
-  { value: "retail",      label: "Retail Store",         emoji: "🛍️" },
-  { value: "fitness",     label: "Fitness Studio",       emoji: "💪" },
-  { value: "salon",       label: "Salon & Beauty",       emoji: "💇" },
-  { value: "medical",     label: "Medical / Dental",     emoji: "🏥" },
-  { value: "grocery",     label: "Grocery / Supermarket",emoji: "🛒" },
+  { value: "cafe",        label: "Café / Coffee Shop",   emoji: "☕" },
+  { value: "restaurant",  label: "Restaurant",            emoji: "🍽️" },
+  { value: "bakery",      label: "Bakery",                emoji: "🥐" },
+  { value: "retail",      label: "Retail Store",          emoji: "🛍️" },
+  { value: "fitness",     label: "Fitness Studio",        emoji: "💪" },
+  { value: "salon",       label: "Salon & Beauty",        emoji: "💇" },
+  { value: "medical",     label: "Medical / Dental",      emoji: "🏥" },
+  { value: "grocery",     label: "Grocery / Supermarket", emoji: "🛒" },
 ];
+
+// ── Sub-categories per business type ─────────────────────────────────────────
+export const SUBCATEGORIES = {
+  cafe: [
+    { value: "specialty",   label: "Specialty / Artisan Coffee" },
+    { value: "casual",      label: "Casual Coffee Shop" },
+    { value: "coworking",   label: "Co-working Café" },
+    { value: "dessert",     label: "Dessert & Coffee" },
+    { value: "bookshop",    label: "Bookshop Café" },
+  ],
+  restaurant: [
+    { value: "italian",     label: "Italian" },
+    { value: "sushi",       label: "Sushi / Japanese" },
+    { value: "fastfood",    label: "Fast Food" },
+    { value: "arabic",      label: "Arabic / Levantine" },
+    { value: "indian",      label: "Indian" },
+    { value: "chinese",     label: "Chinese" },
+    { value: "mexican",     label: "Mexican" },
+    { value: "burgers",     label: "Burgers & Grills" },
+    { value: "seafood",     label: "Seafood" },
+    { value: "vegan",       label: "Vegan / Vegetarian" },
+    { value: "steakhouse",  label: "Steakhouse" },
+    { value: "pizza",       label: "Pizza" },
+  ],
+  bakery: [
+    { value: "artisan",     label: "Artisan Bread" },
+    { value: "pastry",      label: "Pastry & Croissants" },
+    { value: "cakes",       label: "Custom Cakes" },
+    { value: "glutenfree",  label: "Gluten-Free" },
+  ],
+  retail: [
+    { value: "fashion",     label: "Fashion & Clothing" },
+    { value: "electronics", label: "Electronics" },
+    { value: "homegoods",   label: "Home Goods" },
+    { value: "books",       label: "Books & Stationery" },
+    { value: "gifts",       label: "Gifts & Accessories" },
+    { value: "sports",      label: "Sports & Outdoors" },
+  ],
+  fitness: [
+    { value: "mixed",       label: "Mixed (Men & Women)" },
+    { value: "women_only",  label: "Women Only" },
+    { value: "men_only",    label: "Men Only" },
+    { value: "yoga",        label: "Yoga / Pilates Studio" },
+    { value: "crossfit",    label: "CrossFit / Functional" },
+    { value: "martial",     label: "Martial Arts" },
+    { value: "swimming",    label: "Swimming" },
+  ],
+  salon: [
+    { value: "mixed",       label: "Mixed (Men & Women)" },
+    { value: "women_only",  label: "Women Only" },
+    { value: "men_only",    label: "Barbershop / Men Only" },
+    { value: "nails",       label: "Nails & Spa" },
+    { value: "kids",        label: "Kids Hair Salon" },
+  ],
+  medical: [
+    { value: "dental",      label: "Dental Clinic" },
+    { value: "gp",          label: "General Practice" },
+    { value: "dermatology", label: "Dermatology" },
+    { value: "pediatric",   label: "Pediatric" },
+    { value: "physio",      label: "Physiotherapy" },
+    { value: "ophthalmology",label: "Ophthalmology" },
+    { value: "pharmacy",    label: "Pharmacy" },
+  ],
+  grocery: [
+    { value: "supermarket",  label: "Full Supermarket" },
+    { value: "minimart",     label: "Mini Mart / Corner Store" },
+    { value: "organic",      label: "Organic & Health Foods" },
+    { value: "butcher",      label: "Butcher / Meat Shop" },
+    { value: "fruits",       label: "Fruits & Vegetables" },
+  ],
+};
 
 // ── Radius labels ────────────────────────────────────────────────────────────
 export const RADIUS_LABELS = [

@@ -5,6 +5,7 @@ import MainLayout from "./components/layout/MainLayout";
 import DashboardPage from "./pages/DashboardPage";
 import ScanPage from "./pages/ScanPage";
 import ReportsPage from "./pages/ReportsPage";
+import SettingsPage from "./pages/SettingsPage";
 import WelcomePage from "./pages/WelcomePage";
 import SignupPage from './pages/SignupPage';
 import LoginPage from './pages/LoginPage';
@@ -27,6 +28,7 @@ export default function App() {
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/scan" element={<ScanPage />} />
             <Route path="/reports" element={<ReportsPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
           </Route>
 
           {/* Fallback: If a user types a random URL, send them to the Welcome page */}

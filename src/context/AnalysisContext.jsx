@@ -9,13 +9,29 @@ export function AnalysisProvider({ children }) {
   const [category,     setCategory]     = useState("");
   const [radius,       setRadius]       = useState(750);
   const [location,     setLocation]     = useState("");
-  const [pin,          setPin]          = useState(null); // { lat, lng }
+  const [pin,          setPin]          = useState(null);
 
-  // ── Result state ────────────────────────────────────────────────────────────
+  // ── Scan result state ───────────────────────────────────────────────────────
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [hasResults,  setHasResults]  = useState(false);
-  const [results,     setResults]     = useState(null);   // normalised metrics
+  const [results,     setResults]     = useState(null);
+  const [rawScanData, setRawScanData] = useState(null);
   const [scanError,   setScanError]   = useState(null);
+
+  // ── AI analysis state ───────────────────────────────────────────────────────
+  const [isAiLoading,  setIsAiLoading]  = useState(false);
+  const [aiAnalysis,   setAiAnalysis]   = useState(null);
+  const [aiError,      setAiError]      = useState(null);
+  const [hasAiResults, setHasAiResults] = useState(false);
+
+  // ── Compare state ───────────────────────────────────────────────────────────
+  const [comparePin,        setComparePin]        = useState(null);
+  const [compareResults,    setCompareResults]    = useState(null);
+  const [isComparing,       setIsComparing]       = useState(false);
+  const [hasCompareResults, setHasCompareResults] = useState(false);
+  const [compareError,      setCompareError]      = useState(null);
+  const [compareMode,       setCompareMode]       = useState(false); // modal open
+  const [comparePicking,    setComparePicking]    = useState(false); // slim banner mode
 
   // ── Actions ─────────────────────────────────────────────────────────────────
   const runAnalysis = useCallback(async () => {
@@ -24,17 +40,25 @@ export function AnalysisProvider({ children }) {
     setIsAnalyzing(true);
     setHasResults(false);
     setScanError(null);
+    setAiAnalysis(null);
+    setHasAiResults(false);
+    setAiError(null);
+    setRawScanData(null);
+    // Reset compare too on new primary scan
+    setComparePin(null);
+    setCompareResults(null);
+    setHasCompareResults(false);
+    setCompareError(null);
+    setCompareMode(false);
+    setComparePicking(false);
 
     try {
-      const data = await apiService.runScan({
-        businessType,
-        category,
-        radius,
-        lat: pin.lat,
-        lng: pin.lng,
+      const { normalised, raw } = await apiService.runScan({
+        businessType, category, radius,
+        lat: pin.lat, lng: pin.lng,
       });
-
-      setResults(data);
+      setResults(normalised);
+      setRawScanData(raw);
       setHasResults(true);
     } catch (err) {
       console.error("[AnalysisContext] runAnalysis error:", err);
@@ -44,14 +68,72 @@ export function AnalysisProvider({ children }) {
     }
   }, [businessType, category, radius, pin]);
 
+  const runAiAnalysis = useCallback(async () => {
+    if (!rawScanData) return;
+    setIsAiLoading(true);
+    setAiError(null);
+    try {
+      const analysisText = await apiService.analyzeResults(rawScanData);
+      setAiAnalysis(analysisText);
+      setHasAiResults(true);
+    } catch (err) {
+      console.error("[AnalysisContext] runAiAnalysis error:", err);
+      setAiError(err.message ?? "AI analysis failed. Please try again.");
+    } finally {
+      setIsAiLoading(false);
+    }
+  }, [rawScanData]);
+
+  /**
+   * Run a comparison scan for the second pin.
+   * Uses same businessType, category, radius as the primary scan.
+   */
+  const runCompareAnalysis = useCallback(async () => {
+    if (!businessType || !comparePin) return;
+    setIsComparing(true);
+    setHasCompareResults(false);
+    setCompareError(null);
+
+    try {
+      const { normalised } = await apiService.runScan({
+        businessType,
+        category,
+        radius,
+        lat: comparePin.lat,
+        lng: comparePin.lng,
+      });
+      setCompareResults(normalised);
+      setHasCompareResults(true);
+    } catch (err) {
+      console.error("[AnalysisContext] runCompareAnalysis error:", err);
+      setCompareError(err.message ?? "Comparison scan failed. Please try again.");
+    } finally {
+      setIsComparing(false);
+    }
+  }, [businessType, category, radius, comparePin]);
+
+  const resetCompare = useCallback(() => {
+    setComparePin(null);
+    setCompareResults(null);
+    setHasCompareResults(false);
+    setCompareError(null);
+    setIsComparing(false);
+    setCompareMode(false);
+    setComparePicking(false);
+  }, []);
+
   const resetAnalysis = useCallback(() => {
     setResults(null);
     setHasResults(false);
     setIsAnalyzing(false);
     setScanError(null);
-  }, []);
+    setRawScanData(null);
+    setAiAnalysis(null);
+    setHasAiResults(false);
+    setAiError(null);
+    resetCompare();
+  }, [resetCompare]);
 
-  // ── Save current scan as a report ─────────────────────────────────────────
   const saveCurrentReport = useCallback(() => {
     if (!results || !pin) return null;
     const report = {
@@ -66,11 +148,11 @@ export function AnalysisProvider({ children }) {
       lat:         pin.lat,
       lng:         pin.lng,
       radius,
-      // Store full results so reports page can show details
       fullResults: results,
+      aiAnalysis:  aiAnalysis ?? null,
     };
     return apiService.saveReport(report);
-  }, [results, pin, businessType, radius]);
+  }, [results, pin, businessType, radius, aiAnalysis]);
 
   const value = {
     // form
@@ -79,11 +161,21 @@ export function AnalysisProvider({ children }) {
     radius,       setRadius,
     location,     setLocation,
     pin,          setPin,
-    // results
-    isAnalyzing,
-    hasResults,
-    results,
-    scanError,
+    // scan results
+    isAnalyzing, hasResults, results, rawScanData, scanError,
+    // AI
+    isAiLoading, hasAiResults, aiAnalysis, aiError,
+    runAiAnalysis,
+    // compare
+    comparePin,        setComparePin,
+    compareResults,    setCompareResults,
+    isComparing,       setIsComparing,
+    hasCompareResults, setHasCompareResults,
+    compareError,      setCompareError,
+    compareMode,       setCompareMode,
+    comparePicking,    setComparePicking,
+    runCompareAnalysis,
+    resetCompare,
     // actions
     runAnalysis,
     resetAnalysis,
