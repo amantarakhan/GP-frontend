@@ -40,6 +40,15 @@ const Icons = {
       <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
     </svg>
   ),
+  appendix: (
+    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 19.5A2.5 2.5 0 016.5 17H20" />
+      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" />
+      <line x1="9" y1="7" x2="15" y2="7" />
+      <line x1="9" y1="11" x2="15" y2="11" />
+      <line x1="9" y1="15" x2="13" y2="15" />
+    </svg>
+  ),
 };
 
 // ── Shared NavLink style fn ───────────────────────────────────────────────────
@@ -270,8 +279,43 @@ export default function Sidebar({ expanded, setExpanded }) {
           }}
         />
 
+        {/* ── Appendix ── */}
+        <div style={{ padding: expanded ? "4px 8px" : "4px 0", flexShrink: 0 }}>
+          <NavLink
+            to="/appendix"
+            title={!expanded ? "Appendix" : undefined}
+            style={({ isActive }) => ({
+              width:          expanded ? "100%" : "38px",
+              height:         "38px",
+              display:        "flex",
+              alignItems:     "center",
+              justifyContent: expanded ? "flex-start" : "center",
+              gap:            "11px",
+              padding:        expanded ? "0 12px" : "0",
+              borderRadius:   "10px",
+              border:         "none",
+              background:     isActive
+                ? "linear-gradient(90deg,rgba(63,125,88,.22) 0%,rgba(63,125,88,.06) 100%)"
+                : "transparent",
+              color:          isActive ? "#F5F2E1" : "#687280",
+              fontSize:       "13px",
+              fontFamily:     "var(--font-body)",
+              cursor:         "pointer",
+              transition:     "background .18s",
+              overflow:       "hidden",
+              whiteSpace:     "nowrap",
+              textDecoration: "none",
+            })}
+            onMouseEnter={(e) => { if (!e.currentTarget.style.background.includes("linear-gradient(90")) e.currentTarget.style.background = "rgba(255,255,255,.06)"; }}
+            onMouseLeave={(e) => { if (!e.currentTarget.style.background.includes("linear-gradient(90")) e.currentTarget.style.background = "transparent"; }}
+          >
+            <span style={{ flexShrink: 0, display: "flex", alignItems: "center" }}>{Icons.appendix}</span>
+            {expanded && <span style={{ animation: "sbFadeIn .18s ease both" }}>Appendix</span>}
+          </NavLink>
+        </div>
+
         {/* ── Settings ── */}
-        <div style={{ padding: expanded ? "8px 8px" : "8px 0", flexShrink: 0 }}>
+        <div style={{ padding: expanded ? "4px 8px 8px" : "4px 0 8px", flexShrink: 0 }}>
           <NavLink
             to="/settings"
             title={!expanded ? "Settings" : undefined}

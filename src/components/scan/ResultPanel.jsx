@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useLocationAnalysis } from "../../hooks/useLocationAnalysis";
 import ScoreRing from "../ui/ScoreRing";
 import StatsCard from "../ui/StatsCard";
@@ -62,6 +62,12 @@ export default function ResultPanel() {
           badgeBg={feasibility >= 75 ? "var(--color-success)" : feasibility >= 55 ? "var(--color-accent)" : "#fee2e2"}
           badgeColor={feasibility >= 75 ? "var(--color-brand)" : "var(--color-dark)"}
           iconColor="var(--color-brand)"
+          tooltip={
+            <span>
+              <strong style={{ color: "#e6d3ad" }}>Feasibility Score (0–100)</strong><br />
+              Measures how viable this location is for your business. Calculated from the population-to-competitor ratio using a logistic curve, then adjusted for competitor quality (low ratings = opportunity), price gaps, nearby universities, and district youth or elderly concentration. <strong style={{ color: "#e6d3ad" }}>≥75 = Strong · 55–74 = Moderate · &lt;55 = Weak</strong>
+            </span>
+          }
         >
           <div style={{ display: "flex", alignItems: "center", gap: "14px", marginTop: "4px" }}>
             <ScoreRing value={feasibility} color="var(--color-brand)" track="var(--color-success)" />
@@ -81,6 +87,12 @@ export default function ResultPanel() {
           badgeBg={competitors <= 10 ? "var(--color-success)" : competitors <= 30 ? "var(--color-accent)" : "#fee2e2"}
           badgeColor={competitors <= 10 ? "var(--color-brand)" : "var(--color-dark)"}
           iconColor="var(--color-accent)"
+          tooltip={
+            <span>
+              <strong style={{ color: "#e6d3ad" }}>Competitor Density</strong><br />
+              Total similar businesses found via Google Places within your chosen radius, filtered by business type. For restaurants and cafés, Talabat listings are cross-referenced to filter by cuisine. <strong style={{ color: "#e6d3ad" }}>Avg Rating</strong> is the mean Google star rating (1–5) — a low average signals a quality gap. <strong style={{ color: "#e6d3ad" }}>Avg Price Level</strong> is 1 (budget) to 4 (expensive).
+            </span>
+          }
         >
           <div style={{ display: "flex", alignItems: "center", gap: "14px", marginTop: "4px" }}>
             <ScoreRing value={competitors} max={60} color="var(--color-accent)" track="rgba(230,211,173,.4)" showRaw />
@@ -100,6 +112,12 @@ export default function ResultPanel() {
           badgeBg={saturation <= 35 ? "var(--color-success)" : saturation <= 60 ? "var(--color-accent)" : "#fee2e2"}
           badgeColor={saturation <= 35 ? "var(--color-brand)" : "var(--color-dark)"}
           iconColor="var(--color-text)"
+          tooltip={
+            <span>
+              <strong style={{ color: "#e6d3ad" }}>Market Saturation (0–100%)</strong><br />
+              How crowded the market is relative to a benchmark of 50 businesses/km². Formula: <em>competitor density ÷ 50 × 100</em>, capped at 100%. <strong style={{ color: "#e6d3ad" }}>≤35% = Low Risk · 36–60% = Moderate · &gt;60% = Saturated.</strong> Youth Market % shows ages 15–34 in this district from Jordan census data.
+            </span>
+          }
         >
           <div style={{ marginTop: "4px" }}>
             <div style={{ fontFamily: "var(--font-display)", fontSize: "34px", fontWeight: 700, color: "var(--color-dark)", lineHeight: 1, marginBottom: "8px" }}>
@@ -165,22 +183,77 @@ export default function ResultPanel() {
   );
 }
 
+// ── InfoTooltip ───────────────────────────────────────────────────────────────
+function InfoTooltip({ content }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  return (
+    <div ref={ref} style={{ position: "relative", display: "inline-flex", flexShrink: 0 }}>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        title="What does this mean?"
+        style={{
+          width: "16px", height: "16px", borderRadius: "50%",
+          border: "1.5px solid rgba(104,114,128,.35)",
+          background: open ? "rgba(63,125,88,.12)" : "transparent",
+          cursor: "pointer", display: "flex", alignItems: "center",
+          justifyContent: "center", padding: 0, flexShrink: 0,
+          color: "rgba(104,114,128,.8)", fontSize: "9.5px",
+          fontWeight: 800, fontFamily: "var(--font-body)",
+          transition: "background .15s, border-color .15s",
+        }}
+      >
+        i
+      </button>
+      {open && (
+        <div style={{
+          position: "absolute", top: "22px", left: "50%",
+          transform: "translateX(-40%)",
+          background: "#1F2937", color: "#F5F2E1",
+          borderRadius: "10px", padding: "13px 15px",
+          width: "230px", fontSize: "11.5px",
+          fontFamily: "var(--font-body)", lineHeight: 1.65,
+          zIndex: 300, boxShadow: "0 10px 36px rgba(0,0,0,.32)",
+          pointerEvents: "none",
+        }}>
+          {/* Arrow */}
+          <div style={{
+            position: "absolute", top: "-4px", left: "calc(40% - 4px)",
+            width: "9px", height: "9px", background: "#1F2937",
+            borderRadius: "2px", transform: "rotate(45deg)",
+          }} />
+          {content}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── MetricCard ────────────────────────────────────────────────────────────────
-function MetricCard({ icon, label, description, badge, badgeBg, badgeColor, iconColor, children }) {
+function MetricCard({ icon, label, description, badge, badgeBg, badgeColor, iconColor, tooltip, children }) {
   return (
     <div className="fade-in" style={{
       background: "var(--color-card)", borderRadius: "var(--radius-lg)",
       padding: "18px", border: "1px solid rgba(230,211,173,.6)", boxShadow: "var(--shadow-sm)",
     }}>
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "14px" }}>
-        <div>
+        <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "2px" }}>
             <span style={{ color: iconColor }}>{icon}</span>
             <span style={{ fontFamily: "var(--font-body)", fontSize: "12px", fontWeight: 700, color: "var(--color-dark)" }}>{label}</span>
+            {tooltip && <InfoTooltip content={tooltip} />}
           </div>
           <div style={{ fontFamily: "var(--font-body)", fontSize: "11px", color: "var(--color-text)" }}>{description}</div>
         </div>
-        <span style={{ background: badgeBg, color: badgeColor, fontSize: "10px", fontWeight: 700, padding: "3px 8px", borderRadius: "20px", fontFamily: "var(--font-body)", whiteSpace: "nowrap", flexShrink: 0 }}>
+        <span style={{ background: badgeBg, color: badgeColor, fontSize: "10px", fontWeight: 700, padding: "3px 8px", borderRadius: "20px", fontFamily: "var(--font-body)", whiteSpace: "nowrap", flexShrink: 0, marginLeft: "8px" }}>
           {badge}
         </span>
       </div>
