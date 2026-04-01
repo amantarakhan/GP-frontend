@@ -128,7 +128,7 @@ export const NAV_ITEMS = [
     id:    "reports",
     label: "Saved Reports",
     path:  "/reports",
-    badge: 3,
+    badge: null,
   },
 ];
 
