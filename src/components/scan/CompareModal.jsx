@@ -325,7 +325,8 @@ export default function CompareModal() {
     }
   }, [comparePin, comparePicking]);
 
-  if (!compareMode) return null;
+  // Show picking banner even when compareMode is false (user came from /compare page)
+  if (!compareMode && !comparePicking) return null;
 
   const winner = getOverallWinner(results, compareResults);
 

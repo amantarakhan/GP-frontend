@@ -130,6 +130,12 @@ export const NAV_ITEMS = [
     path:  "/reports",
     badge: null,
   },
+  {
+    id:    "compare",
+    label: "Compare",
+    path:  "/compare",
+    badge: null,
+  },
 ];
 
 // ── Mock competitor data ─────────────────────────────────────────────────────

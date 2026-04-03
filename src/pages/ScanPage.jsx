@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import InputPanel      from "../components/scan/InputPanel";
 import MapContainer    from "../components/scan/MapContainer";
 import ResultPanel     from "../components/scan/ResultPanel";
@@ -8,73 +9,19 @@ import CompareModal    from "../components/scan/CompareModal";
 import { useLocationAnalysis } from "../hooks/useLocationAnalysis";
 import { auth } from "../firebase"; // Use two dots to go up to src
 import { saveReport as firestoreSaveReport } from "../services/dbService"; // Use two dots to go up to src
-// ── Floating Compare Button ───────────────────────────────────────────────────
-function CompareButton() {
-  const { hasResults, compareMode, setCompareMode, comparePicking } = useLocationAnalysis();
-  const [hovered, setHovered] = useState(false);
-
-  if (!hasResults || compareMode || comparePicking) return null;
-
-  return (
-    <>
-      <style>{`
-        @keyframes floatIn {
-          from { opacity: 0; transform: translateY(16px) scale(.95); }
-          to   { opacity: 1; transform: translateY(0)    scale(1);   }
-        }
-        @keyframes floatPulse {
-          0%, 100% { box-shadow: 0 8px 30px rgba(99,102,241,.4), 0 0 0 0   rgba(99,102,241,.3); }
-          50%       { box-shadow: 0 8px 30px rgba(99,102,241,.5), 0 0 0 8px rgba(99,102,241,0);  }
-        }
-      `}</style>
-      <button
-        onClick={() => setCompareMode(true)}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
-        style={{
-          position:      "fixed",
-          bottom:        "32px",
-          right:         "32px",
-          zIndex:        500,
-          display:       "flex",
-          alignItems:    "center",
-          gap:           "10px",
-          padding:       "13px 20px",
-          borderRadius:  "50px",
-          border:        "none",
-          background:    hovered
-            ? "linear-gradient(135deg,#7c3aed,#4338ca)"
-            : "linear-gradient(135deg,#6366f1,#4338ca)",
-          color:         "#fff",
-          fontFamily:    "var(--font-body)",
-          fontSize:      "13px",
-          fontWeight:    700,
-          cursor:        "pointer",
-          letterSpacing: ".3px",
-          animation:     "floatIn .5s cubic-bezier(.34,1.56,.64,1) both, floatPulse 2.5s ease 1s infinite",
-          transform:     hovered ? "translateY(-2px) scale(1.03)" : "none",
-          transition:    "background .2s, transform .2s",
-        }}
-      >
-        {/* Icon: two bars side by side */}
-        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
-          <line x1="18" y1="20" x2="18" y2="10"/>
-          <line x1="12" y1="20" x2="12" y2="4"/>
-          <line x1="6"  y1="20" x2="6"  y2="14"/>
-        </svg>
-        Compare Location
-        {/* Arrow */}
-        <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
-          style={{ opacity: hovered ? 1 : 0.7, transition: "opacity .2s, transform .2s", transform: hovered ? "translateX(2px)" : "none" }}>
-          <path d="M5 12h14M12 5l7 7-7 7"/>
-        </svg>
-      </button>
-    </>
-  );
-}
-
 // ── ScanPage ──────────────────────────────────────────────────────────────────
 export default function ScanPage() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { comparePin, comparePicking } = useLocationAnalysis();
+
+  // After picking Location B on map, navigate back to compare page
+  useEffect(() => {
+    if (comparePin && !comparePicking && location.state?.returnTo) {
+      navigate(location.state.returnTo, { replace: true });
+    }
+  }, [comparePin, comparePicking]);
+
   return (
     <div style={{ display: "flex", height: "100%", overflow: "hidden", position: "relative" }}>
       {/* ── Left: Input panel ── */}
@@ -130,10 +77,7 @@ export default function ScanPage() {
         </div>
       </div>
 
-      {/* ── Floating compare button ── */}
-      <CompareButton />
-
-      {/* ── Compare modal (portal-style fixed overlay) ── */}
+      {/* ── Compare modal picking banner ── */}
       <CompareModal />
     </div>
   );

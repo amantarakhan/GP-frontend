@@ -7,6 +7,7 @@ import ScanPage from "./pages/ScanPage";
 import ReportsPage from "./pages/ReportsPage";
 import SettingsPage from "./pages/SettingsPage";
 import AppendixPage from "./pages/AppendixPage";
+import ComparePage from "./pages/ComparePage";
 import WelcomePage from "./pages/WelcomePage";
 import SignupPage from './pages/SignupPage';
 import LoginPage from './pages/LoginPage';
@@ -30,6 +31,7 @@ export default function App() {
             <Route path="/reports" element={<ReportsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/appendix" element={<AppendixPage />} />
+            <Route path="/compare" element={<ComparePage />} />
           </Route>
 
           {/* Fallback: If a user types a random URL, send them to the Welcome page */}
