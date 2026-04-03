@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiService } from "../services/apiService";
+import { auth } from "../firebase";
+import { getUserProfile } from "../services/dbService";
 
 const SCORE_COLOR = (s) => s >= 75 ? "var(--color-brand)" : s >= 55 ? "#b45309" : "#dc2626";
 const SCORE_BG    = (s) => s >= 75 ? "var(--color-success)" : s >= 55 ? "var(--color-accent)" : "#fee2e2";
@@ -42,11 +44,20 @@ export default function DashboardPage() {
   const navigate  = useNavigate();
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [userName, setUserName] = useState("");
 
   useEffect(() => {
     const saved = apiService.getReports();
     setReports(saved);
     setLoading(false);
+
+    const user = auth.currentUser;
+    if (user) {
+      getUserProfile(user.uid).then((profile) => {
+        const name = profile?.displayName || user.displayName || "";
+        setUserName(name);
+      });
+    }
   }, []);
 
   const totalScans = reports.length;
@@ -74,7 +85,7 @@ export default function DashboardPage() {
           fontFamily: "var(--font-display)", fontSize: "30px", fontWeight: 700,
           color: "var(--color-dark)", letterSpacing: "-0.5px", marginBottom: "8px",
         }}>
-          Welcome back, Analyst
+          Welcome back {userName || "Analyst"},
         </h1>
         <p style={{ fontFamily: "var(--font-body)", fontSize: "14px", color: "var(--color-text)", lineHeight: 1.6 }}>
           {totalScans > 0

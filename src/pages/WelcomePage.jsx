@@ -447,7 +447,7 @@ const WelcomePage = () => {
     if (auth.currentUser) {
       navigate("/scan");
     } else {
-      setShowSignupModal(true);
+      navigate("/signup");
     }
   };
 

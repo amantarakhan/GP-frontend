@@ -10,6 +10,7 @@ import {
   signOut,
 } from "firebase/auth";
 import { apiService } from "../services/apiService";
+import { getUserProfile, updateUserProfile } from "../services/dbService";
 
 // ── Toggle switch ─────────────────────────────────────────────────────────────
 function Toggle({ checked, onChange }) {
@@ -237,6 +238,14 @@ export default function SettingsPage() {
 
   useEffect(() => {
     setReportCount(apiService.getReports().length);
+    if (user?.uid) {
+      getUserProfile(user.uid).then((profile) => {
+        if (profile) {
+          if (profile.displayName) setDisplayName(profile.displayName);
+          if (profile.email)       setEmail(profile.email);
+        }
+      });
+    }
   }, []);
 
   // ── Persist notifications ──────────────────────────────────────────────────
@@ -267,6 +276,7 @@ export default function SettingsPage() {
     setSaving(true);
     try {
       await updateProfile(auth.currentUser, { displayName: val });
+      await updateUserProfile(auth.currentUser.uid, { displayName: val });
       setDisplayName(val);
       showSaveMsg("Display name updated!");
     } catch (e) {
@@ -278,6 +288,7 @@ export default function SettingsPage() {
     setSaving(true);
     try {
       await updateEmail(auth.currentUser, val);
+      await updateUserProfile(auth.currentUser.uid, { email: val });
       setEmail(val);
       showSaveMsg("Email updated!");
     } catch (e) {

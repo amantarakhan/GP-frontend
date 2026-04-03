@@ -18,7 +18,6 @@ import {
   deleteDoc,
   collection,
   query,
-  where,
   orderBy,
   serverTimestamp,
 } from "firebase/firestore";
@@ -81,13 +80,26 @@ export async function getUserProfile(uid) {
   return snap.exists() ? { id: snap.id, ...snap.data() } : null;
 }
 
+/**
+ * Update specific fields in a user profile document.
+ *
+ * @param {string} uid    — Auth UID
+ * @param {object} fields — partial fields to update (e.g. { displayName, email })
+ * @returns {Promise<void>}
+ */
+export async function updateUserProfile(uid, fields) {
+  if (!uid) throw new Error("updateUserProfile: uid is required");
+  await setDoc(doc(db, "users", uid), clean(fields), { merge: true });
+}
+
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SAVED REPORTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /**
- * Save a market analysis report to Firestore.
+ * Save a market analysis report as a subcollection under the user's document.
+ * Structure: users/{userId}/saved_reports/{reportId}
  *
  * @param {string} userId   — Auth UID of the creator
  * @param {object} report   — report payload from AnalysisContext
@@ -97,10 +109,7 @@ export async function saveReport(userId, report) {
   if (!userId) throw new Error("saveReport: userId is required");
   if (!report) throw new Error("saveReport: report payload is required");
 
-  // Build payload — all fields defaulted to null so no undefined sneaks through
   const payload = {
-    userId,
-
     // ── Core identity ────────────────────────────────────────────────────────
     reportName:   report.title        ?? `${report.businessType ?? ""} — ${report.location ?? ""}`,
     businessType: report.businessType ?? "",
@@ -132,18 +141,17 @@ export async function saveReport(userId, report) {
     }),
   };
 
-  // clean() must be called BEFORE serverTimestamp() fields are included,
-  // but serverTimestamp() returns a sentinel object (not a plain value),
-  // so we clean everything except the timestamp sentinel by extracting it first.
   const { timestamp, ...rest } = payload;
   const cleanedPayload = { ...clean(rest), timestamp };
 
-  const ref = await addDoc(collection(db, "saved_reports"), cleanedPayload);
+  const reportsRef = collection(db, "users", userId, "saved_reports");
+  const ref = await addDoc(reportsRef, cleanedPayload);
   return ref.id;
 }
 
 /**
  * Fetch all saved reports for a given user, newest first.
+ * Reads from: users/{userId}/saved_reports
  *
  * @param {string} userId
  * @returns {Promise<object[]>}
@@ -152,8 +160,7 @@ export async function getUserReports(userId) {
   if (!userId) return [];
 
   const q = query(
-    collection(db, "saved_reports"),
-    where("userId", "==", userId),
+    collection(db, "users", userId, "saved_reports"),
     orderBy("timestamp", "desc")
   );
 
@@ -162,12 +169,14 @@ export async function getUserReports(userId) {
 }
 
 /**
- * Delete a saved report by its Firestore document ID.
+ * Delete a saved report from the user's subcollection.
  *
+ * @param {string} userId   — Auth UID
  * @param {string} reportId — Firestore doc ID
  * @returns {Promise<void>}
  */
-export async function deleteReport(reportId) {
+export async function deleteReport(userId, reportId) {
+  if (!userId)   throw new Error("deleteReport: userId is required");
   if (!reportId) throw new Error("deleteReport: reportId is required");
-  await deleteDoc(doc(db, "saved_reports", reportId));
+  await deleteDoc(doc(db, "users", userId, "saved_reports", reportId));
 }

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { createUserWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "../firebase";
+import { createUserProfile } from "../services/dbService";
 import logo      from "../assets/logo.png";
 import logo1     from "../assets/logo1.png";
 import globeHero from "../assets/logo2.png";
@@ -209,7 +210,8 @@ export default function SignUp() {
     setFirebaseError("");
     setLoading(true);
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      const cred = await createUserWithEmailAndPassword(auth, email, password);
+      await createUserProfile(cred.user, { displayName: name });
       setDone(true);
       setTimeout(() => navigate("/dashboard"), 1700);
     } catch (err) {
@@ -225,7 +227,8 @@ export default function SignUp() {
     setFirebaseError("");
     setGoogleLoading(true);
     try {
-      await signInWithPopup(auth, googleProvider);
+      const cred = await signInWithPopup(auth, googleProvider);
+      await createUserProfile(cred.user);
       setDone(true);
       setTimeout(() => navigate("/dashboard"), 1600);
     } catch (err) {

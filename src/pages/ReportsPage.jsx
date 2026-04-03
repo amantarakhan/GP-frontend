@@ -225,7 +225,7 @@ export default function ReportsPage() {
   const handleDelete = async (id) => {
     try {
       if (currentUser) {
-        await firestoreDeleteReport(id);
+        await firestoreDeleteReport(currentUser.uid, id);
       } else {
         apiService.deleteReport(id);
       }
