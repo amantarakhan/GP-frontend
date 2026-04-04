@@ -110,8 +110,14 @@ export default function InputPanel() {
     pin,
     isAnalyzing,  canRun,
     runAnalysis,
-    scanError,    // <-- from updated AnalysisContext
+    scanError,
+    hasResults,
+    saveCurrentReport,
   } = useLocationAnalysis();
+
+  const [saveState, setSaveState] = React.useState("idle"); // idle | saving | saved
+
+  React.useEffect(() => { setSaveState("idle"); }, [hasResults]);
 
   const sliderPct = ((radius - 250) / (5000 - 250)) * 100;
   const sliderBg  = `linear-gradient(to right, var(--color-brand) 0%, var(--color-brand) ${sliderPct}%, var(--color-accent) ${sliderPct}%, var(--color-accent) 100%)`;
@@ -295,6 +301,64 @@ export default function InputPanel() {
           </>
         )}
       </button>
+
+      {/* Save Report button — visible only after a scan */}
+      {hasResults && (
+        <button
+          onClick={async () => {
+            if (saveState !== "idle") return;
+            setSaveState("saving");
+            try {
+              saveCurrentReport();
+              setSaveState("saved");
+              setTimeout(() => setSaveState("idle"), 2500);
+            } catch {
+              setSaveState("idle");
+            }
+          }}
+          disabled={saveState !== "idle"}
+          style={{
+            width:          "100%",
+            padding:        "13px 20px",
+            borderRadius:   "var(--radius-md)",
+            border:         saveState === "saved" ? "1.5px solid rgba(63,125,88,.4)" : "1.5px solid rgba(63,125,88,.3)",
+            background:     saveState === "saved"
+              ? "rgba(63,125,88,.1)"
+              : "transparent",
+            color:          "var(--color-brand)",
+            fontSize:       "14px",
+            fontWeight:     700,
+            fontFamily:     "var(--font-body)",
+            letterSpacing:  ".4px",
+            cursor:         saveState !== "idle" ? "default" : "pointer",
+            display:        "flex",
+            alignItems:     "center",
+            justifyContent: "center",
+            gap:            "8px",
+            transition:     "all .2s",
+          }}
+          onMouseEnter={(e) => { if (saveState === "idle") e.currentTarget.style.background = "rgba(63,125,88,.07)"; }}
+          onMouseLeave={(e) => { if (saveState === "idle") e.currentTarget.style.background = "transparent"; }}
+        >
+          {saveState === "saved" ? (
+            <>
+              <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="var(--color-brand)" strokeWidth={2.5}>
+                <polyline points="20,6 9,17 4,12" />
+              </svg>
+              Report Saved!
+            </>
+          ) : (
+            <>
+              <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
+                <polyline points="17,21 17,13 7,13 7,21"/>
+                <polyline points="7,3 7,8 15,8"/>
+              </svg>
+              Save Report
+            </>
+          )}
+        </button>
+      )}
 
       {/* Pro tip */}
       <div style={{

@@ -203,6 +203,7 @@ export default function TopBar() {
 
           {/* Save Report — Firestore-powered */}
           <button
+            data-tutorial="save-report"
             onClick={hasResults ? handleSave : () => navigate("/reports")}
             disabled={saveState === "saving"}
             style={{

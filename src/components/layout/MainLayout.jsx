@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import TopBar from "./TopBar";
+import TutorialOverlay from "../tutorial/TutorialOverlay";
+import CompareSpotlight from "../tutorial/CompareSpotlight";
 
 export default function MainLayout() {
   const [expanded, setExpanded] = useState(false);
@@ -31,6 +33,8 @@ export default function MainLayout() {
         }}
       >
         <TopBar />
+        <TutorialOverlay />
+        <CompareSpotlight />
         <main style={{
           flex:       1,
           overflowY:  "auto",

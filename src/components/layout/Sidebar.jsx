@@ -1,7 +1,8 @@
-import React from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { NAV_ITEMS } from "../../constants";
 import { useLocationAnalysis } from "../../hooks/useLocationAnalysis";
+import { apiService } from "../../services/apiService";
 
 import globeIcon from "../../assets/logo2.png";
 import wordmark  from "../../assets/logo1.png";
@@ -92,6 +93,7 @@ function NavItem({ item, expanded }) {
       to={item.path}
       title={!expanded ? item.label : undefined}
       className="sidebar-nav-item"
+      data-tutorial={`nav-${item.id}`}
       style={({ isActive }) => ({
         ...navLinkStyle(isActive, expanded),
         marginBottom: "4px",
@@ -157,6 +159,14 @@ function NavItem({ item, expanded }) {
 export default function Sidebar({ expanded, setExpanded }) {
   const navigate = useNavigate();
   const { hasResults } = useLocationAnalysis();
+  const location = useLocation();
+  const [reportCount, setReportCount] = useState(0);
+
+  // Re-read count whenever the route changes (covers save → navigate back)
+  useEffect(() => {
+    setReportCount(apiService.getReports().length);
+  }, [location.pathname]);
+
   const visibleNavItems = NAV_ITEMS.filter(item => item.id !== "compare" || hasResults);
   return (
     <>
@@ -169,6 +179,7 @@ export default function Sidebar({ expanded, setExpanded }) {
 
       <aside
         className="localyze-sidebar"
+        data-tutorial="sidebar"
         onMouseEnter={() => setExpanded(true)}
         onMouseLeave={() => setExpanded(false)}
         style={{
@@ -276,7 +287,13 @@ export default function Sidebar({ expanded, setExpanded }) {
           }}
         >
           {visibleNavItems.map((item) => (
-            <NavItem key={item.id} item={item} expanded={expanded} />
+            <NavItem
+              key={item.id}
+              item={item.id === "reports" && reportCount > 0
+                ? { ...item, badge: reportCount }
+                : item}
+              expanded={expanded}
+            />
           ))}
         </nav>
 

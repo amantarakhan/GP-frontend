@@ -165,7 +165,16 @@ export async function getUserReports(userId) {
   );
 
   const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  const reports = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+
+  // Sort client-side (newest first) to avoid requiring a Firestore composite index
+  reports.sort((a, b) => {
+    const ta = a.timestamp?.toMillis?.() ?? 0;
+    const tb = b.timestamp?.toMillis?.() ?? 0;
+    return tb - ta;
+  });
+
+  return reports;
 }
 
 /**

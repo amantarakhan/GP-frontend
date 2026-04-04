@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiService } from "../services/apiService";
+import { useAnalysis } from "../context/AnalysisContext";
 import { auth } from "../firebase";
-import { getUserProfile } from "../services/dbService";
+import { getUserProfile, getUserReports } from "../services/dbService";
 
 const SCORE_COLOR = (s) => s >= 75 ? "var(--color-brand)" : s >= 55 ? "#b45309" : "#dc2626";
 const SCORE_BG    = (s) => s >= 75 ? "var(--color-success)" : s >= 55 ? "var(--color-accent)" : "#fee2e2";
@@ -42,38 +43,67 @@ function StatWidget({ label, value, sub, icon }) {
 
 export default function DashboardPage() {
   const navigate  = useNavigate();
+  const { resetAnalysis } = useAnalysis();
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [userName, setUserName] = useState("");
 
-  useEffect(() => {
-    const saved = apiService.getReports();
-    setReports(saved);
-    setLoading(false);
+  const currentUser = auth.currentUser;
 
-    const user = auth.currentUser;
-    if (user) {
-      getUserProfile(user.uid).then((profile) => {
-        const name = profile?.displayName || user.displayName || "";
+  const fetchReports = useCallback(async () => {
+    setLoading(true);
+    try {
+      if (currentUser) {
+        const data = await getUserReports(currentUser.uid);
+        setReports(data);
+      } else {
+        setReports(apiService.getReports());
+      }
+    } catch (err) {
+      console.error("[DashboardPage] fetchReports:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [currentUser]);
+
+  useEffect(() => { fetchReports(); }, [fetchReports]);
+
+  useEffect(() => {
+    if (currentUser) {
+      getUserProfile(currentUser.uid).then((profile) => {
+        const name = profile?.displayName || currentUser.displayName || "";
         setUserName(name);
       });
     }
-  }, []);
+  }, [currentUser]);
+
+  // Normalize field names — Firestore uses feasibilityScore/competitorCount,
+  // localStorage uses score/competitors
+  const getScore       = (r) => r.feasibilityScore ?? r.score ?? 0;
+  const getCompetitors = (r) => r.competitorCount  ?? r.competitors ?? 0;
+  const getSaturation  = (r) => r.saturation ?? 0;
+  const getTitle       = (r) => r.reportName ?? r.title ?? "Untitled";
+  const getLocation    = (r) => r.location ?? "";
+  const getDate        = (r) => r.dateLabel ?? r.date ?? "";
 
   const totalScans = reports.length;
   const avgFeasibility = totalScans
-    ? Math.round(reports.reduce((sum, r) => sum + (r.score ?? 0), 0) / totalScans)
+    ? Math.round(reports.reduce((sum, r) => sum + getScore(r), 0) / totalScans)
     : null;
   const totalCoverage = reports.reduce((sum, r) => {
     const km = parseFloat(r.fullResults?.coverage ?? "0");
     return sum + (isNaN(km) ? 0 : km);
   }, 0);
+  const totalCompetitors = reports.reduce((sum, r) => sum + getCompetitors(r), 0);
+  const avgSaturation = totalScans
+    ? Math.round(reports.reduce((sum, r) => sum + getSaturation(r), 0) / totalScans)
+    : null;
 
   return (
-    <div className="dashboard-page" style={{ padding: "28px", maxWidth: "1200px" }}>
+    <div className="dashboard-page" style={{ padding: "28px" }}>
 
       {/* Header */}
-      <div className="fade-in" style={{ marginBottom: "30px" }}>
+      <div className="fade-in" data-tutorial="welcome-header" style={{ marginBottom: "30px" }}>
         <div style={{
           fontFamily: "var(--font-body)", fontSize: "9.5px", fontWeight: 600,
           color: "var(--color-brand)", letterSpacing: "2.5px",
@@ -97,6 +127,7 @@ export default function DashboardPage() {
       {/* Stat widgets — class added for responsive 4→2→1 col grid */}
       <div
         className="fade-in fade-in-1 dashboard-stat-grid"
+        data-tutorial="stat-grid"
         style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: "16px", marginBottom: "28px" }}
       >
         <StatWidget
@@ -108,11 +139,11 @@ export default function DashboardPage() {
           icon={<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>}
         />
         <StatWidget
-          label="Locations Scanned" value={loading ? "—" : totalScans} sub="All time"
-          icon={<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>}
+          label="Competitors Found" value={loading ? "—" : totalCompetitors} sub="Total across all scans"
+          icon={<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>}
         />
         <StatWidget
-          label="Total Coverage" value={loading ? "—" : totalCoverage > 0 ? `${totalCoverage.toFixed(1)} km²` : "—"} sub="Area analyzed"
+          label="Avg. Saturation" value={loading ? "—" : avgSaturation != null ? `${avgSaturation}%` : "—"} sub="Market saturation"
           icon={<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>}
         />
       </div>
@@ -161,7 +192,8 @@ export default function DashboardPage() {
               Run your first market scan to see results here
             </div>
             <button
-              onClick={() => navigate("/scan")}
+              data-tutorial="start-scan-btn"
+              onClick={() => { resetAnalysis(); navigate("/scan"); }}
               style={{
                 padding: "11px 22px", borderRadius: "var(--radius-md)", border: "none",
                 background: "linear-gradient(135deg,var(--color-brand),var(--color-brand-dark))",
@@ -193,13 +225,13 @@ export default function DashboardPage() {
               {/* Score ring */}
               <div style={{
                 width: "48px", height: "48px", borderRadius: "50%",
-                background: SCORE_BG(r.score), display: "flex",
+                background: SCORE_BG(getScore(r)), display: "flex",
                 alignItems: "center", justifyContent: "center", flexShrink: 0,
               }}>
                 <span style={{
                   fontFamily: "var(--font-display)", fontSize: "15px",
-                  fontWeight: 700, color: SCORE_COLOR(r.score),
-                }}>{r.score}</span>
+                  fontWeight: 700, color: SCORE_COLOR(getScore(r)),
+                }}>{getScore(r)}</span>
               </div>
 
               <div style={{ flex: 1, minWidth: 0 }}>
@@ -208,10 +240,10 @@ export default function DashboardPage() {
                   color: "var(--color-dark)", marginBottom: "2px",
                   whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
                 }}>
-                  {r.title}
+                  {getTitle(r)}
                 </div>
                 <div style={{ fontFamily: "var(--font-body)", fontSize: "12px", color: "var(--color-text)" }}>
-                  {r.location} · {r.date}
+                  {getLocation(r)} · {getDate(r)}
                 </div>
               </div>
 
@@ -224,7 +256,7 @@ export default function DashboardPage() {
                   <div style={{
                     fontFamily: "var(--font-display)", fontSize: "16px",
                     fontWeight: 700, color: "var(--color-dark)",
-                  }}>{r.competitors}</div>
+                  }}>{getCompetitors(r)}</div>
                   <div style={{ fontFamily: "var(--font-body)", fontSize: "10px", color: "var(--color-text)" }}>
                     Competitors
                   </div>
@@ -233,7 +265,7 @@ export default function DashboardPage() {
                   <div style={{
                     fontFamily: "var(--font-display)", fontSize: "16px",
                     fontWeight: 700, color: "var(--color-dark)",
-                  }}>{r.saturation}%</div>
+                  }}>{getSaturation(r)}%</div>
                   <div style={{ fontFamily: "var(--font-body)", fontSize: "10px", color: "var(--color-text)" }}>
                     Saturation
                   </div>
@@ -251,6 +283,7 @@ export default function DashboardPage() {
       {/* CTA band */}
       <div
         className="fade-in fade-in-3 dashboard-cta-band"
+        data-tutorial="cta-band"
         style={{
           marginTop: "28px", borderRadius: "var(--radius-xl)",
           background: "linear-gradient(135deg,var(--color-brand) 0%,var(--color-brand-dark) 100%)",
@@ -270,7 +303,8 @@ export default function DashboardPage() {
           </div>
         </div>
         <button
-          onClick={() => navigate("/scan")}
+          data-tutorial="start-scan-btn"
+          onClick={() => { resetAnalysis(); navigate("/scan"); }}
           style={{
             padding: "13px 24px", borderRadius: "var(--radius-md)", border: "none",
             background: "var(--color-accent)", color: "var(--color-dark)",

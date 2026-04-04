@@ -137,7 +137,7 @@ function Step({ n, title, children }) {
 // ═════════════════════════════════════════════════════════════════════════════
 export default function AppendixPage() {
   return (
-    <div style={{ padding: "28px", maxWidth: "860px" }}>
+    <div style={{ padding: "28px" }}>
 
       {/* Header */}
       <div className="fade-in" style={{ marginBottom: "28px" }}>
