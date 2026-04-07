@@ -2,17 +2,14 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
 import { auth } from "../../firebase";
 import { useAnalysis } from "../../context/AnalysisContext";
+import { useTutorialManager, TUTORIAL_IDS } from "../../context/TutorialContext";
 
-const STORAGE_KEY = (uid) => `localyze_compare_tip_seen_${uid}`;
 const PAD    = 12;
-const RADIUS = 50;  // large radius → circular cutout around the icon
+const RADIUS = 50;
 const ARROW  = 8;
 const OVERLAY_RGBA = "rgba(0, 0, 0, 0.72)";
 
 // ── Circular clip-path ───────────────────────────────────────────────────────
-// Outer full-screen rect + inner circle via 4 arcs (approximation of a circle
-// using cubic Bézier / SVG arcs isn't needed — we use a rounded rect whose
-// radius equals half the size, making it a perfect circle).
 function buildCircleClipPath(cx, cy, r) {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
@@ -22,7 +19,6 @@ function buildCircleClipPath(cx, cy, r) {
   const x = cx - r;
   const y = cy - r;
 
-  // A rounded rect with rx=ry=r and equal width/height = 2r is a circle
   const inner = [
     `M${x + r},${y}`,
     `H${x + d - r}`,
@@ -42,25 +38,35 @@ function buildCircleClipPath(cx, cy, r) {
 // ═════════════════════════════════════════════════════════════════════════════
 export default function CompareSpotlight() {
   const { hasResults }  = useAnalysis();
-  const [show, setShow] = useState(false);
   const [rect, setRect] = useState(null);
   const [exiting, setExiting] = useState(false);
   const prevHasResults  = useRef(false);
   const tooltipRef      = useRef(null);
   const [ttSize, setTtSize] = useState({ w: 300, h: 160 });
 
+  const {
+    activeTutorial,
+    isOnboardingActive,
+    hasSeenCompareFeature,
+    requestTutorial,
+    completeTutorial,
+  } = useTutorialManager();
+
+  const show = activeTutorial === TUTORIAL_IDS.COMPARE;
+
   // ── Trigger on first scan completion ───────────────────────────────────────
+  // Only request if: user has results (scanCount > 0), hasn't seen this tip,
+  // and the onboarding tour is NOT active.
   useEffect(() => {
-    // Detect the transition: hasResults went from false → true
     if (hasResults && !prevHasResults.current) {
       const uid = auth.currentUser?.uid;
-      if (uid && !localStorage.getItem(STORAGE_KEY(uid))) {
-        // Small delay so the Compare nav item renders & animates in
-        setTimeout(() => setShow(true), 600);
+      if (uid && !hasSeenCompareFeature()) {
+        // Queue with low priority — onboarding (100) always wins
+        setTimeout(() => requestTutorial(TUTORIAL_IDS.COMPARE, 10), 600);
       }
     }
     prevHasResults.current = hasResults;
-  }, [hasResults]);
+  }, [hasResults, hasSeenCompareFeature, requestTutorial]);
 
   // ── Measure the Compare nav item ──────────────────────────────────────────
   const measure = useCallback(() => {
@@ -89,12 +95,10 @@ export default function CompareSpotlight() {
   const dismiss = useCallback(() => {
     setExiting(true);
     setTimeout(() => {
-      const uid = auth.currentUser?.uid;
-      if (uid) localStorage.setItem(STORAGE_KEY(uid), "true");
-      setShow(false);
+      completeTutorial(TUTORIAL_IDS.COMPARE);
       setExiting(false);
     }, 340);
-  }, []);
+  }, [completeTutorial]);
 
   if (!show || !rect) return null;
 

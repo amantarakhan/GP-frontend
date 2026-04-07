@@ -2,8 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate, useLocation } from "react-router-dom";
 import { auth } from "../../firebase";
-
-const storageKey = (uid) => `localyze_tutorial_done_${uid}`;
+import { useTutorialManager, TUTORIAL_IDS } from "../../context/TutorialContext";
 
 const PAD    = 10;   // breathing room around the spotlighted element
 const RADIUS = 14;   // rounded-corner radius on the cutout
@@ -157,7 +156,6 @@ function Arrow({ placement }) {
 // ═════════════════════════════════════════════════════════════════════════════
 export default function TutorialOverlay() {
   const [step, setStep]         = useState(0);
-  const [visible, setVisible]   = useState(false);
   const [exiting, setExiting]   = useState(false);
   const [rect, setRect]         = useState(null);   // target bounding rect
   const tooltipRef              = useRef(null);
@@ -165,14 +163,20 @@ export default function TutorialOverlay() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // ── Show for first-time users ──────────────────────────────────────────────
+  const { activeTutorial, hasCompletedOnboarding, requestTutorial, completeTutorial } =
+    useTutorialManager();
+  const visible = activeTutorial === TUTORIAL_IDS.ONBOARDING;
+
+  // ── Request tour for first-time users (highest priority) ──────────────────
   useEffect(() => {
     const unsub = auth.onAuthStateChanged((user) => {
       if (!user) return;
-      if (!localStorage.getItem(storageKey(user.uid))) setVisible(true);
+      if (!hasCompletedOnboarding()) {
+        requestTutorial(TUTORIAL_IDS.ONBOARDING, 100);
+      }
     });
     return unsub;
-  }, []);
+  }, [hasCompletedOnboarding, requestTutorial]);
 
   // ── Measure the spotlighted element ────────────────────────────────────────
   const measure = useCallback((shouldScroll = false) => {
@@ -233,13 +237,11 @@ export default function TutorialOverlay() {
   const dismiss = useCallback(() => {
     setExiting(true);
     setTimeout(() => {
-      const uid = auth.currentUser?.uid;
-      if (uid) localStorage.setItem(storageKey(uid), "true");
-      setVisible(false);
+      completeTutorial(TUTORIAL_IDS.ONBOARDING);
       setExiting(false);
       setStep(0);
     }, 340);
-  }, []);
+  }, [completeTutorial]);
 
   const next = () => (step < STEPS.length - 1 ? setStep((s) => s + 1) : dismiss());
   const prev = () => step > 0 && setStep((s) => s - 1);
