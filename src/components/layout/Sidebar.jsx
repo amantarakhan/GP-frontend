@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { NAV_ITEMS } from "../../constants";
 import { useLocationAnalysis } from "../../hooks/useLocationAnalysis";
 import { apiService } from "../../services/apiService";
@@ -158,6 +159,7 @@ function NavItem({ item, expanded }) {
 // ── Sidebar ──────────────────────────────────────────────────────────────────
 export default function Sidebar({ expanded, setExpanded }) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { hasResults } = useLocationAnalysis();
   const location = useLocation();
   const [reportCount, setReportCount] = useState(0);
@@ -167,7 +169,15 @@ export default function Sidebar({ expanded, setExpanded }) {
     setReportCount(apiService.getReports().length);
   }, [location.pathname]);
 
-  const visibleNavItems = NAV_ITEMS.filter(item => item.id !== "compare" || hasResults);
+  const navLabelMap = {
+    dashboard: t("nav.dashboard"),
+    scan:      t("nav.newScan"),
+    reports:   t("nav.savedReports"),
+    compare:   t("compare.locationComparison"),
+  };
+  const visibleNavItems = NAV_ITEMS
+    .filter(item => item.id !== "compare" || hasResults)
+    .map(item => ({ ...item, label: navLabelMap[item.id] || item.label }));
   return (
     <>
       <style>{`
@@ -271,7 +281,7 @@ export default function Sidebar({ expanded, setExpanded }) {
                 whiteSpace: "nowrap", animation: "sbFadeIn .18s ease both",
               }}
             >
-              Main Menu
+              {t("nav.mainMenu")}
             </div>
           )
           : <div className="sidebar-nav-label" style={{ height: "18px" }} />
@@ -310,7 +320,7 @@ export default function Sidebar({ expanded, setExpanded }) {
         <div style={{ padding: expanded ? "4px 8px" : "4px 0", flexShrink: 0 }}>
           <NavLink
             to="/appendix"
-            title={!expanded ? "Appendix" : undefined}
+            title={!expanded ? t("nav.appendix") : undefined}
             style={({ isActive }) => ({
               width:          expanded ? "100%" : "38px",
               height:         "38px",
@@ -337,7 +347,7 @@ export default function Sidebar({ expanded, setExpanded }) {
             onMouseLeave={(e) => { if (!e.currentTarget.style.background.includes("linear-gradient(90")) e.currentTarget.style.background = "transparent"; }}
           >
             <span style={{ flexShrink: 0, display: "flex", alignItems: "center" }}>{Icons.appendix}</span>
-            {expanded && <span style={{ animation: "sbFadeIn .18s ease both" }}>Appendix</span>}
+            {expanded && <span style={{ animation: "sbFadeIn .18s ease both" }}>{t("nav.appendix")}</span>}
           </NavLink>
         </div>
 
@@ -345,7 +355,7 @@ export default function Sidebar({ expanded, setExpanded }) {
         <div style={{ padding: expanded ? "4px 8px 8px" : "4px 0 8px", flexShrink: 0 }}>
           <NavLink
             to="/settings"
-            title={!expanded ? "Settings" : undefined}
+            title={!expanded ? t("nav.settings") : undefined}
             onClick={() => navigate("/settings")}
             style={{
               width:          expanded ? "100%" : "38px",
@@ -370,7 +380,7 @@ export default function Sidebar({ expanded, setExpanded }) {
             onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
           >
             <span style={{ flexShrink: 0, display: "flex", alignItems: "center" }}>{Icons.settings}</span>
-            {expanded && <span style={{ animation: "sbFadeIn .18s ease both" }}>Settings</span>}
+            {expanded && <span style={{ animation: "sbFadeIn .18s ease both" }}>{t("nav.settings")}</span>}
           </NavLink>
         </div>
 
@@ -403,9 +413,9 @@ export default function Sidebar({ expanded, setExpanded }) {
                 <div style={{
                   color: "#F5F2E1", fontSize: "13px", fontWeight: 600,
                   fontFamily: "var(--font-body)", overflow: "hidden", textOverflow: "ellipsis",
-                }}>Analyst Pro</div>
+                }}>{t("sidebar.analystPro")}</div>
                 <div style={{ color: "#687280", fontSize: "11px", fontFamily: "var(--font-body)" }}>
-                  Pro Plan Active
+                  {t("sidebar.proPlanActive")}
                 </div>
               </div>
               <span style={{ animation: "sbFadeIn .18s ease both", flexShrink: 0, display: "flex" }}>

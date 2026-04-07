@@ -5,6 +5,7 @@ import {
   Marker,
   Circle,
 } from "@react-google-maps/api";
+import { useTranslation } from "react-i18next";
 import { useLocationAnalysis } from "../../hooks/useLocationAnalysis";
 import { MOCK_COMPETITORS } from "../../constants";
 

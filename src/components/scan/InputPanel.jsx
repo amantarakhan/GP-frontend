@@ -1,10 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useLocationAnalysis } from "../../hooks/useLocationAnalysis";
 import { getRadiusLabel, formatRadius, SUBCATEGORIES } from "../../constants";
 import BusinessTypeDropdown from "./BusinessTypeDropdown";
 
 // ── Sub-category dropdown ─────────────────────────────────────────────────────
 function SubCategoryDropdown({ businessType, value, onChange }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const wrapRef = useRef(null);
   const options = businessType ? (SUBCATEGORIES[businessType] ?? []) : [];
@@ -27,7 +29,7 @@ function SubCategoryDropdown({ businessType, value, onChange }) {
         fontFamily: "var(--font-body)", fontSize: "13px", color: "var(--color-text)",
         opacity: 0.6,
       }}>
-        Select a business type first…
+        {t("scan.selectBusinessFirst")}
       </div>
     );
   }
@@ -50,7 +52,7 @@ function SubCategoryDropdown({ businessType, value, onChange }) {
           transition: "all .2s",
         }}
       >
-        <span>{selected ? selected.label : "Select a category…"}</span>
+        <span>{selected ? selected.label : t("scan.selectCategory")}</span>
         <svg width="15" height="15" fill="none" viewBox="0 0 24 24"
           stroke="var(--color-text)" strokeWidth={2.5}
           style={{ transform: open ? "rotate(180deg)" : "none", transition: "transform .2s", flexShrink: 0 }}>
@@ -115,6 +117,7 @@ export default function InputPanel() {
     saveCurrentReport,
   } = useLocationAnalysis();
 
+  const { t } = useTranslation();
   const [saveState, setSaveState] = React.useState("idle"); // idle | saving | saved
 
   React.useEffect(() => { setSaveState("idle"); }, [hasResults]);
@@ -144,14 +147,14 @@ export default function InputPanel() {
             <polyline points="22,12 18,12 15,21 9,3 6,12 2,12" />
           </svg>
           <span style={{ fontFamily:"var(--font-body)", fontSize:"9.5px", fontWeight:600, color:"var(--color-brand)", letterSpacing:"2.5px", textTransform:"uppercase" }}>
-            Market Analysis
+            {t("scan.marketAnalysis")}
           </span>
         </div>
         <h1 style={{ fontFamily:"var(--font-display)", fontSize:"24px", fontWeight:700, color:"var(--color-dark)", letterSpacing:"-0.5px", lineHeight:1.15, marginBottom:"8px" }}>
-          Location<br />Intelligence
+          {t("scan.locationIntelligence")}<br />{t("scan.intelligence")}
         </h1>
         <p style={{ fontFamily:"var(--font-body)", fontSize:"13px", color:"var(--color-text)", lineHeight:1.65 }}>
-          Analyze foot traffic, competition density, and demand signals for your target area.
+          {t("scan.scanDesc")}
         </p>
       </div>
 
@@ -159,13 +162,13 @@ export default function InputPanel() {
 
       {/* Business Type */}
       <div>
-        <Label>Business Type</Label>
+        <Label>{t("scan.businessType")}</Label>
         <BusinessTypeDropdown value={businessType} onChange={(val) => { setBusinessType(val); setCategory(""); }} />
       </div>
 
       {/* Category */}
       <div>
-        <Label>Target Cuisine / Category</Label>
+        <Label>{t("scan.targetCategory")}</Label>
         <SubCategoryDropdown
           businessType={businessType}
           value={category}
@@ -176,7 +179,7 @@ export default function InputPanel() {
       {/* Radius slider */}
       <div>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline", marginBottom:"12px" }}>
-          <Label style={{ marginBottom:0 }}>Search Radius</Label>
+          <Label style={{ marginBottom:0 }}>{t("scan.searchRadius")}</Label>
           <div style={{ display:"flex", alignItems:"center", gap:"7px" }}>
             <span style={{ fontFamily:"var(--font-display)", fontSize:"16px", fontWeight:700, color:"var(--color-brand)" }}>
               {formatRadius(radius)}
@@ -200,7 +203,7 @@ export default function InputPanel() {
 
       {/* Location */}
       <div>
-        <Label>Target Location</Label>
+        <Label>{t("scan.targetLocation")}</Label>
         <div style={{ position:"relative" }}>
           <span style={{ position:"absolute", left:"13px", top:"50%", transform:"translateY(-50%)", color:"var(--color-text)" }}>
             <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -210,7 +213,7 @@ export default function InputPanel() {
           </span>
           <input
             type="text"
-            placeholder="Click the map or enter address…"
+            placeholder={t("scan.clickMapOrEnter")}
             value={location}
             onChange={(e) => setLocation(e.target.value)}
             style={inputStyle({ paddingLeft:"37px" })}
@@ -233,7 +236,7 @@ export default function InputPanel() {
             <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
             </svg>
-            Click the map to set your target coordinates.
+            {t("scan.clickMapWarning")}
           </div>
         )}
       </div>
@@ -253,7 +256,7 @@ export default function InputPanel() {
             <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
           </svg>
           <div style={{ fontFamily:"var(--font-body)", fontSize:"12px", color:"#991b1b", lineHeight:1.5 }}>
-            <strong style={{ display:"block", marginBottom:"2px" }}>Scan failed</strong>
+            <strong style={{ display:"block", marginBottom:"2px" }}>{t("scan.scanFailed")}</strong>
             {scanError}
           </div>
         </div>
@@ -290,14 +293,14 @@ export default function InputPanel() {
             <svg className="spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
               <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
             </svg>
-            Analyzing Market…
+            {t("scan.analyzingMarket")}
           </>
         ) : (
           <>
             <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <polyline points="22,12 18,12 15,21 9,3 6,12 2,12" />
             </svg>
-            Run Analysis
+            {t("scan.runAnalysis")}
           </>
         )}
       </button>
@@ -345,7 +348,7 @@ export default function InputPanel() {
               <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="var(--color-brand)" strokeWidth={2.5}>
                 <polyline points="20,6 9,17 4,12" />
               </svg>
-              Report Saved!
+              {t("scan.reportSaved")}
             </>
           ) : (
             <>
@@ -354,7 +357,7 @@ export default function InputPanel() {
                 <polyline points="17,21 17,13 7,13 7,21"/>
                 <polyline points="7,3 7,8 15,8"/>
               </svg>
-              Save Report
+              {t("scan.saveReport")}
             </>
           )}
         </button>
@@ -377,9 +380,9 @@ export default function InputPanel() {
           </svg>
         </div>
         <div>
-          <div style={{ fontFamily:"var(--font-body)", fontSize:"11.5px", fontWeight:700, color:"var(--color-brand)", marginBottom:"3px" }}>Pro Tip</div>
+          <div style={{ fontFamily:"var(--font-body)", fontSize:"11.5px", fontWeight:700, color:"var(--color-brand)", marginBottom:"3px" }}>{t("scan.proTip")}</div>
           <div style={{ fontFamily:"var(--font-body)", fontSize:"12px", color:"var(--color-text)", lineHeight:1.55 }}>
-            Click anywhere on the map to set your target location before running analysis.
+            {t("scan.proTipText")}
           </div>
         </div>
       </div>

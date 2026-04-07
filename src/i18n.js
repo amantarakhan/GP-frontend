@@ -9,7 +9,9 @@ i18n
   .use(initReactI18next)
   .init({
     resources: { en: { translation: en }, ar: { translation: ar } },
+    supportedLngs: ["en", "ar"],
     fallbackLng: "en",
+    load: "languageOnly",            // "en-US" → "en", "ar-SA" → "ar"
     interpolation: { escapeValue: false },
     detection: {
       order: ["localStorage", "navigator"],
@@ -20,9 +22,10 @@ i18n
 
 // Apply dir attribute on language change
 const applyDir = (lng) => {
-  const dir = lng === "ar" ? "rtl" : "ltr";
+  const base = lng?.split("-")[0] ?? "en";
+  const dir = base === "ar" ? "rtl" : "ltr";
   document.documentElement.setAttribute("dir", dir);
-  document.documentElement.setAttribute("lang", lng);
+  document.documentElement.setAttribute("lang", base);
 };
 
 applyDir(i18n.language);

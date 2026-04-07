@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useLocationAnalysis } from "../../hooks/useLocationAnalysis";
 
 const STATUS_STYLES = {
@@ -18,7 +19,8 @@ function PriceDots({ level }) {
 }
 
 function StarRating({ rating }) {
-  if (!rating) return <span style={{ color: "var(--color-text)", fontSize: "11px" }}>No rating</span>;
+  const { t } = useTranslation();
+  if (!rating) return <span style={{ color: "var(--color-text)", fontSize: "11px" }}>{t("competitors.noRating")}</span>;
   return (
     <div style={{ display: "flex", alignItems: "center", gap: "3px" }}>
       <svg width="11" height="11" viewBox="0 0 24 24" fill="var(--color-brand)">
@@ -32,10 +34,17 @@ function StarRating({ rating }) {
 }
 
 export default function CompetitorList() {
+  const { t } = useTranslation();
   const { hasResults, results } = useLocationAnalysis();
   const [expanded,     setExpanded]     = useState(true);
   const [expandedId,   setExpandedId]   = useState(null);  // for detail row
   const [showAll,      setShowAll]      = useState(false);
+
+  const statusLabels = {
+    high:   t("competitors.highThreat"),
+    medium: t("competitors.medium"),
+    low:    t("competitors.lowThreat"),
+  };
 
   if (!hasResults || !results?.competitorList?.length) return null;
 
@@ -70,7 +79,7 @@ export default function CompetitorList() {
             <path d="M16 3.13a4 4 0 010 7.75"/>
           </svg>
           <span style={{ fontFamily: "var(--font-body)", fontSize: "13px", fontWeight: 700, color: "var(--color-dark)" }}>
-            Nearby Competitors
+            {t("competitors.title")}
           </span>
           <span style={{
             background: "rgba(63,125,88,.15)", color: "var(--color-brand)",
@@ -95,7 +104,9 @@ export default function CompetitorList() {
           {visible.map((c, i) => {
             const s         = STATUS_STYLES[c.status] ?? STATUS_STYLES.low;
             const isOpen    = expandedId === c.id;
-            const todayDay  = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][new Date().getDay()];
+            const dayKeys   = ["sunday","monday","tuesday","wednesday","thursday","friday","saturday"];
+            const todayKey  = dayKeys[new Date().getDay()];
+            const todayDay  = t(`competitors.days.${todayKey}`);
             const todayHours = c.hours.find((h) => h.startsWith(todayDay));
 
             return (
@@ -156,7 +167,7 @@ export default function CompetitorList() {
                     padding: "3px 8px", borderRadius: "20px",
                     fontFamily: "var(--font-body)", flexShrink: 0,
                   }}>
-                    {s.label}
+                    {statusLabels[c.status] ?? statusLabels.low}
                   </span>
 
                   {/* Expand chevron */}
@@ -182,7 +193,7 @@ export default function CompetitorList() {
                     {/* Today's hours */}
                     <div>
                       <div style={{ fontFamily: "var(--font-body)", fontSize: "10px", color: "var(--color-text)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: "4px" }}>
-                        Today's Hours
+                        {t("competitors.todaysHours")}
                       </div>
                       <div style={{ fontFamily: "var(--font-body)", fontSize: "12px", color: "var(--color-dark)" }}>
                         {todayHours ? todayHours.replace(`${todayDay}: `, "") : "Hours not available"}

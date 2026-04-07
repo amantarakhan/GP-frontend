@@ -1,20 +1,22 @@
 import React, { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useLocationAnalysis } from "../hooks/useLocationAnalysis";
+/* eslint-disable react/prop-types */
 
-// ── Metric config ─────────────────────────────────────────────────────────────
-const METRICS = [
-  { key: "feasibility",  label: "Feasibility Score",  icon: "✦", higherWins: true,  format: (v) => `${v}%`, max: 100 },
-  { key: "competitors",  label: "Competitors Nearby", icon: "⬡", higherWins: false, format: (v) => v,       max: 60  },
-  { key: "saturation",   label: "Market Saturation",  icon: "◈", higherWins: false, format: (v) => `${v}%`, max: 100 },
-  { key: "footTraffic",  label: "Foot Traffic",       icon: "◉", higherWins: true,  format: (v) => `${v}`,  max: 100 },
-  { key: "demandSignal", label: "Demand Signal",      icon: "◈", higherWins: true,  format: (v) => `${v}`,  max: 100 },
+// ── Metric config (labels are i18n keys, resolved at render time) ────────────
+const METRICS_CONFIG = [
+  { key: "feasibility",  labelKey: "compare.feasibilityScore",  icon: "✦", higherWins: true,  format: (v) => `${v}%`, max: 100 },
+  { key: "competitors",  labelKey: "compare.competitorsNearby", icon: "⬡", higherWins: false, format: (v) => v,       max: 60  },
+  { key: "saturation",   labelKey: "compare.marketSaturation",  icon: "◈", higherWins: false, format: (v) => `${v}%`, max: 100 },
+  { key: "footTraffic",  labelKey: "compare.footTraffic",       icon: "◉", higherWins: true,  format: (v) => `${v}`,  max: 100 },
+  { key: "demandSignal", labelKey: "compare.demandSignal",      icon: "◈", higherWins: true,  format: (v) => `${v}`,  max: 100 },
 ];
 
 function getOverallWinner(resultsA, resultsB) {
   if (!resultsA || !resultsB) return null;
   let scoreA = 0, scoreB = 0;
-  for (const m of METRICS) {
+  for (const m of METRICS_CONFIG) {
     const a = resultsA[m.key] ?? 0;
     const b = resultsB[m.key] ?? 0;
     if (m.higherWins) { if (a > b) scoreA++; else if (b > a) scoreB++; }
@@ -26,6 +28,7 @@ function getOverallWinner(resultsA, resultsB) {
 }
 
 function MetricRow({ metric, valueA, valueB }) {
+  const { t } = useTranslation();
   const a    = valueA ?? 0;
   const b    = valueB ?? 0;
   const pctA = Math.min((a / metric.max) * 100, 100);
@@ -48,7 +51,7 @@ function MetricRow({ metric, valueA, valueB }) {
           </span>
           {aWins && !tied && (
             <span style={{ background: "rgba(63,125,88,.12)", color: "#3f7d58", fontSize: "10px", fontWeight: 700, padding: "3px 9px", borderRadius: "10px", fontFamily: "var(--font-body)", letterSpacing: ".5px", textTransform: "uppercase" }}>
-              Better
+              {t("compare.better")}
             </span>
           )}
         </div>
@@ -61,10 +64,10 @@ function MetricRow({ metric, valueA, valueB }) {
       <div style={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: "6px" }}>
         <span style={{ fontFamily: "var(--font-body)", fontSize: "20px", color: "var(--color-brand)" }}>{metric.icon}</span>
         <span style={{ fontFamily: "var(--font-body)", fontSize: "10px", fontWeight: 700, color: "var(--color-text)", textTransform: "uppercase", letterSpacing: "1.2px", lineHeight: 1.4, textAlign: "center" }}>
-          {metric.label}
+          {t(metric.labelKey)}
         </span>
         {tied && (
-          <span style={{ fontFamily: "var(--font-body)", fontSize: "9px", fontWeight: 700, color: "#b45309", background: "rgba(180,83,9,.1)", padding: "2px 8px", borderRadius: "8px" }}>TIE</span>
+          <span style={{ fontFamily: "var(--font-body)", fontSize: "9px", fontWeight: 700, color: "#b45309", background: "rgba(180,83,9,.1)", padding: "2px 8px", borderRadius: "8px" }}>{t("compare.tie")}</span>
         )}
       </div>
 
@@ -73,7 +76,7 @@ function MetricRow({ metric, valueA, valueB }) {
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           {bWins && !tied && (
             <span style={{ background: "rgba(99,102,241,.12)", color: "#6366f1", fontSize: "10px", fontWeight: 700, padding: "3px 9px", borderRadius: "10px", fontFamily: "var(--font-body)", letterSpacing: ".5px", textTransform: "uppercase" }}>
-              Better
+              {t("compare.better")}
             </span>
           )}
           <span style={{ fontFamily: "var(--font-display)", fontSize: "26px", fontWeight: 700, color: bWins ? "#6366f1" : tied ? "var(--color-dark)" : "var(--color-text)" }}>
@@ -89,6 +92,7 @@ function MetricRow({ metric, valueA, valueB }) {
 }
 
 function LocationCard({ letter, color, pin, results, isWinner }) {
+  const { t } = useTranslation();
   return (
     <div style={{
       flex: 1, borderRadius: "var(--radius-lg)",
@@ -104,24 +108,24 @@ function LocationCard({ letter, color, pin, results, isWinner }) {
           fontWeight: 800, padding: "5px 20px", borderRadius: "20px",
           letterSpacing: "1.5px", textTransform: "uppercase", whiteSpace: "nowrap",
           boxShadow: `0 4px 14px ${color}44`,
-        }}>✦ Recommended</div>
+        }}>{t("compare.recommended")}</div>
       )}
       <div style={{ display: "flex", alignItems: "center", gap: "20px", marginBottom: "36px" }}>
         <div style={{ width: "72px", height: "72px", borderRadius: "50%", background: color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: `0 8px 28px ${color}44` }}>
           <span style={{ fontFamily: "var(--font-display)", fontSize: "28px", fontWeight: 700, color: "#fff" }}>{letter}</span>
         </div>
         <div>
-          <div style={{ fontFamily: "var(--font-body)", fontSize: "12px", fontWeight: 700, color, textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: "6px" }}>Location {letter}</div>
+          <div style={{ fontFamily: "var(--font-body)", fontSize: "12px", fontWeight: 700, color, textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: "6px" }}>{t("compare.location", { letter })}</div>
           <div style={{ fontFamily: "var(--font-body)", fontSize: "15px", color: "var(--color-text)" }}>{pin ? `${pin.lat}, ${pin.lng}` : "—"}</div>
         </div>
       </div>
       {results && (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
           {[
-            { label: "Feasibility", value: `${results.feasibility}%` },
-            { label: "District",    value: results.districtName ?? "—" },
-            { label: "Competitors", value: results.competitors },
-            { label: "Saturation",  value: `${results.saturation}%` },
+            { label: t("compare.feasibility"), value: `${results.feasibility}%` },
+            { label: t("compare.district"),    value: results.districtName ?? "—" },
+            { label: t("compare.competitors"), value: results.competitors },
+            { label: t("compare.saturation"),  value: `${results.saturation}%` },
           ].map(({ label, value }) => (
             <div key={label} style={{ background: "rgba(255,255,255,.6)", borderRadius: "14px", padding: "20px 22px" }}>
               <div style={{ fontFamily: "var(--font-body)", fontSize: "10px", color: "var(--color-text)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "1.2px", marginBottom: "8px" }}>{label}</div>
@@ -153,6 +157,7 @@ function CompareSkeleton() {
 export default function ComparePage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
 
   const {
     comparePin,      setComparePin,
@@ -202,15 +207,15 @@ export default function ComparePage() {
       {/* ── Page header ── */}
       <div className="fade-in" style={{ marginBottom: "36px" }}>
         <div style={{ fontFamily: "var(--font-body)", fontSize: "9.5px", fontWeight: 600, color: "var(--color-brand)", letterSpacing: "2.5px", textTransform: "uppercase", marginBottom: "8px" }}>
-          Analysis
+          {t("compare.analysis")}
         </div>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: "14px" }}>
           <div>
             <h1 style={{ fontFamily: "var(--font-display)", fontSize: "36px", fontWeight: 700, color: "var(--color-dark)", letterSpacing: "-0.5px", marginBottom: "8px" }}>
-              Location Comparison
+              {t("compare.locationComparison")}
             </h1>
             <p style={{ fontFamily: "var(--font-body)", fontSize: "15px", color: "var(--color-text)", lineHeight: 1.6 }}>
-              Side-by-side market analysis — find your best location.
+              {t("compare.sideBySideDesc")}
             </p>
           </div>
           {(comparePin || hasCompareResults) && (
@@ -223,7 +228,7 @@ export default function ComparePage() {
                 padding: "10px 20px", cursor: "pointer", marginTop: "6px",
               }}
             >
-              Reset Comparison
+              {t("compare.resetComparison")}
             </button>
           )}
         </div>
@@ -238,10 +243,10 @@ export default function ComparePage() {
         }}>
           <div style={{ fontSize: "48px", marginBottom: "20px" }}>📍</div>
           <div style={{ fontFamily: "var(--font-display)", fontSize: "22px", fontWeight: 700, color: "var(--color-dark)", marginBottom: "10px" }}>
-            No scan results yet
+            {t("compare.noScanYet")}
           </div>
           <p style={{ fontFamily: "var(--font-body)", fontSize: "14px", color: "var(--color-text)", marginBottom: "28px" }}>
-            Run a scan first to set Location A, then come back to compare.
+            {t("compare.noScanDesc")}
           </p>
           <button
             onClick={() => navigate("/scan")}
@@ -251,7 +256,7 @@ export default function ComparePage() {
               border: "none", borderRadius: "999px", padding: "14px 32px", cursor: "pointer",
             }}
           >
-            Go to Scan →
+            {t("compare.goToScan")}
           </button>
         </div>
       )}
@@ -289,14 +294,14 @@ export default function ComparePage() {
               </div>
               <div>
                 <div style={{ fontFamily: "var(--font-display)", fontSize: "20px", fontWeight: 700, color: "var(--color-dark)", marginBottom: "5px" }}>
-                  {winner === "tie" ? "Both locations are evenly matched" : `Location ${winner} is the better choice`}
+                  {winner === "tie" ? t("compare.evenlyMatched") : t("compare.betterChoice", { winner })}
                 </div>
                 <div style={{ fontFamily: "var(--font-body)", fontSize: "14px", color: "var(--color-text)" }}>
                   {winner === "tie"
-                    ? "Consider additional factors like rent and accessibility"
+                    ? t("compare.considerFactors")
                     : winner === "A"
-                      ? "Higher feasibility and stronger market conditions"
-                      : "Better market opportunity with lower competition"}
+                      ? t("compare.higherFeasibility")
+                      : t("compare.betterOpportunity")}
                 </div>
               </div>
             </div>
@@ -334,12 +339,12 @@ export default function ComparePage() {
                   </svg>
                 </div>
                 <div style={{ textAlign: "center" }}>
-                  <div style={{ fontFamily: "var(--font-display)", fontSize: "26px", fontWeight: 700, color: "#6366f1", marginBottom: "12px" }}>Pick Location B</div>
-                  <div style={{ fontFamily: "var(--font-body)", fontSize: "15px", color: "var(--color-text)", lineHeight: 1.7 }}>Click to go to the map<br />and select a second location</div>
+                  <div style={{ fontFamily: "var(--font-display)", fontSize: "26px", fontWeight: 700, color: "#6366f1", marginBottom: "12px" }}>{t("compare.pickLocationB")}</div>
+                  <div style={{ fontFamily: "var(--font-body)", fontSize: "15px", color: "var(--color-text)", lineHeight: 1.7 }}>{t("compare.clickMapSelect")}</div>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "14px 28px", borderRadius: "14px", background: "rgba(99,102,241,.12)", border: "1px solid rgba(99,102,241,.2)" }}>
                   <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="#6366f1" strokeWidth={2.5}><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22,2 15,22 11,13 2,9 22,2"/></svg>
-                  <span style={{ fontFamily: "var(--font-body)", fontSize: "15px", fontWeight: 700, color: "#6366f1" }}>Tap map to place pin</span>
+                  <span style={{ fontFamily: "var(--font-body)", fontSize: "15px", fontWeight: 700, color: "#6366f1" }}>{t("compare.tapMapToPlace")}</span>
                 </div>
               </div>
             ) : (
@@ -354,12 +359,12 @@ export default function ComparePage() {
               <div style={{ display: "grid", gridTemplateColumns: "1fr 120px 1fr", gap: "20px", marginBottom: "8px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px", justifyContent: "flex-end" }}>
                   <div style={{ width: "12px", height: "12px", borderRadius: "50%", background: "#3f7d58" }} />
-                  <span style={{ fontFamily: "var(--font-body)", fontSize: "11px", fontWeight: 700, color: "#3f7d58", textTransform: "uppercase", letterSpacing: "1.5px" }}>Location A</span>
+                  <span style={{ fontFamily: "var(--font-body)", fontSize: "11px", fontWeight: 700, color: "#3f7d58", textTransform: "uppercase", letterSpacing: "1.5px" }}>{t("compare.locationA")}</span>
                 </div>
                 <div />
                 <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                   <div style={{ width: "12px", height: "12px", borderRadius: "50%", background: "#6366f1" }} />
-                  <span style={{ fontFamily: "var(--font-body)", fontSize: "11px", fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "1.5px" }}>Location B</span>
+                  <span style={{ fontFamily: "var(--font-body)", fontSize: "11px", fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "1.5px" }}>{t("compare.locationB")}</span>
                 </div>
               </div>
 
@@ -371,31 +376,31 @@ export default function ComparePage() {
                     <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
                   </svg>
                   <div style={{ flex: 1 }}>
-                    <strong style={{ fontFamily: "var(--font-body)", fontSize: "13px", color: "#991b1b", display: "block", marginBottom: "4px" }}>Comparison scan failed</strong>
+                    <strong style={{ fontFamily: "var(--font-body)", fontSize: "13px", color: "#991b1b", display: "block", marginBottom: "4px" }}>{t("compare.compareFailed")}</strong>
                     <span style={{ fontFamily: "var(--font-body)", fontSize: "13px", color: "#991b1b" }}>{compareError}</span>
                   </div>
                   <button onClick={runCompareAnalysis} style={{ flexShrink: 0, fontFamily: "var(--font-body)", fontSize: "12px", fontWeight: 700, color: "#991b1b", background: "rgba(220,38,38,.08)", border: "1px solid rgba(220,38,38,.2)", borderRadius: "8px", padding: "8px 14px", cursor: "pointer" }}>
-                    Retry
+                    {t("common.retry")}
                   </button>
                 </div>
               )}
 
               {hasCompareResults && !isComparing && results && compareResults && (
                 <div>
-                  {METRICS.map((metric) => (
+                  {METRICS_CONFIG.map((metric) => (
                     <MetricRow key={metric.key} metric={metric} valueA={results[metric.key]} valueB={compareResults[metric.key]} />
                   ))}
                   {/* District row */}
                   <div style={{ paddingTop: "22px", display: "grid", gridTemplateColumns: "1fr 120px 1fr", gap: "20px", alignItems: "center" }}>
                     <div style={{ textAlign: "right" }}>
-                      <div style={{ fontFamily: "var(--font-body)", fontSize: "10px", fontWeight: 600, color: "var(--color-text)", textTransform: "uppercase", letterSpacing: "1.2px", marginBottom: "5px" }}>District</div>
+                      <div style={{ fontFamily: "var(--font-body)", fontSize: "10px", fontWeight: 600, color: "var(--color-text)", textTransform: "uppercase", letterSpacing: "1.2px", marginBottom: "5px" }}>{t("compare.district")}</div>
                       <div style={{ fontFamily: "var(--font-body)", fontSize: "15px", fontWeight: 600, color: "var(--color-dark)" }}>{results.districtName ?? "—"}</div>
                     </div>
                     <div style={{ textAlign: "center" }}>
-                      <span style={{ fontFamily: "var(--font-body)", fontSize: "10px", fontWeight: 600, color: "var(--color-text)", textTransform: "uppercase", letterSpacing: "1px" }}>Area</span>
+                      <span style={{ fontFamily: "var(--font-body)", fontSize: "10px", fontWeight: 600, color: "var(--color-text)", textTransform: "uppercase", letterSpacing: "1px" }}>{t("compare.area")}</span>
                     </div>
                     <div>
-                      <div style={{ fontFamily: "var(--font-body)", fontSize: "10px", fontWeight: 600, color: "var(--color-text)", textTransform: "uppercase", letterSpacing: "1.2px", marginBottom: "5px" }}>District</div>
+                      <div style={{ fontFamily: "var(--font-body)", fontSize: "10px", fontWeight: 600, color: "var(--color-text)", textTransform: "uppercase", letterSpacing: "1.2px", marginBottom: "5px" }}>{t("compare.district")}</div>
                       <div style={{ fontFamily: "var(--font-body)", fontSize: "15px", fontWeight: 600, color: "var(--color-dark)" }}>{compareResults.districtName ?? "—"}</div>
                     </div>
                   </div>
@@ -405,7 +410,7 @@ export default function ComparePage() {
           )}
 
           <p style={{ fontFamily: "var(--font-body)", fontSize: "12px", color: "var(--color-text)", opacity: .55, paddingBottom: "12px" }}>
-            ⓘ Same business type and radius used for both scans.
+            ⓘ {t("compare.sameTypeNote")}
           </p>
         </div>
       )}

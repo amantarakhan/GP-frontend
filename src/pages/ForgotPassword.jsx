@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { sendPasswordResetEmail } from "firebase/auth";
 import { auth } from "../firebase";
+import { useTranslation } from "react-i18next";
 import logo      from "../assets/logo.png";
 import logo1     from "../assets/logo1.png";
 import globeHero from "../assets/logo2.png";
@@ -147,19 +148,20 @@ const Field = ({ label, icon, type="text", value, onChange, delay="0s" }) => {
 // ═══════════════════════════════════════════════════════════════════════════════
 // FIREBASE ERROR CODE → FRIENDLY MESSAGE
 // ═══════════════════════════════════════════════════════════════════════════════
-const mapAuthError = code => ({
-  "auth/user-not-found"         : "No account found with this email address.",
-  "auth/invalid-email"          : "Please enter a valid email address.",
-  "auth/too-many-requests"      : "Too many requests. Please wait a moment.",
-  "auth/network-request-failed" : "Network error — check your connection.",
-  "auth/missing-email"          : "Please enter your email address.",
-}[code] ?? "Something went wrong. Please try again.");
+const mapAuthError = (code, t) => ({
+  "auth/user-not-found"         : t("forgotPassword.errors.userNotFound"),
+  "auth/invalid-email"          : t("forgotPassword.errors.invalidEmail"),
+  "auth/too-many-requests"      : t("forgotPassword.errors.tooManyRequests"),
+  "auth/network-request-failed" : t("forgotPassword.errors.networkError"),
+  "auth/missing-email"          : t("forgotPassword.errors.missingEmail"),
+}[code] ?? t("forgotPassword.errors.default"));
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // MAIN
 // ═══════════════════════════════════════════════════════════════════════════════
 export default function ForgotPassword() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [email,         setEmail]         = useState("");
   const [loading,       setLoading]       = useState(false);
   const [sent,          setSent]          = useState(false);
@@ -185,8 +187,8 @@ export default function ForgotPassword() {
   }, [resendCooldown]);
 
   const validate = () => {
-    if (!email.trim())               return "Email address is required.";
-    if (!/\S+@\S+\.\S+/.test(email)) return "Please enter a valid email address.";
+    if (!email.trim())               return t("forgotPassword.validation.emailRequired");
+    if (!/\S+@\S+\.\S+/.test(email)) return t("forgotPassword.validation.invalidEmail");
     return "";
   };
 
@@ -202,7 +204,7 @@ export default function ForgotPassword() {
       setSent(true);
       setResendCooldown(60); // 60-second cooldown before resend
     } catch (err) {
-      setFirebaseError(mapAuthError(err.code));
+      setFirebaseError(mapAuthError(err.code, t));
     } finally {
       setLoading(false);
     }
@@ -217,7 +219,7 @@ export default function ForgotPassword() {
       await sendPasswordResetEmail(auth, email);
       setResendCooldown(60);
     } catch (err) {
-      setFirebaseError(mapAuthError(err.code));
+      setFirebaseError(mapAuthError(err.code, t));
     } finally {
       setLoading(false);
     }
@@ -276,7 +278,7 @@ export default function ForgotPassword() {
               boxShadow: backHov ? "0 4px 18px rgba(63,125,88,.32)" : "none",
             }}
           >
-            <ArrowLeft/> Back to Login
+            <ArrowLeft/> {t("forgotPassword.backToLogin")}
           </button>
         </nav>
 
@@ -373,7 +375,7 @@ export default function ForgotPassword() {
                   fontFamily:"var(--font-display)", fontSize:"1rem", fontWeight:700,
                   color:"var(--color-brand-dark)", letterSpacing:".04em",
                   textShadow:"0 0 12px rgba(63,125,88,.25)",
-                }}>Network</span>
+                }}>{t("common.network")}</span>
               </div>
 
               <h1 style={{
@@ -383,13 +385,13 @@ export default function ForgotPassword() {
                 margin:"0 0 11px", letterSpacing:"-.034em", lineHeight:1.08,
                 textShadow:"0 1px 24px rgba(255,255,255,.65)",
               }}>
-                {sent ? "Check your " : "Reset your "}
+                {sent ? t("forgotPassword.checkYour") + " " : t("forgotPassword.resetYour") + " "}
                 <span style={{
                   background:"linear-gradient(130deg,var(--color-brand) 0%,var(--color-brand-dark) 100%)",
                   WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent",
                   backgroundClip:"text",
                   filter:"drop-shadow(0 0 12px rgba(63,125,88,.35))",
-                }}>{sent ? "inbox." : "password."}</span>
+                }}>{sent ? t("forgotPassword.inbox") : t("forgotPassword.password")}</span>
               </h1>
               <p style={{
                 fontFamily:"var(--font-body)", fontSize:".9rem",
@@ -397,8 +399,8 @@ export default function ForgotPassword() {
                 textShadow:"0 1px 8px rgba(255,255,255,.5)",
               }}>
                 {sent
-                  ? `We sent a reset link to ${email}`
-                  : "Enter your email and we'll send you a secure reset link."
+                  ? t("forgotPassword.sentTo", { email })
+                  : t("forgotPassword.enterEmail")
                 }
               </p>
             </div>
@@ -426,12 +428,12 @@ export default function ForgotPassword() {
                     fontFamily:"var(--font-display)", fontSize:"1.1rem",
                     fontWeight:800, color:"var(--color-dark)",
                     margin:"0 0 6px", letterSpacing:"-.02em",
-                  }}>Check your inbox for the reset link!</p>
+                  }}>{t("forgotPassword.checkInbox")}</p>
                   <p style={{
                     fontFamily:"var(--font-body)", fontSize:".82rem",
                     color:"var(--color-text)", margin:0, opacity:.65, lineHeight:1.6,
                   }}>
-                    Didn't receive it? Check your spam folder<br/>or resend after the cooldown.
+                    {t("forgotPassword.didntReceive")}<br/>{t("forgotPassword.orResend")}
                   </p>
                 </div>
 
@@ -472,10 +474,10 @@ export default function ForgotPassword() {
                   }}
                 >
                   {loading
-                    ? "Sending…"
+                    ? t("forgotPassword.sending")
                     : resendCooldown > 0
-                      ? `Resend in ${resendCooldown}s`
-                      : "Resend Reset Link"
+                      ? t("forgotPassword.resendIn", { seconds: resendCooldown })
+                      : t("forgotPassword.resendLink")
                   }
                 </button>
 
@@ -492,7 +494,7 @@ export default function ForgotPassword() {
                   onMouseEnter={e=>{ e.currentTarget.style.opacity="1"; e.currentTarget.style.color="var(--color-brand)"; }}
                   onMouseLeave={e=>{ e.currentTarget.style.opacity=".7"; e.currentTarget.style.color="var(--color-brand-dark)"; }}
                 >
-                  <ArrowLeft/> Back to Login
+                  <ArrowLeft/> {t("forgotPassword.backToLogin")}
                 </button>
               </div>
 
@@ -515,7 +517,7 @@ export default function ForgotPassword() {
                 {/* Email field */}
                 <div style={{ marginBottom:"32px" }}>
                   <Field
-                    label="Email Address" icon={<Mail/>} type="email"
+                    label={t("forgotPassword.emailLabel")} icon={<Mail/>} type="email"
                     value={email} onChange={e => { setEmail(e.target.value); setEmailError(""); }}
                     delay=".08s"
                   />
@@ -557,15 +559,15 @@ export default function ForgotPassword() {
                         borderRadius:"50%", display:"inline-block",
                         animation:"spin .7s linear infinite",
                       }}/>
-                      Sending reset link…
+                      {t("forgotPassword.sendingLink")}
                     </>
-                  ) : <>Send Reset Link <ArrowRight/></>}
+                  ) : <>{t("forgotPassword.sendResetLink")} <ArrowRight/></>}
                 </button>
 
                 {/* Divider */}
                 <div style={{ display:"flex", alignItems:"center", gap:"14px", marginBottom:"18px" }}>
                   <div style={{ flex:1, height:1, background:"rgba(255,255,255,.22)" }}/>
-                  <span style={{ fontFamily:"var(--font-body)", fontSize:".66rem", letterSpacing:".08em", color:"var(--color-text)", opacity:.35 }}>OR</span>
+                  <span style={{ fontFamily:"var(--font-body)", fontSize:".66rem", letterSpacing:".08em", color:"var(--color-text)", opacity:.35 }}>{t("common.or")}</span>
                   <div style={{ flex:1, height:1, background:"rgba(255,255,255,.22)" }}/>
                 </div>
 
@@ -582,7 +584,7 @@ export default function ForgotPassword() {
                     onMouseEnter={e=>{ e.currentTarget.style.opacity="1"; e.currentTarget.style.color="var(--color-brand)"; }}
                     onMouseLeave={e=>{ e.currentTarget.style.opacity=".7"; e.currentTarget.style.color="var(--color-brand-dark)"; }}
                   >
-                    <ArrowLeft/> Log In
+                    <ArrowLeft/> {t("signup.logIn")}
                   </button>
                   <button onClick={() => navigate("/signup")} style={{
                     fontFamily:"var(--font-body)", fontSize:".82rem", fontWeight:600,
@@ -594,7 +596,7 @@ export default function ForgotPassword() {
                     onMouseEnter={e=>{ e.currentTarget.style.opacity="1"; e.currentTarget.style.color="var(--color-brand)"; }}
                     onMouseLeave={e=>{ e.currentTarget.style.opacity=".7"; e.currentTarget.style.color="var(--color-brand-dark)"; }}
                   >
-                    Create account
+                    {t("forgotPassword.createAccount")}
                   </button>
                 </div>
               </>
@@ -609,12 +611,12 @@ export default function ForgotPassword() {
           justifyContent:"space-between", flexWrap:"wrap", gap:"8px",
         }}>
           <p style={{ fontFamily:"var(--font-body)", fontSize:".72rem", color:"var(--color-text)", margin:0, opacity:.35 }}>
-            © {new Date().getFullYear()} Localyze · Graduation project · All data illustrative.
+            {t("common.footer", { year: new Date().getFullYear() })}
           </p>
           <div style={{ display:"flex", alignItems:"center", gap:"6px" }}>
             <div style={{ width:5, height:5, borderRadius:"50%", background:"var(--color-brand)", opacity:.55 }}/>
             <span style={{ fontFamily:"var(--font-body)", fontSize:".7rem", color:"var(--color-text)", opacity:.35 }}>
-              Built with precision
+              {t("common.builtWith")}
             </span>
           </div>
         </footer>

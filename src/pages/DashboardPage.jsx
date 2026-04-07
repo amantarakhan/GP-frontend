@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { apiService } from "../services/apiService";
 import { useAnalysis } from "../context/AnalysisContext";
 import { auth } from "../firebase";
@@ -43,6 +44,7 @@ function StatWidget({ label, value, sub, icon }) {
 
 export default function DashboardPage() {
   const navigate  = useNavigate();
+  const { t } = useTranslation();
   const { resetAnalysis } = useAnalysis();
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -109,18 +111,18 @@ export default function DashboardPage() {
           color: "var(--color-brand)", letterSpacing: "2.5px",
           textTransform: "uppercase", marginBottom: "6px",
         }}>
-          Overview
+          {t("dashboard.overview")}
         </div>
         <h1 style={{
           fontFamily: "var(--font-display)", fontSize: "30px", fontWeight: 700,
           color: "var(--color-dark)", letterSpacing: "-0.5px", marginBottom: "8px",
         }}>
-          Welcome back {userName || "Analyst"},
+          {t("dashboard.welcomeBack").replace("Analyst", userName || t("dashboard.welcomeBack").split(", ")[1] || "Analyst")}
         </h1>
         <p style={{ fontFamily: "var(--font-body)", fontSize: "14px", color: "var(--color-text)", lineHeight: 1.6 }}>
           {totalScans > 0
-            ? `You have ${totalScans} saved scan${totalScans > 1 ? "s" : ""}. Here's your activity summary.`
-            : "Run your first scan to start building your market intelligence dashboard."}
+            ? t("dashboard.hasScansSummary", { count: totalScans, s: totalScans > 1 ? "s" : "" })
+            : t("dashboard.noScansYet")}
         </p>
       </div>
 
@@ -131,19 +133,19 @@ export default function DashboardPage() {
         style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: "16px", marginBottom: "28px" }}
       >
         <StatWidget
-          label="Saved Reports" value={loading ? "—" : totalScans} sub="Total scans saved"
+          label={t("dashboard.savedReports")} value={loading ? "—" : totalScans} sub={t("dashboard.totalScansSaved")}
           icon={<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>}
         />
         <StatWidget
-          label="Avg. Feasibility" value={loading ? "—" : avgFeasibility != null ? `${avgFeasibility}%` : "—"} sub="Across all scans"
+          label={t("dashboard.avgFeasibility")} value={loading ? "—" : avgFeasibility != null ? `${avgFeasibility}%` : "—"} sub={t("dashboard.acrossAllScans")}
           icon={<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>}
         />
         <StatWidget
-          label="Competitors Found" value={loading ? "—" : totalCompetitors} sub="Total across all scans"
+          label={t("dashboard.competitorsFound")} value={loading ? "—" : totalCompetitors} sub={t("dashboard.totalAcrossScans")}
           icon={<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>}
         />
         <StatWidget
-          label="Avg. Saturation" value={loading ? "—" : avgSaturation != null ? `${avgSaturation}%` : "—"} sub="Market saturation"
+          label={t("dashboard.avgSaturation")} value={loading ? "—" : avgSaturation != null ? `${avgSaturation}%` : "—"} sub={t("dashboard.marketSaturation")}
           icon={<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>}
         />
       </div>
@@ -157,7 +159,7 @@ export default function DashboardPage() {
           <h2 style={{
             fontFamily: "var(--font-display)", fontSize: "20px",
             fontWeight: 700, color: "var(--color-dark)",
-          }}>Recent Reports</h2>
+          }}>{t("dashboard.recentReports")}</h2>
           {totalScans > 0 && (
             <button
               onClick={() => navigate("/reports")}
@@ -166,7 +168,7 @@ export default function DashboardPage() {
                 color: "var(--color-brand)", background: "none", border: "none", cursor: "pointer",
               }}
             >
-              View all →
+              {t("common.viewAll")}
             </button>
           )}
         </div>
@@ -183,13 +185,13 @@ export default function DashboardPage() {
               fontFamily: "var(--font-display)", fontSize: "18px",
               fontWeight: 700, color: "var(--color-dark)", marginBottom: "6px",
             }}>
-              No scans yet
+              {t("dashboard.noScansTitle")}
             </div>
             <div style={{
               fontFamily: "var(--font-body)", fontSize: "13px",
               color: "var(--color-text)", marginBottom: "20px",
             }}>
-              Run your first market scan to see results here
+              {t("dashboard.noScansDesc")}
             </div>
             <button
               data-tutorial="start-scan-btn"
@@ -201,7 +203,7 @@ export default function DashboardPage() {
                 fontFamily: "var(--font-body)", cursor: "pointer",
               }}
             >
-              Start First Scan →
+              {t("dashboard.startFirstScan")}
             </button>
           </div>
         )}
@@ -258,7 +260,7 @@ export default function DashboardPage() {
                     fontWeight: 700, color: "var(--color-dark)",
                   }}>{getCompetitors(r)}</div>
                   <div style={{ fontFamily: "var(--font-body)", fontSize: "10px", color: "var(--color-text)" }}>
-                    Competitors
+                    {t("dashboard.competitors")}
                   </div>
                 </div>
                 <div style={{ textAlign: "center" }}>
@@ -267,7 +269,7 @@ export default function DashboardPage() {
                     fontWeight: 700, color: "var(--color-dark)",
                   }}>{getSaturation(r)}%</div>
                   <div style={{ fontFamily: "var(--font-body)", fontSize: "10px", color: "var(--color-text)" }}>
-                    Saturation
+                    {t("dashboard.saturation")}
                   </div>
                 </div>
               </div>
@@ -296,10 +298,10 @@ export default function DashboardPage() {
             fontFamily: "var(--font-display)", fontSize: "22px",
             fontWeight: 700, color: "#F5F2E1", marginBottom: "6px",
           }}>
-            Ready to find your next location?
+            {t("dashboard.readyTitle")}
           </div>
           <div style={{ fontFamily: "var(--font-body)", fontSize: "13.5px", color: "rgba(245,242,225,.75)" }}>
-            Run a new scan to get instant market intelligence for any area.
+            {t("dashboard.readyDesc")}
           </div>
         </div>
         <button
@@ -312,7 +314,7 @@ export default function DashboardPage() {
             cursor: "pointer", flexShrink: 0, whiteSpace: "nowrap",
           }}
         >
-          Start New Scan →
+          {t("dashboard.startNewScan")}
         </button>
       </div>
     </div>

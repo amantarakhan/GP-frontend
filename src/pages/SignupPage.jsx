@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { createUserWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "../firebase";
 import { createUserProfile } from "../services/dbService";
+import { useTranslation } from "react-i18next";
 import logo      from "../assets/logo.png";
 import logo1     from "../assets/logo1.png";
 import globeHero from "../assets/logo2.png";
@@ -142,7 +143,7 @@ const Field = ({ label, icon, type="text", value, onChange, delay="0s", suffix }
   );
 };
 
-const getPw = pw => {
+const getPw = (pw, t) => {
   if (!pw) return null;
   let s = 0;
   if (pw.length >= 8)          s++;
@@ -150,11 +151,11 @@ const getPw = pw => {
   if (/[0-9]/.test(pw))        s++;
   if (/[^A-Za-z0-9]/.test(pw)) s++;
   return [
-    { s, label:"Too short",  color:"#e74c3c" },
-    { s, label:"Weak",       color:"#e67e22" },
-    { s, label:"Fair",       color:"#e6c329" },
-    { s, label:"Good",       color:"var(--color-brand)" },
-    { s, label:"Strong ✦",   color:"var(--color-brand-dark)" },
+    { s, label: t("signup.pwStrength.tooShort"), color: "#e74c3c" },
+    { s, label: t("signup.pwStrength.weak"), color: "#e67e22" },
+    { s, label: t("signup.pwStrength.fair"), color: "#e6c329" },
+    { s, label: t("signup.pwStrength.good"), color: "var(--color-brand)" },
+    { s, label: t("signup.pwStrength.strong"), color: "var(--color-brand-dark)" },
   ][s];
 };
 
@@ -163,17 +164,18 @@ const Err = ({ msg }) => msg
   : null;
 
 // ── Maps Firebase error codes to friendly messages shown inside the glass card ──
-const mapAuthError = code => ({
-  "auth/email-already-in-use"   : "An account with this email already exists.",
-  "auth/invalid-email"          : "Please enter a valid email address.",
-  "auth/weak-password"          : "Password must be at least 6 characters.",
-  "auth/network-request-failed" : "Network error — check your connection.",
-  "auth/too-many-requests"      : "Too many attempts. Please try again later.",
-  "auth/operation-not-allowed"  : "Email sign-up is not enabled. Contact support.",
-}[code] ?? "Something went wrong. Please try again.");
+const mapAuthError = (code, t) => ({
+  "auth/email-already-in-use"   : t("signup.errors.emailInUse"),
+  "auth/invalid-email"          : t("signup.errors.invalidEmail"),
+  "auth/weak-password"          : t("signup.errors.weakPassword"),
+  "auth/network-request-failed" : t("signup.errors.networkError"),
+  "auth/too-many-requests"      : t("signup.errors.tooManyRequests"),
+  "auth/operation-not-allowed"  : t("signup.errors.notAllowed"),
+}[code] ?? t("signup.errors.default"));
 
 export default function SignUp() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [name,          setName]          = useState("");
   const [email,         setEmail]         = useState("");
   const [password,      setPassword]      = useState("");
@@ -193,13 +195,13 @@ export default function SignUp() {
     return () => window.removeEventListener("scroll", fn);
   }, []);
 
-  const pw = getPw(password);
+  const pw = getPw(password, t);
 
   const validate = () => {
     const e = {};
-    if (!name.trim())                e.name     = "Full name required.";
-    if (!/\S+@\S+\.\S+/.test(email)) e.email    = "Valid email required.";
-    if (password.length < 8)         e.password = "Minimum 8 characters.";
+    if (!name.trim())                e.name     = t("signup.validation.nameRequired");
+    if (!/\S+@\S+\.\S+/.test(email)) e.email    = t("signup.validation.emailRequired");
+    if (password.length < 8)         e.password = t("signup.validation.minChars");
     return e;
   };
 
@@ -215,7 +217,7 @@ export default function SignUp() {
       setDone(true);
       setTimeout(() => navigate("/dashboard"), 1700);
     } catch (err) {
-      setFirebaseError(mapAuthError(err.code));
+      setFirebaseError(mapAuthError(err.code, t));
     } finally {
       setLoading(false);
     }
@@ -232,7 +234,7 @@ export default function SignUp() {
       setDone(true);
       setTimeout(() => navigate("/dashboard"), 1600);
     } catch (err) {
-      setFirebaseError(mapAuthError(err.code));
+      setFirebaseError(mapAuthError(err.code, t));
     } finally {
       setGoogleLoading(false);
     }
@@ -263,7 +265,7 @@ export default function SignUp() {
             <img src={logo} alt="Localyze" style={{ height:"100%", width:"auto", objectFit:"contain", display:"block" }}/>
           </div>
           <div style={{ display:"flex", alignItems:"center", gap:"12px" }}>
-            <span style={{ fontFamily:"var(--font-body)", fontSize:".83rem", color:"var(--color-text)", opacity:.7 }}>Already have an account?</span>
+            <span style={{ fontFamily:"var(--font-body)", fontSize:".83rem", color:"var(--color-text)", opacity:.7 }}>{t("signup.hasAccount")}</span>
             <button onClick={() => navigate("/login")}
               onMouseEnter={() => setLogHov(true)} onMouseLeave={() => setLogHov(false)}
               style={{
@@ -273,7 +275,7 @@ export default function SignUp() {
                 border:"1.5px solid rgba(63,125,88,.22)", padding:"8px 22px", borderRadius:"999px",
                 cursor:"pointer", transition:"all .22s ease",
                 boxShadow: logHov ? "0 4px 18px rgba(63,125,88,.32)" : "none",
-              }}>Log In</button>
+              }}>{t("signup.logIn")}</button>
           </div>
         </nav>
 
@@ -345,14 +347,14 @@ export default function SignUp() {
             <div style={{ textAlign:"center", marginBottom:"42px" }}>
               <div style={{ display:"inline-flex", alignItems:"center", gap:"8px", marginBottom:"18px" }}>
                 <img src={logo1} alt="Localyze" style={{ height:"22px", width:"auto", objectFit:"contain", display:"block", filter:"drop-shadow(0 0 8px rgba(63,125,88,.3))" }}/>
-                <span style={{ fontFamily:"var(--font-display)", fontSize:"1rem", fontWeight:700, color:"var(--color-brand-dark)", letterSpacing:".04em", textShadow:"0 0 12px rgba(63,125,88,.25)" }}>Network</span>
+                <span style={{ fontFamily:"var(--font-display)", fontSize:"1rem", fontWeight:700, color:"var(--color-brand-dark)", letterSpacing:".04em", textShadow:"0 0 12px rgba(63,125,88,.25)" }}>{t("common.network")}</span>
               </div>
               <h1 style={{ fontFamily:"var(--font-display)", fontSize:"clamp(2rem,4.5vw,2.4rem)", fontWeight:800, color:"var(--color-dark)", margin:"0 0 11px", letterSpacing:"-.034em", lineHeight:1.08, textShadow:"0 1px 24px rgba(255,255,255,.65)" }}>
-                Create your{"\u00A0"}
-                <span style={{ background:"linear-gradient(130deg,var(--color-brand) 0%,var(--color-brand-dark) 100%)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text", filter:"drop-shadow(0 0 12px rgba(63,125,88,.35))" }}>account.</span>
+                {t("signup.createYour")}{"\u00A0"}
+                <span style={{ background:"linear-gradient(130deg,var(--color-brand) 0%,var(--color-brand-dark) 100%)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text", filter:"drop-shadow(0 0 12px rgba(63,125,88,.35))" }}>{t("signup.account")}</span>
               </h1>
               <p style={{ fontFamily:"var(--font-body)", fontSize:".9rem", color:"var(--color-dark)", margin:0, lineHeight:1.65, opacity:.6, textShadow:"0 1px 8px rgba(255,255,255,.5)" }}>
-                Location intelligence, ready in minutes.
+                {t("signup.subtitle")}
               </p>
             </div>
 
@@ -365,8 +367,8 @@ export default function SignUp() {
                   </svg>
                 </div>
                 <div style={{ textAlign:"center" }}>
-                  <p style={{ fontFamily:"var(--font-display)", fontSize:"1.3rem", fontWeight:800, color:"var(--color-dark)", margin:"0 0 8px", letterSpacing:"-.02em" }}>You're in.</p>
-                  <p style={{ fontFamily:"var(--font-body)", fontSize:".85rem", color:"var(--color-text)", margin:0, opacity:.7 }}>Launching your dashboard…</p>
+                  <p style={{ fontFamily:"var(--font-display)", fontSize:"1.3rem", fontWeight:800, color:"var(--color-dark)", margin:"0 0 8px", letterSpacing:"-.02em" }}>{t("signup.youreIn")}</p>
+                  <p style={{ fontFamily:"var(--font-body)", fontSize:".85rem", color:"var(--color-text)", margin:0, opacity:.7 }}>{t("signup.launchingDashboard")}</p>
                 </div>
               </div>
             ) : (
@@ -387,15 +389,15 @@ export default function SignUp() {
                 {/* FIELDS */}
                 <div style={{ display:"flex", flexDirection:"column", gap:"26px", marginBottom:"36px" }}>
                   <div>
-                    <Field label="Full Name" icon={<User/>} value={name} onChange={e=>setName(e.target.value)} delay=".06s"/>
+                    <Field label={t("signup.fullName")} icon={<User/>} value={name} onChange={e=>setName(e.target.value)} delay=".06s"/>
                     <Err msg={errors.name}/>
                   </div>
                   <div>
-                    <Field label="Email Address" icon={<Mail/>} type="email" value={email} onChange={e=>setEmail(e.target.value)} delay=".14s"/>
+                    <Field label={t("signup.emailLabel")} icon={<Mail/>} type="email" value={email} onChange={e=>setEmail(e.target.value)} delay=".14s"/>
                     <Err msg={errors.email}/>
                   </div>
                   <div>
-                    <Field label="Password" icon={<Lock/>}
+                    <Field label={t("signup.passwordLabel")} icon={<Lock/>}
                       type={showPw ? "text" : "password"}
                       value={password} onChange={e=>setPassword(e.target.value)}
                       delay=".22s"
@@ -439,8 +441,8 @@ export default function SignUp() {
                     letterSpacing:".02em", marginBottom:"26px",
                   }}>
                   {loading
-                    ? <><span style={{ width:15, height:15, flexShrink:0, border:"2px solid rgba(255,255,255,.3)", borderTop:"2px solid #fff", borderRadius:"50%", display:"inline-block", animation:"spin .7s linear infinite" }}/>Creating your account…</>
-                    : <>Create Account <Arrow/></>}
+                    ? <><span style={{ width:15, height:15, flexShrink:0, border:"2px solid rgba(255,255,255,.3)", borderTop:"2px solid #fff", borderRadius:"50%", display:"inline-block", animation:"spin .7s linear infinite" }}/>{t("signup.creatingAccount")}</>
+                    : <>{t("signup.createAccount")} <Arrow/></>}
                 </button>
 
                 {/* Google sign-up */}
@@ -460,22 +462,22 @@ export default function SignUp() {
                     boxShadow: gBtnHov ? "0 6px 20px rgba(0,0,0,.08)" : "none",
                   }}>
                   {googleLoading
-                    ? <><span style={{ width:15, height:15, flexShrink:0, border:"2px solid rgba(63,125,88,.3)", borderTop:"2px solid var(--color-brand)", borderRadius:"50%", display:"inline-block", animation:"spin .7s linear infinite" }}/>Connecting…</>
-                    : <><GoogleIcon/>Sign up with Google</>}
+                    ? <><span style={{ width:15, height:15, flexShrink:0, border:"2px solid rgba(63,125,88,.3)", borderTop:"2px solid var(--color-brand)", borderRadius:"50%", display:"inline-block", animation:"spin .7s linear infinite" }}/>{t("signup.connecting")}</>
+                    : <><GoogleIcon/>{t("signup.signUpGoogle")}</>}
                 </button>
 
                 <div style={{ display:"flex", alignItems:"center", gap:"14px", marginBottom:"18px" }}>
                   <div style={{ flex:1, height:1, background:"rgba(255,255,255,.22)" }}/>
-                  <span style={{ fontFamily:"var(--font-body)", fontSize:".66rem", letterSpacing:".08em", color:"var(--color-text)", opacity:.35 }}>OR</span>
+                  <span style={{ fontFamily:"var(--font-body)", fontSize:".66rem", letterSpacing:".08em", color:"var(--color-text)", opacity:.35 }}>{t("common.or")}</span>
                   <div style={{ flex:1, height:1, background:"rgba(255,255,255,.22)" }}/>
                 </div>
 
                 <p style={{ fontFamily:"var(--font-body)", fontSize:".84rem", color:"var(--color-dark)", textAlign:"center", margin:0, opacity:.75 }}>
-                  Already have an account?{" "}
+                  {t("signup.hasAccount")}{" "}
                   <button onClick={()=>navigate("/login")} style={{ fontFamily:"var(--font-body)", fontSize:".84rem", fontWeight:700, color:"var(--color-brand-dark)", background:"none", border:"none", padding:0, cursor:"pointer", textDecoration:"underline", textDecorationColor:"rgba(63,125,88,.3)", transition:"color .18s, text-shadow .18s" }}
                     onMouseEnter={e=>{ e.currentTarget.style.color="var(--color-brand)"; e.currentTarget.style.textShadow="0 0 12px rgba(63,125,88,.3)"; }}
                     onMouseLeave={e=>{ e.currentTarget.style.color="var(--color-brand-dark)"; e.currentTarget.style.textShadow="none"; }}
-                  >Log In</button>
+                  >{t("signup.logIn")}</button>
                 </p>
               </>
             )}
@@ -484,11 +486,11 @@ export default function SignUp() {
 
         <footer style={{ padding:"16px 5%", borderTop:"1px solid rgba(230,211,173,.18)", display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:"8px" }}>
           <p style={{ fontFamily:"var(--font-body)", fontSize:".72rem", color:"var(--color-text)", margin:0, opacity:.35 }}>
-            © {new Date().getFullYear()} Localyze · Graduation project · All data illustrative.
+            {t("common.footer", { year: new Date().getFullYear() })}
           </p>
           <div style={{ display:"flex", alignItems:"center", gap:"6px" }}>
             <div style={{ width:5, height:5, borderRadius:"50%", background:"var(--color-brand)", opacity:.55 }}/>
-            <span style={{ fontFamily:"var(--font-body)", fontSize:".7rem", color:"var(--color-text)", opacity:.35 }}>Built with precision</span>
+            <span style={{ fontFamily:"var(--font-body)", fontSize:".7rem", color:"var(--color-text)", opacity:.35 }}>{t("common.builtWith")}</span>
           </div>
         </footer>
       </div>

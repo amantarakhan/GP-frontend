@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "../firebase";
 import { createUserProfile } from "../services/dbService";
+import { useTranslation } from "react-i18next";
 import logo      from "../assets/logo.png";
 import logo1     from "../assets/logo1.png";
 import globeHero from "../assets/logo2.png";
@@ -130,22 +131,23 @@ const Err = ({ msg }) => msg
   : null;
 
 // ── Maps Firebase error codes → friendly messages shown inside the glass card ──
-const mapAuthError = code => ({
-  "auth/user-not-found"         : "No account found with this email.",
-  "auth/wrong-password"         : "Incorrect password. Please try again.",
-  "auth/invalid-email"          : "Please enter a valid email address.",
-  "auth/invalid-credential"     : "Incorrect email or password.",
-  "auth/user-disabled"          : "This account has been disabled.",
-  "auth/too-many-requests"      : "Too many attempts. Please try again later.",
-  "auth/network-request-failed" : "Network error — check your connection.",
-  "auth/popup-closed-by-user"   : "Google sign-in was cancelled.",
-  "auth/popup-blocked"          : "Pop-up blocked. Allow pop-ups and try again.",
-  "auth/cancelled-popup-request": "Only one sign-in window at a time.",
-  "auth/account-exists-with-different-credential": "Account exists with a different sign-in method.",
-}[code] ?? "Sign-in failed. Please try again.");
+const mapAuthError = (code, t) => ({
+  "auth/user-not-found"         : t("login.errors.userNotFound"),
+  "auth/wrong-password"         : t("login.errors.wrongPassword"),
+  "auth/invalid-email"          : t("login.errors.invalidEmail"),
+  "auth/invalid-credential"     : t("login.errors.invalidCredential"),
+  "auth/user-disabled"          : t("login.errors.userDisabled"),
+  "auth/too-many-requests"      : t("login.errors.tooManyRequests"),
+  "auth/network-request-failed" : t("login.errors.networkError"),
+  "auth/popup-closed-by-user"   : t("login.errors.popupClosed"),
+  "auth/popup-blocked"          : t("login.errors.popupBlocked"),
+  "auth/cancelled-popup-request": t("login.errors.cancelledPopup"),
+  "auth/account-exists-with-different-credential": t("login.errors.accountExists"),
+}[code] ?? t("login.errors.default"));
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [email,          setEmail]          = useState("");
   const [password,       setPassword]       = useState("");
   const [showPw,         setShowPw]         = useState(false);
@@ -167,8 +169,8 @@ export default function LoginPage() {
 
   const validate = () => {
     const e = {};
-    if (!/\S+@\S+\.\S+/.test(email)) e.email    = "Valid email required.";
-    if (password.length < 6)          e.password = "Password required.";
+    if (!/\S+@\S+\.\S+/.test(email)) e.email    = t("login.validation.emailRequired");
+    if (password.length < 6)          e.password = t("login.validation.passwordRequired");
     return e;
   };
 
@@ -184,7 +186,7 @@ export default function LoginPage() {
       setDone(true);
       setTimeout(() => navigate("/dashboard"), 1600);
     } catch (err) {
-      setFirebaseError(mapAuthError(err.code));
+      setFirebaseError(mapAuthError(err.code, t));
     } finally {
       setLoading(false);
     }
@@ -200,7 +202,7 @@ export default function LoginPage() {
       setDone(true);
       setTimeout(() => navigate("/dashboard"), 1600);
     } catch (err) {
-      setFirebaseError(mapAuthError(err.code));
+      setFirebaseError(mapAuthError(err.code, t));
     } finally {
       setGoogleLoading(false);
     }
@@ -231,7 +233,7 @@ export default function LoginPage() {
             <img src={logo} alt="Localyze" style={{ height:"100%", width:"auto", objectFit:"contain", display:"block" }}/>
           </div>
           <div style={{ display:"flex", alignItems:"center", gap:"12px" }}>
-            <span style={{ fontFamily:"var(--font-body)", fontSize:".83rem", color:"var(--color-text)", opacity:.7 }}>Don't have an account?</span>
+            <span style={{ fontFamily:"var(--font-body)", fontSize:".83rem", color:"var(--color-text)", opacity:.7 }}>{t("login.noAccount")}</span>
             <button onClick={() => navigate("/signup")}
               onMouseEnter={() => setSignHov(true)} onMouseLeave={() => setSignHov(false)}
               style={{
@@ -241,7 +243,7 @@ export default function LoginPage() {
                 border:"1.5px solid rgba(63,125,88,.22)", padding:"8px 22px", borderRadius:"999px",
                 cursor:"pointer", transition:"all .22s ease",
                 boxShadow: signHov ? "0 4px 18px rgba(63,125,88,.32)" : "none",
-              }}>Sign Up</button>
+              }}>{t("login.signUp")}</button>
           </div>
         </nav>
 
@@ -314,14 +316,14 @@ export default function LoginPage() {
             <div style={{ textAlign:"center", marginBottom:"42px" }}>
               <div style={{ display:"inline-flex", alignItems:"center", gap:"8px", marginBottom:"18px" }}>
                 <img src={logo1} alt="Localyze" style={{ height:"22px", width:"auto", objectFit:"contain", display:"block", filter:"drop-shadow(0 0 8px rgba(63,125,88,.3))" }}/>
-                <span style={{ fontFamily:"var(--font-display)", fontSize:"1rem", fontWeight:700, color:"var(--color-brand-dark)", letterSpacing:".04em", textShadow:"0 0 12px rgba(63,125,88,.25)" }}>Network</span>
+                <span style={{ fontFamily:"var(--font-display)", fontSize:"1rem", fontWeight:700, color:"var(--color-brand-dark)", letterSpacing:".04em", textShadow:"0 0 12px rgba(63,125,88,.25)" }}>{t("common.network")}</span>
               </div>
               <h1 style={{ fontFamily:"var(--font-display)", fontSize:"clamp(2rem,4.5vw,2.4rem)", fontWeight:800, color:"var(--color-dark)", margin:"0 0 11px", letterSpacing:"-.034em", lineHeight:1.08, textShadow:"0 1px 24px rgba(255,255,255,.65)" }}>
-                Welcome{"\u00A0"}
-                <span style={{ background:"linear-gradient(130deg,var(--color-brand) 0%,var(--color-brand-dark) 100%)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text", filter:"drop-shadow(0 0 12px rgba(63,125,88,.35))" }}>back.</span>
+                {t("login.welcomeBack")}{"\u00A0"}
+                <span style={{ background:"linear-gradient(130deg,var(--color-brand) 0%,var(--color-brand-dark) 100%)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text", filter:"drop-shadow(0 0 12px rgba(63,125,88,.35))" }}>{t("login.back")}</span>
               </h1>
               <p style={{ fontFamily:"var(--font-body)", fontSize:".9rem", color:"var(--color-dark)", margin:0, lineHeight:1.65, opacity:.6, textShadow:"0 1px 8px rgba(255,255,255,.5)" }}>
-                Access your location intelligence portal.
+                {t("login.portalAccess")}
               </p>
             </div>
 
@@ -334,8 +336,8 @@ export default function LoginPage() {
                   </svg>
                 </div>
                 <div style={{ textAlign:"center" }}>
-                  <p style={{ fontFamily:"var(--font-display)", fontSize:"1.3rem", fontWeight:800, color:"var(--color-dark)", margin:"0 0 8px", letterSpacing:"-.02em" }}>Welcome back.</p>
-                  <p style={{ fontFamily:"var(--font-body)", fontSize:".85rem", color:"var(--color-text)", margin:0, opacity:.7 }}>Loading your dashboard…</p>
+                  <p style={{ fontFamily:"var(--font-display)", fontSize:"1.3rem", fontWeight:800, color:"var(--color-dark)", margin:"0 0 8px", letterSpacing:"-.02em" }}>{t("login.welcomeBackSuccess")}</p>
+                  <p style={{ fontFamily:"var(--font-body)", fontSize:".85rem", color:"var(--color-text)", margin:0, opacity:.7 }}>{t("login.loadingDashboard")}</p>
                 </div>
               </div>
             ) : (
@@ -356,11 +358,11 @@ export default function LoginPage() {
                 {/* FIELDS */}
                 <div style={{ display:"flex", flexDirection:"column", gap:"26px", marginBottom:"16px" }}>
                   <div>
-                    <Field label="Email Address" icon={<Mail/>} type="email" value={email} onChange={e=>setEmail(e.target.value)} delay=".06s"/>
+                    <Field label={t("login.emailLabel")} icon={<Mail/>} type="email" value={email} onChange={e=>setEmail(e.target.value)} delay=".06s"/>
                     <Err msg={errors.email}/>
                   </div>
                   <div>
-                    <Field label="Password" icon={<Lock/>}
+                    <Field label={t("login.passwordLabel")} icon={<Lock/>}
                       type={showPw ? "text" : "password"}
                       value={password} onChange={e=>setPassword(e.target.value)}
                       delay=".14s"
@@ -382,7 +384,7 @@ export default function LoginPage() {
                     style={{ fontFamily:"var(--font-body)", fontSize:".78rem", fontWeight:600, color:"var(--color-brand-dark)", background:"none", border:"none", padding:0, cursor:"pointer", opacity:.75, textDecoration:"underline", textDecorationColor:"rgba(63,125,88,.25)", transition:"opacity .18s, color .18s" }}
                     onMouseEnter={e=>{ e.currentTarget.style.opacity="1"; e.currentTarget.style.color="var(--color-brand)"; }}
                     onMouseLeave={e=>{ e.currentTarget.style.opacity=".75"; e.currentTarget.style.color="var(--color-brand-dark)"; }}
-                  >Forgot password?</button>
+                  >{t("login.forgotPassword")}</button>
                 </div>
 
                 {/* LOG IN PILL */}
@@ -401,8 +403,8 @@ export default function LoginPage() {
                     letterSpacing:".02em", marginBottom:"16px",
                   }}>
                   {loading
-                    ? <><span style={{ width:15, height:15, flexShrink:0, border:"2px solid rgba(255,255,255,.3)", borderTop:"2px solid #fff", borderRadius:"50%", display:"inline-block", animation:"spin .7s linear infinite" }}/>Signing you in…</>
-                    : <>Log In <Arrow/></>}
+                    ? <><span style={{ width:15, height:15, flexShrink:0, border:"2px solid rgba(255,255,255,.3)", borderTop:"2px solid #fff", borderRadius:"50%", display:"inline-block", animation:"spin .7s linear infinite" }}/>{t("login.signingIn")}</>
+                    : <>{t("login.logIn")} <Arrow/></>}
                 </button>
 
                 {/* GOOGLE SIGN-IN */}
@@ -422,24 +424,24 @@ export default function LoginPage() {
                     boxShadow: gBtnHov ? "0 6px 20px rgba(0,0,0,.08)" : "none",
                   }}>
                   {googleLoading
-                    ? <><span style={{ width:15, height:15, flexShrink:0, border:"2px solid rgba(63,125,88,.3)", borderTop:"2px solid var(--color-brand)", borderRadius:"50%", display:"inline-block", animation:"spin .7s linear infinite" }}/>Connecting…</>
-                    : <><GoogleIcon/>Continue with Google</>}
+                    ? <><span style={{ width:15, height:15, flexShrink:0, border:"2px solid rgba(63,125,88,.3)", borderTop:"2px solid var(--color-brand)", borderRadius:"50%", display:"inline-block", animation:"spin .7s linear infinite" }}/>{t("login.connecting")}</>
+                    : <><GoogleIcon/>{t("login.continueGoogle")}</>}
                 </button>
 
                 {/* Divider */}
                 <div style={{ display:"flex", alignItems:"center", gap:"14px", marginBottom:"18px" }}>
                   <div style={{ flex:1, height:1, background:"rgba(255,255,255,.22)" }}/>
-                  <span style={{ fontFamily:"var(--font-body)", fontSize:".66rem", letterSpacing:".08em", color:"var(--color-text)", opacity:.35 }}>OR</span>
+                  <span style={{ fontFamily:"var(--font-body)", fontSize:".66rem", letterSpacing:".08em", color:"var(--color-text)", opacity:.35 }}>{t("common.or")}</span>
                   <div style={{ flex:1, height:1, background:"rgba(255,255,255,.22)" }}/>
                 </div>
 
                 {/* Sign Up link */}
                 <p style={{ fontFamily:"var(--font-body)", fontSize:".84rem", color:"var(--color-dark)", textAlign:"center", margin:0, opacity:.75 }}>
-                  Don't have an account?{" "}
+                  {t("login.noAccount")}{" "}
                   <button onClick={()=>navigate("/signup")} style={{ fontFamily:"var(--font-body)", fontSize:".84rem", fontWeight:700, color:"var(--color-brand-dark)", background:"none", border:"none", padding:0, cursor:"pointer", textDecoration:"underline", textDecorationColor:"rgba(63,125,88,.3)", transition:"color .18s, text-shadow .18s" }}
                     onMouseEnter={e=>{ e.currentTarget.style.color="var(--color-brand)"; e.currentTarget.style.textShadow="0 0 12px rgba(63,125,88,.3)"; }}
                     onMouseLeave={e=>{ e.currentTarget.style.color="var(--color-brand-dark)"; e.currentTarget.style.textShadow="none"; }}
-                  >Sign Up</button>
+                  >{t("login.signUp")}</button>
                 </p>
               </>
             )}
@@ -448,11 +450,11 @@ export default function LoginPage() {
 
         <footer style={{ padding:"16px 5%", borderTop:"1px solid rgba(230,211,173,.18)", display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:"8px" }}>
           <p style={{ fontFamily:"var(--font-body)", fontSize:".72rem", color:"var(--color-text)", margin:0, opacity:.35 }}>
-            © {new Date().getFullYear()} Localyze · Graduation project · All data illustrative.
+            {t("common.footer", { year: new Date().getFullYear() })}
           </p>
           <div style={{ display:"flex", alignItems:"center", gap:"6px" }}>
             <div style={{ width:5, height:5, borderRadius:"50%", background:"var(--color-brand)", opacity:.55 }}/>
-            <span style={{ fontFamily:"var(--font-body)", fontSize:".7rem", color:"var(--color-text)", opacity:.35 }}>Built with precision</span>
+            <span style={{ fontFamily:"var(--font-body)", fontSize:".7rem", color:"var(--color-text)", opacity:.35 }}>{t("common.builtWith")}</span>
           </div>
         </footer>
       </div>

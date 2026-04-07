@@ -11,6 +11,7 @@
 
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAnalysis } from "../../context/AnalysisContext";
 import { auth } from "../../firebase";
 import { saveReport as firestoreSaveReport } from "../../services/dbService";
@@ -25,12 +26,18 @@ const PAGE_TITLES = {
 export default function TopBar() {
   const { pathname } = useLocation();
   const navigate     = useNavigate();
+  const { t } = useTranslation();
   const { hasResults, results, pin, businessType, radius, aiAnalysis } = useAnalysis();
 
   // ── Save button states ────────────────────────────────────────────────────
   const [saveState, setSaveState] = useState("idle"); // "idle" | "saving" | "saved" | "error"
 
-  const title = PAGE_TITLES[pathname] ?? "Localyze";
+  const PAGE_TITLES_I18N = {
+    "/dashboard": t("nav.dashboard"),
+    "/scan":      t("nav.newScan"),
+    "/reports":   t("nav.savedReports"),
+  };
+  const title = PAGE_TITLES_I18N[pathname] ?? "Localyze";
 
   // ── Build the report payload (matches both local and Firestore schemas) ────
   const buildReportPayload = () => {
@@ -85,10 +92,10 @@ export default function TopBar() {
 
   // ── Derived button appearance ─────────────────────────────────────────────
   const saveLabel = {
-    idle:   "Save Report",
-    saving: "Saving…",
-    saved:  "Saved!",
-    error:  "Error — retry",
+    idle:   t("topbar.saveReport"),
+    saving: t("topbar.saving"),
+    saved:  t("topbar.saved"),
+    error:  t("topbar.errorRetry"),
   }[saveState];
 
   const saveBg = {
@@ -151,7 +158,7 @@ export default function TopBar() {
             style={{ fontFamily: "var(--font-body)", fontSize: "12px", color: "var(--color-text)", cursor: "pointer" }}
             onClick={() => navigate("/dashboard")}
           >
-            Home
+            {t("common.home")}
           </span>
           <span style={{ color: "var(--color-accent)", fontSize: "14px" }}>/</span>
           <span style={{ fontFamily: "var(--font-body)", fontSize: "12px", fontWeight: 600, color: "var(--color-dark)" }}>
@@ -177,7 +184,7 @@ export default function TopBar() {
                 animation: "pulse-dot 1.8s ease infinite", display: "inline-block",
               }} />
               <span style={{ fontFamily: "var(--font-body)", fontSize: "11px", fontWeight: 700, color: "var(--color-brand)" }}>
-                Analysis Ready
+                {t("topbar.analysisReady")}
               </span>
             </div>
           )}
@@ -198,7 +205,7 @@ export default function TopBar() {
               <polyline points="7,10 12,15 17,10"/>
               <line x1="12" y1="15" x2="12" y2="3"/>
             </svg>
-            Export
+            {t("common.export")}
           </button>
 
           {/* Save Report — Firestore-powered */}

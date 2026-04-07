@@ -9,6 +9,8 @@ import {
   EmailAuthProvider,
   signOut,
 } from "firebase/auth";
+import { useTranslation } from "react-i18next";
+import i18n from "../i18n";
 import { apiService } from "../services/apiService";
 import { getUserProfile, updateUserProfile } from "../services/dbService";
 
@@ -118,6 +120,7 @@ function EditableField({ value, placeholder, type = "text", onSave, saving }) {
   const [editing, setEditing] = useState(false);
   const [val,     setVal]     = useState(value ?? "");
   const inputRef = useRef(null);
+  const { t } = useTranslation();
 
   useEffect(() => { setVal(value ?? ""); }, [value]);
   useEffect(() => { if (editing) inputRef.current?.focus(); }, [editing]);
@@ -145,7 +148,7 @@ function EditableField({ value, placeholder, type = "text", onSave, saving }) {
             borderRadius: "7px", padding: "4px 10px", cursor: "pointer",
           }}
         >
-          Edit
+          {t("common.edit")}
         </button>
       </div>
     );
@@ -177,7 +180,7 @@ function EditableField({ value, placeholder, type = "text", onSave, saving }) {
           border: "none", borderRadius: "7px", padding: "6px 12px", cursor: "pointer",
         }}
       >
-        {saving ? "…" : "Save"}
+        {saving ? "…" : t("common.save")}
       </button>
       <button
         onClick={() => { setEditing(false); setVal(value ?? ""); }}
@@ -188,7 +191,7 @@ function EditableField({ value, placeholder, type = "text", onSave, saving }) {
           padding: "6px 10px", cursor: "pointer",
         }}
       >
-        Cancel
+        {t("common.cancel")}
       </button>
     </div>
   );
@@ -226,10 +229,9 @@ export default function SettingsPage() {
     JSON.parse(localStorage.getItem("notif_report_saved") ?? "true")
   );
 
-  // ── Theme ──────────────────────────────────────────────────────────────────
-  const [theme, setTheme] = useState(() =>
-    localStorage.getItem("localyze_theme") ?? "light"
-  );
+  // ── Language ────────────────────────────────────────────────────────────────
+  const { t, i18n: i18nInstance } = useTranslation();
+  const currentLang = (i18nInstance.language || "en").split("-")[0];
 
   // ── Data ──────────────────────────────────────────────────────────────────
   const [reportCount,   setReportCount]   = useState(0);
@@ -252,11 +254,9 @@ export default function SettingsPage() {
   useEffect(() => { localStorage.setItem("notif_scan_complete", JSON.stringify(notifScanComplete)); }, [notifScanComplete]);
   useEffect(() => { localStorage.setItem("notif_report_saved",  JSON.stringify(notifReportSaved));  }, [notifReportSaved]);
 
-  // ── Theme apply ────────────────────────────────────────────────────────────
-  useEffect(() => {
-    localStorage.setItem("localyze_theme", theme);
-    document.documentElement.setAttribute("data-theme", theme);
-  }, [theme]);
+  const switchLanguage = (lng) => {
+    i18n.changeLanguage(lng);   // i18n.js already persists to localStorage & sets dir
+  };
 
   // ── Helpers ────────────────────────────────────────────────────────────────
   const showSaveMsg = (msg, isError = false) => {
@@ -278,7 +278,7 @@ export default function SettingsPage() {
       await updateProfile(auth.currentUser, { displayName: val });
       await updateUserProfile(auth.currentUser.uid, { displayName: val });
       setDisplayName(val);
-      showSaveMsg("Display name updated!");
+      showSaveMsg(t("settings.displayNameUpdated"));
     } catch (e) {
       showSaveMsg(e.message, true);
     } finally { setSaving(false); }
@@ -290,7 +290,7 @@ export default function SettingsPage() {
       await updateEmail(auth.currentUser, val);
       await updateUserProfile(auth.currentUser.uid, { email: val });
       setEmail(val);
-      showSaveMsg("Email updated!");
+      showSaveMsg(t("settings.emailUpdated"));
     } catch (e) {
       showSaveMsg(e.message, true);
     } finally { setSaving(false); }
@@ -298,8 +298,8 @@ export default function SettingsPage() {
 
   const handleChangePassword = async () => {
     setPwError(null);
-    if (newPw !== confirmPw) { setPwError("Passwords don't match."); return; }
-    if (newPw.length < 6)    { setPwError("Password must be at least 6 characters."); return; }
+    if (newPw !== confirmPw) { setPwError(t("settings.passwordsNoMatch")); return; }
+    if (newPw.length < 6)    { setPwError(t("settings.passwordMinLength")); return; }
     setPwSaving(true);
     try {
       const credential = EmailAuthProvider.credential(auth.currentUser.email, currentPw);
@@ -309,7 +309,7 @@ export default function SettingsPage() {
       setCurrentPw(""); setNewPw(""); setConfirmPw("");
       setTimeout(() => setPwSuccess(false), 3000);
     } catch (e) {
-      setPwError(e.code === "auth/wrong-password" ? "Current password is incorrect." : e.message);
+      setPwError(e.code === "auth/wrong-password" ? t("settings.wrongPassword") : e.message);
     } finally { setPwSaving(false); }
   };
 
@@ -345,13 +345,13 @@ export default function SettingsPage() {
       {/* ── Page header ── */}
       <div className="fade-in" style={{ marginBottom: "28px" }}>
         <div style={{ fontFamily: "var(--font-body)", fontSize: "9.5px", fontWeight: 600, color: "var(--color-brand)", letterSpacing: "2.5px", textTransform: "uppercase", marginBottom: "6px" }}>
-          Preferences
+          {t("settings.preferences")}
         </div>
         <h1 style={{ fontFamily: "var(--font-display)", fontSize: "30px", fontWeight: 700, color: "var(--color-dark)", letterSpacing: "-0.5px", marginBottom: "6px" }}>
-          Settings
+          {t("settings.title")}
         </h1>
         <p style={{ fontFamily: "var(--font-body)", fontSize: "13.5px", color: "var(--color-text)" }}>
-          Manage your account, notifications, and preferences.
+          {t("settings.subtitle")}
         </p>
       </div>
 
@@ -375,7 +375,7 @@ export default function SettingsPage() {
         {/* ══ 1. PROFILE ══════════════════════════════════════════════════════ */}
         <div className="fade-in fade-in-1">
           <SectionCard
-            title="Profile"
+            title={t("settings.profile")}
             icon={<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="var(--color-brand)" strokeWidth={2}><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>}
           >
             {/* Avatar */}
@@ -413,7 +413,7 @@ export default function SettingsPage() {
               </div>
               <div>
                 <div style={{ fontFamily: "var(--font-body)", fontSize: "15px", fontWeight: 700, color: "var(--color-dark)", marginBottom: "3px" }}>
-                  {displayName || "No name set"}
+                  {displayName || t("settings.noNameSet")}
                 </div>
                 <div style={{ fontFamily: "var(--font-body)", fontSize: "12px", color: "var(--color-text)", marginBottom: "10px" }}>
                   {email}
@@ -427,29 +427,29 @@ export default function SettingsPage() {
                     borderRadius: "8px", padding: "5px 12px", cursor: "pointer",
                   }}
                 >
-                  Change Photo
+                  {t("settings.changePhoto")}
                 </button>
               </div>
             </div>
 
             {/* Editable fields */}
-            <FieldRow label="Display Name" hint="Your name shown across the app">
-              <EditableField value={displayName} placeholder="Enter your name" onSave={handleSaveName} saving={saving} />
+            <FieldRow label={t("settings.displayName")} hint={t("settings.displayNameHint")}>
+              <EditableField value={displayName} placeholder={t("settings.enterName")} onSave={handleSaveName} saving={saving} />
             </FieldRow>
-            <FieldRow label="Email Address" hint="Used for login and notifications">
-              <EditableField value={email} placeholder="Enter email" type="email" onSave={handleSaveEmail} saving={saving} />
+            <FieldRow label={t("settings.emailAddress")} hint={t("settings.emailHint")}>
+              <EditableField value={email} placeholder={t("settings.enterEmail")} type="email" onSave={handleSaveEmail} saving={saving} />
             </FieldRow>
 
             {/* Change password */}
             <div style={{ marginTop: "20px" }}>
               <div style={{ fontFamily: "var(--font-body)", fontSize: "13px", fontWeight: 600, color: "var(--color-dark)", marginBottom: "14px" }}>
-                Change Password
+                {t("settings.changePassword")}
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                 {[
-                  { label: "Current password", val: currentPw, set: setCurrentPw },
-                  { label: "New password",      val: newPw,     set: setNewPw     },
-                  { label: "Confirm new password", val: confirmPw, set: setConfirmPw },
+                  { label: t("settings.currentPassword"), val: currentPw, set: setCurrentPw },
+                  { label: t("settings.newPassword"),      val: newPw,     set: setNewPw     },
+                  { label: t("settings.confirmPassword"), val: confirmPw, set: setConfirmPw },
                 ].map((f) => (
                   <input
                     key={f.label}
@@ -475,7 +475,7 @@ export default function SettingsPage() {
                 )}
                 {pwSuccess && (
                   <div style={{ fontFamily: "var(--font-body)", fontSize: "12px", color: "var(--color-brand)", padding: "8px 12px", background: "var(--color-success)", borderRadius: "8px" }}>
-                    ✓ Password updated successfully!
+                    {t("settings.passwordUpdated")}
                   </div>
                 )}
                 <button
@@ -490,7 +490,7 @@ export default function SettingsPage() {
                     padding: "10px 20px", cursor: "pointer", transition: "all .2s",
                   }}
                 >
-                  {pwSaving ? "Updating…" : "Update Password"}
+                  {pwSaving ? t("settings.updating") : t("settings.updatePassword")}
                 </button>
               </div>
             </div>
@@ -500,49 +500,50 @@ export default function SettingsPage() {
         {/* ══ 2. NOTIFICATIONS ════════════════════════════════════════════════ */}
         <div className="fade-in fade-in-2">
           <SectionCard
-            title="Notifications"
+            title={t("settings.notifications")}
             icon={<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="var(--color-brand)" strokeWidth={2}><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>}
           >
             <FieldRow
-              label="Scan Complete"
-              hint="Get notified when a location scan finishes"
+              label={t("settings.scanComplete")}
+              hint={t("settings.scanCompleteHint")}
             >
               <Toggle checked={notifScanComplete} onChange={setNotifScanComplete} />
             </FieldRow>
             <FieldRow
-              label="Report Saved"
-              hint="Get notified when a report is saved to your archive"
+              label={t("settings.reportSaved")}
+              hint={t("settings.reportSavedHint")}
             >
               <Toggle checked={notifReportSaved} onChange={setNotifReportSaved} />
             </FieldRow>
           </SectionCard>
         </div>
 
-        {/* ══ 3. APPEARANCE ═══════════════════════════════════════════════════ */}
+        {/* ══ 3. LANGUAGE ═════════════════════════════════════════════════════ */}
         <div className="fade-in fade-in-3">
           <SectionCard
-            title="Appearance"
-            icon={<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="var(--color-brand)" strokeWidth={2}><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>}
+            title={t("settings.language")}
+            icon={<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="var(--color-brand)" strokeWidth={2}><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>}
           >
-            <FieldRow label="Theme" hint="Choose how Localyze looks for you">
+            <FieldRow label={t("settings.language")} hint={t("settings.languageHint")}>
               <div style={{ display: "flex", gap: "8px" }}>
                 {[
-                  { value: "light", label: "☀️ Light" },
-                  { value: "dark",  label: "🌙 Dark"  },
-                ].map((t) => (
+                  { value: "en", label: "English" },
+                  { value: "ar", label: "العربية" },
+                ].map((lng) => (
                   <button
-                    key={t.value}
-                    onClick={() => setTheme(t.value)}
+                    key={lng.value}
+                    onClick={() => switchLanguage(lng.value)}
                     style={{
-                      fontFamily: "var(--font-body)", fontSize: "12px", fontWeight: 600,
+                      fontFamily: lng.value === "ar" ? "'Noto Sans Arabic', var(--font-body)" : "var(--font-body)",
+                      fontSize: "12px", fontWeight: 600,
                       padding: "7px 16px", borderRadius: "var(--radius-md)",
-                      border: theme === t.value ? "1.5px solid var(--color-brand)" : "1.5px solid var(--color-accent)",
-                      background: theme === t.value ? "rgba(63,125,88,.1)" : "transparent",
-                      color: theme === t.value ? "var(--color-brand)" : "var(--color-text)",
+                      border: currentLang === lng.value ? "1.5px solid var(--color-brand)" : "1.5px solid var(--color-accent)",
+                      background: currentLang === lng.value ? "rgba(63,125,88,.1)" : "transparent",
+                      color: currentLang === lng.value ? "var(--color-brand)" : "var(--color-text)",
                       cursor: "pointer", transition: "all .18s",
                     }}
                   >
-                    {t.label}
+                    {lng.label}
                   </button>
                 ))}
               </div>
@@ -553,12 +554,12 @@ export default function SettingsPage() {
         {/* ══ 4. DATA & PRIVACY ═══════════════════════════════════════════════ */}
         <div className="fade-in fade-in-4">
           <SectionCard
-            title="Data & Privacy"
+            title={t("settings.dataPrivacy")}
             icon={<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="var(--color-brand)" strokeWidth={2}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>}
           >
             <FieldRow
-              label="Saved Reports"
-              hint={`${reportCount} report${reportCount !== 1 ? "s" : ""} stored locally on this device`}
+              label={t("settings.savedReportsLabel")}
+              hint={t("settings.reportsStored", { count: reportCount, s: reportCount !== 1 ? "s" : "" })}
             >
               <button
                 onClick={handleExportData}
@@ -574,16 +575,16 @@ export default function SettingsPage() {
                   <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
                   <polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/>
                 </svg>
-                Export JSON
+                {t("settings.exportJson")}
               </button>
             </FieldRow>
             <FieldRow
-              label="Clear All Reports"
-              hint="Permanently delete all saved reports from this device"
+              label={t("settings.clearAllReports")}
+              hint={t("settings.clearHint")}
             >
               {clearDone ? (
                 <span style={{ fontFamily: "var(--font-body)", fontSize: "12px", color: "var(--color-brand)", fontWeight: 600 }}>
-                  ✓ Cleared
+                  {t("settings.cleared")}
                 </span>
               ) : (
                 <button
@@ -597,7 +598,7 @@ export default function SettingsPage() {
                     transition: "all .2s",
                   }}
                 >
-                  {clearConfirm ? "⚠ Confirm Delete" : "Clear Reports"}
+                  {clearConfirm ? t("settings.confirmDelete") : t("settings.clearReports")}
                 </button>
               )}
             </FieldRow>
@@ -623,7 +624,7 @@ export default function SettingsPage() {
               <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
               <polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/>
             </svg>
-            Sign Out
+            {t("settings.signOut")}
           </button>
         </div>
 

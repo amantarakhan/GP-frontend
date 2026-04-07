@@ -1,10 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useLocationAnalysis } from "../../hooks/useLocationAnalysis";
 import ScoreRing from "../ui/ScoreRing";
 import StatsCard from "../ui/StatsCard";
 import SkeletonBlock from "../ui/SkeletonBlock";
 
 export default function ResultPanel() {
+  const { t } = useTranslation();
   const { hasResults, isAnalyzing, results } = useLocationAnalysis();
 
   if (isAnalyzing) {
@@ -33,7 +35,7 @@ export default function ResultPanel() {
         <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <polyline points="22,12 18,12 15,21 9,3 6,12 2,12" />
         </svg>
-        Select a business type, drop a pin on the map, and run analysis
+        {t("results.emptyState")}
       </div>
     );
   }
@@ -56,15 +58,15 @@ export default function ResultPanel() {
         {/* Feasibility */}
         <MetricCard
           icon={<svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>}
-          label="Feasibility Score"
-          description="Market viability index"
-          badge={feasibility >= 75 ? "Strong" : feasibility >= 55 ? "Moderate" : "Weak"}
+          label={t("results.feasibilityScore")}
+          description={t("results.marketViability")}
+          badge={feasibility >= 75 ? t("results.strong") : feasibility >= 55 ? t("results.moderate") : t("results.weak")}
           badgeBg={feasibility >= 75 ? "var(--color-success)" : feasibility >= 55 ? "var(--color-accent)" : "#fee2e2"}
           badgeColor={feasibility >= 75 ? "var(--color-brand)" : "var(--color-dark)"}
           iconColor="var(--color-brand)"
           tooltip={
             <span>
-              <strong style={{ color: "#e6d3ad" }}>Feasibility Score (0–100)</strong><br />
+              <strong style={{ color: "#e6d3ad" }}>{t("results.feasibilityTooltip")}</strong><br />
               Measures how viable this location is for your business. Calculated from the population-to-competitor ratio using a logistic curve, then adjusted for competitor quality (low ratings = opportunity), price gaps, nearby universities, and district youth or elderly concentration. <strong style={{ color: "#e6d3ad" }}>≥75 = Strong · 55–74 = Moderate · &lt;55 = Weak</strong>
             </span>
           }
@@ -72,8 +74,8 @@ export default function ResultPanel() {
           <div style={{ display: "flex", alignItems: "center", gap: "14px", marginTop: "4px" }}>
             <ScoreRing value={feasibility} color="var(--color-brand)" track="var(--color-success)" />
             <div style={{ flex: 1 }}>
-              <MiniBar label="Foot Traffic"  value={footTraffic}  max={100} color="var(--color-brand)" />
-              <MiniBar label="Demand Signal" value={demandSignal} max={100} color="var(--color-brand)" mt />
+              <MiniBar label={t("results.footTraffic")}  value={footTraffic}  max={100} color="var(--color-brand)" />
+              <MiniBar label={t("results.demandSignal")} value={demandSignal} max={100} color="var(--color-brand)" mt />
             </div>
           </div>
         </MetricCard>
@@ -81,9 +83,9 @@ export default function ResultPanel() {
         {/* Competitor Density */}
         <MetricCard
           icon={<svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>}
-          label="Competitor Density"
-          description={`${competitors} similar businesses found`}
-          badge={competitors <= 10 ? "Low" : competitors <= 30 ? "Moderate" : "High"}
+          label={t("results.competitorDensity")}
+          description={`${competitors} ${t("results.similarBusinesses")}`}
+          badge={competitors <= 10 ? t("results.low") : competitors <= 30 ? t("results.moderate") : t("results.high")}
           badgeBg={competitors <= 10 ? "var(--color-success)" : competitors <= 30 ? "var(--color-accent)" : "#fee2e2"}
           badgeColor={competitors <= 10 ? "var(--color-brand)" : "var(--color-dark)"}
           iconColor="var(--color-accent)"
@@ -97,8 +99,8 @@ export default function ResultPanel() {
           <div style={{ display: "flex", alignItems: "center", gap: "14px", marginTop: "4px" }}>
             <ScoreRing value={competitors} max={60} color="var(--color-accent)" track="rgba(230,211,173,.4)" showRaw />
             <div style={{ flex: 1 }}>
-              <MiniBar label="Avg Rating"    value={Math.round((parseFloat(avgRating) || 0) * 20)} max={100} color="var(--color-accent)" />
-              <MiniBar label="Avg Price Lvl" value={Math.round((parseFloat(avgPriceLevel) || 0) * 25)} max={100} color="var(--color-accent)" mt />
+              <MiniBar label={t("results.avgRating")}    value={Math.round((parseFloat(avgRating) || 0) * 20)} max={100} color="var(--color-accent)" />
+              <MiniBar label={t("results.avgPriceLevel")} value={Math.round((parseFloat(avgPriceLevel) || 0) * 25)} max={100} color="var(--color-accent)" mt />
             </div>
           </div>
         </MetricCard>
@@ -106,9 +108,9 @@ export default function ResultPanel() {
         {/* Market Saturation */}
         <MetricCard
           icon={<svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><polyline points="23,6 13.5,15.5 8.5,10.5 1,18"/><polyline points="17,6 23,6 23,12"/></svg>}
-          label="Market Saturation"
-          description="Demand vs supply ratio"
-          badge={saturation <= 35 ? "Low Risk" : saturation <= 60 ? "Moderate" : "Saturated"}
+          label={t("results.marketSaturation")}
+          description={t("results.demandVsSupply")}
+          badge={saturation <= 35 ? t("results.lowRisk") : saturation <= 60 ? t("results.moderate") : t("results.saturated")}
           badgeBg={saturation <= 35 ? "var(--color-success)" : saturation <= 60 ? "var(--color-accent)" : "#fee2e2"}
           badgeColor={saturation <= 35 ? "var(--color-brand)" : "var(--color-dark)"}
           iconColor="var(--color-text)"
@@ -124,9 +126,9 @@ export default function ResultPanel() {
               {saturation}%
             </div>
             {youthPercentage != null && (
-              <MiniBar label={`Youth ${youthRank}`} value={Math.round(youthPercentage)} max={100} color="var(--color-brand)" />
+              <MiniBar label={t("results.youthRank", { rank: youthRank })} value={Math.round(youthPercentage)} max={100} color="var(--color-brand)" />
             )}
-            <MiniBar label="Foot Traffic" value={footTraffic} max={100} color="var(--color-text)" mt={youthPercentage != null} />
+            <MiniBar label={t("results.footTraffic")} value={footTraffic} max={100} color="var(--color-text)" mt={youthPercentage != null} />
           </div>
         </MetricCard>
       </div>
@@ -144,30 +146,30 @@ export default function ResultPanel() {
         }}>
           {districtName && (
             <InsightItem
-              label="District"
+              label={t("results.district")}
               value={districtName}
               sub={districtNameAr}
             />
           )}
           {totalPopulation != null && (
             <InsightItem
-              label="Population"
+              label={t("results.population")}
               value={totalPopulation.toLocaleString()}
-              sub="people in district"
+              sub={t("results.peopleInDistrict")}
             />
           )}
           {youthPercentage != null && (
             <InsightItem
-              label="Youth Market"
+              label={t("results.youthMarket")}
               value={`${youthPercentage.toFixed(1)}%`}
-              sub={`Ages 15–34 · ${youthRank}`}
+              sub={t("results.youthAge", { rank: youthRank })}
             />
           )}
           {educationCount > 0 && (
             <InsightItem
-              label="Education Hubs"
+              label={t("results.educationHubs")}
               value={educationCount}
-              sub="nearby institutions"
+              sub={t("results.nearbyInstitutions")}
             />
           )}
         </div>
@@ -175,9 +177,9 @@ export default function ResultPanel() {
 
       {/* ── Bottom stat strip ── */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "14px" }}>
-        <StatsCard icon="pin"   label="District"    value={districtName || "Unknown"} />
-        <StatsCard icon="data"  label="Data Points" value={dataPoints} />
-        <StatsCard icon="globe" label="Coverage"    value={coverage} />
+        <StatsCard icon="pin"   label={t("results.district")}    value={districtName || t("results.unknown")} />
+        <StatsCard icon="data"  label={t("results.dataPoints")} value={dataPoints} />
+        <StatsCard icon="globe" label={t("results.coverage")}    value={coverage} />
       </div>
     </div>
   );
@@ -199,7 +201,7 @@ function InfoTooltip({ content }) {
     <div ref={ref} style={{ position: "relative", display: "inline-flex", flexShrink: 0 }}>
       <button
         onClick={() => setOpen((v) => !v)}
-        title="What does this mean?"
+        title={t("results.whatDoesThisMean")}
         style={{
           width: "16px", height: "16px", borderRadius: "50%",
           border: "1.5px solid rgba(104,114,128,.35)",

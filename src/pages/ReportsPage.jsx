@@ -12,6 +12,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAnalysis } from "../context/AnalysisContext";
 import { auth } from "../firebase";
 import {
@@ -110,6 +111,7 @@ function renderMarkdownCompact(text) {
 
 // ── AI Analysis accordion (unchanged from original) ───────────────────────────
 function AiAnalysisAccordion({ analysis }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   return (
     <div style={{ marginTop: "12px", borderRadius: "var(--radius-md)", border: "1px solid rgba(63,125,88,.18)", overflow: "hidden", background: "rgba(63,125,88,.02)" }}>
@@ -121,8 +123,8 @@ function AiAnalysisAccordion({ analysis }) {
           <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="var(--color-brand)" strokeWidth={2}>
             <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/>
           </svg>
-          <span style={{ fontFamily: "var(--font-body)", fontSize: "12px", fontWeight: 700, color: "var(--color-brand)" }}>AI Market Insights</span>
-          <span style={{ background: "rgba(63,125,88,.12)", color: "var(--color-brand)", fontSize: "9px", fontWeight: 700, padding: "2px 7px", borderRadius: "10px", fontFamily: "var(--font-body)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Saved</span>
+          <span style={{ fontFamily: "var(--font-body)", fontSize: "12px", fontWeight: 700, color: "var(--color-brand)" }}>{t("ai.title")}</span>
+          <span style={{ background: "rgba(63,125,88,.12)", color: "var(--color-brand)", fontSize: "9px", fontWeight: 700, padding: "2px 7px", borderRadius: "10px", fontFamily: "var(--font-body)", textTransform: "uppercase", letterSpacing: "0.5px" }}>{t("reports.saved")}</span>
         </div>
         <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="var(--color-text)" strokeWidth={2}
           style={{ transform: open ? "rotate(180deg)" : "none", transition: "transform .2s", flexShrink: 0 }}>
@@ -180,6 +182,7 @@ function ReportSkeleton() {
 // ═══════════════════════════════════════════════════════════════════════════════
 export default function ReportsPage() {
   const navigate  = useNavigate();
+  const { t } = useTranslation();
   const { hasResults, results, pin, businessType, radius, aiAnalysis } = useAnalysis();
 
   const [reports,   setReports]   = useState([]);
@@ -205,7 +208,7 @@ export default function ReportsPage() {
       }
     } catch (err) {
       console.error("[ReportsPage] fetchReports:", err);
-      setFetchErr("Could not load your reports. Please check your connection and try again.");
+      setFetchErr(t("reports.fetchError"));
     } finally {
       setLoading(false);
     }
@@ -293,13 +296,13 @@ export default function ReportsPage() {
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: "16px" }}>
           <div>
             <h1 style={{ fontFamily: "var(--font-display)", fontSize: "30px", fontWeight: 700, color: "var(--color-dark)", letterSpacing: "-0.5px", marginBottom: "6px" }}>
-              Saved Reports
+              {t("reports.title")}
             </h1>
             <p style={{ fontFamily: "var(--font-body)", fontSize: "13.5px", color: "var(--color-text)" }}>
-              {loading ? "Loading your reports…"
+              {loading ? t("common.loading")
                 : reports.length > 0
                   ? `${reports.length} report${reports.length > 1 ? "s" : ""} saved`
-                  : "No reports yet"}
+                  : t("reports.empty")}
             </p>
           </div>
 
@@ -323,10 +326,10 @@ export default function ReportsPage() {
                 {saveState === "saving" && (
                   <span style={{ width: "11px", height: "11px", border: "2px solid rgba(63,125,88,.3)", borderTop: "2px solid var(--color-brand)", borderRadius: "50%", display: "inline-block", animation: "reportsSpin .7s linear infinite" }} />
                 )}
-                {saveState === "saving" ? "Saving report…"
-                  : saveState === "saved" ? "✓ Saved!"
-                  : saveState === "error"  ? "Error — retry"
-                  : "Save Current Scan"}
+                {saveState === "saving" ? t("reports.saving")
+                  : saveState === "saved" ? t("reports.saved")
+                  : saveState === "error"  ? t("topbar.errorRetry")
+                  : t("reports.saveCurrentScan")}
               </button>
             )}
 
@@ -344,7 +347,7 @@ export default function ReportsPage() {
               <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
               </svg>
-              New Scan
+              {t("nav.newScan")}
             </button>
           </div>
         </div>
@@ -367,7 +370,7 @@ export default function ReportsPage() {
             onClick={fetchReports}
             style={{ fontFamily: "var(--font-body)", fontSize: "12px", fontWeight: 700, color: "#991b1b", background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}
           >
-            Retry
+            {t("common.retry")}
           </button>
         </div>
       )}
@@ -380,7 +383,7 @@ export default function ReportsPage() {
             <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
           </svg>
           <input
-            type="text" placeholder="Search reports…" value={search}
+            type="text" placeholder={t("reports.searchPlaceholder")} value={search}
             onChange={(e) => setSearch(e.target.value)}
             style={{ width: "100%", padding: "12px 14px 12px 40px", borderRadius: "var(--radius-md)", border: "1.5px solid var(--color-accent)", background: "var(--color-app-bg)", color: "var(--color-dark)", fontSize: "13.5px", fontFamily: "var(--font-body)", outline: "none", boxSizing: "border-box" }}
             onFocus={(e) => { e.target.style.borderColor = "var(--color-brand)"; e.target.style.boxShadow = "0 0 0 3px rgba(63,125,88,.12)"; }}
@@ -401,16 +404,16 @@ export default function ReportsPage() {
         <div className="fade-in fade-in-1" style={{ textAlign: "center", padding: "60px 20px", background: "var(--color-card)", borderRadius: "var(--radius-lg)", border: "1px dashed var(--color-accent)" }}>
           <div style={{ fontSize: "36px", marginBottom: "14px" }}>📋</div>
           <div style={{ fontFamily: "var(--font-display)", fontSize: "20px", fontWeight: 700, color: "var(--color-dark)", marginBottom: "8px" }}>
-            No reports saved yet
+            {t("reports.empty")}
           </div>
           <div style={{ fontFamily: "var(--font-body)", fontSize: "13px", color: "var(--color-text)", marginBottom: "22px" }}>
-            Run a scan and save the results to build your report archive
+            {t("reports.emptyDesc")}
           </div>
           <button
             onClick={() => navigate("/scan")}
             style={{ padding: "12px 24px", borderRadius: "var(--radius-md)", border: "none", background: "linear-gradient(135deg,var(--color-brand),var(--color-brand-dark))", color: "var(--color-card)", fontSize: "13px", fontWeight: 700, fontFamily: "var(--font-body)", cursor: "pointer" }}
           >
-            Start First Scan →
+            {t("dashboard.startFirstScan")}
           </button>
         </div>
       )}
@@ -422,7 +425,7 @@ export default function ReportsPage() {
           {/* No-match state */}
           {filtered.length === 0 && reports.length > 0 && (
             <div style={{ textAlign: "center", padding: "48px 20px", background: "var(--color-card)", borderRadius: "var(--radius-lg)", border: "1px dashed var(--color-accent)", color: "var(--color-text)", fontFamily: "var(--font-body)", fontSize: "14px" }}>
-              No reports match your search.
+              {t("reports.empty")}
             </div>
           )}
 
@@ -487,9 +490,9 @@ export default function ReportsPage() {
                 {/* Metric strip */}
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "12px" }}>
                   {[
-                    { label: "Feasibility", value: `${score}%`,   color: score >= 75 ? "var(--color-brand)" : "#b45309" },
-                    { label: "Competitors", value: displayCompetitors(r), color: "var(--color-dark)" },
-                    { label: "Saturation",  value: `${sat}%`,     color: sat  <= 35 ? "var(--color-brand)" : "#b45309"  },
+                    { label: t("compare.feasibility"), value: `${score}%`,   color: score >= 75 ? "var(--color-brand)" : "#b45309" },
+                    { label: t("reports.competitors"), value: displayCompetitors(r), color: "var(--color-dark)" },
+                    { label: t("reports.saturation"),  value: `${sat}%`,     color: sat  <= 35 ? "var(--color-brand)" : "#b45309"  },
                   ].map((m) => (
                     <div key={m.label} style={{ background: "rgba(252,252,253,.7)", borderRadius: "10px", padding: "10px 13px", border: "1px solid rgba(230,211,173,.4)" }}>
                       <div style={{ fontFamily: "var(--font-body)", fontSize: "10px", color: "var(--color-text)", marginBottom: "3px" }}>{m.label}</div>

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 // ── Section wrapper ───────────────────────────────────────────────────────────
 function Section({ title, icon, children }) {
@@ -136,113 +137,100 @@ function Step({ n, title, children }) {
 
 // ═════════════════════════════════════════════════════════════════════════════
 export default function AppendixPage() {
+  const { t } = useTranslation();
+  const scanSteps = t("appendix.scanSteps", { returnObjects: true }) || [];
+  const dataSources = t("appendix.dataSourceItems", { returnObjects: true }) || [];
+
   return (
     <div style={{ padding: "28px" }}>
 
       {/* Header */}
       <div className="fade-in" style={{ marginBottom: "28px" }}>
         <div style={{ fontFamily: "var(--font-body)", fontSize: "9.5px", fontWeight: 600, color: "var(--color-brand)", letterSpacing: "2.5px", textTransform: "uppercase", marginBottom: "6px" }}>
-          Reference
+          {t("appendix.reference")}
         </div>
         <h1 style={{ fontFamily: "var(--font-display)", fontSize: "30px", fontWeight: 700, color: "var(--color-dark)", letterSpacing: "-0.5px", marginBottom: "6px" }}>
-          Appendix & Methodology
+          {t("appendix.title")}
         </h1>
         <p style={{ fontFamily: "var(--font-body)", fontSize: "13.5px", color: "var(--color-text)", lineHeight: 1.6 }}>
-          Definitions for every metric shown in Localyze, and an explanation of how each score is calculated from real data.
-          Click any term to expand its full explanation.
+          {t("appendix.subtitle")}
         </p>
       </div>
 
       {/* ── How a scan works ── */}
       <div className="fade-in fade-in-1">
         <Section
-          title="How a Scan Works"
+          title={t("appendix.howScanWorks")}
           icon={<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="var(--color-brand)" strokeWidth={2}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>}
         >
-          <Step n="1" title="Drop a pin & choose a business type">
-            You select a location on the map in Amman, a business type (e.g. café, gym, pharmacy), an optional sub-type (e.g. Specialty Coffee, Women-only gym), and a scan radius between 300 m and 5 km.
-          </Step>
-          <Step n="2" title="Competitor discovery via Google Places">
-            The backend queries Google Places Nearby Search within your radius and place type. For restaurants and cafés, results are cross-referenced against a Talabat restaurant database using fuzzy name matching (≥85% confidence) to filter by cuisine — so a search for "Sushi" only counts actual sushi venues, not generic restaurants.
-          </Step>
-          <Step n="3" title="District demographics lookup">
-            Your coordinates are matched to one of Amman's sub-districts using bounding-box geometry (falling back to nearest centroid). Each district carries census data: total population, youth (ages 15–34), elderly (60+), and male/female breakdown.
-          </Step>
-          <Step n="4" title="Education proximity check">
-            For food and beverage business types (café, restaurant, fast food, bakery), the system searches for universities within 1 km and validates them against a whitelist of known Jordanian universities — filtering out false positives like cafeteria entrances or parking lots near campuses.
-          </Step>
-          <Step n="5" title="Feasibility score computation">
-            All collected data is fed into a scoring algorithm (logistic curve + adjustments) and returned alongside raw competitor data, demographic stats, and rating summaries.
-          </Step>
-          <Step n="6" title="AI insights (optional)">
-            The full scan result is sent to Gemini 2.5 Flash with a structured business-consultant prompt. It returns a plain-language summary, key risks, and differentiation suggestions — all grounded in the actual competitor names and numbers from your scan.
-          </Step>
+          {scanSteps.map((step, i) => (
+            <Step key={i} n={i + 1} title={step.title}>{step.desc}</Step>
+          ))}
         </Section>
       </div>
 
       {/* ── Score metrics ── */}
       <div className="fade-in fade-in-2">
         <Section
-          title="Score Metrics"
+          title={t("appendix.scoreMetrics")}
           icon={<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="var(--color-brand)" strokeWidth={2}><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>}
         >
           <Term
-            name="Feasibility Score"
-            badge="0 – 100"
+            name={t("appendix.feasibilityScore")}
+            badge={t("appendix.range0100")}
             badgeBg="var(--color-success)"
             badgeColor="var(--color-brand)"
-            formula="base = 100 / (1 + e^(-x))   where x = (ln(pop / comp) − ln(2000)) / 2"
+            formula={t("appendix.feasibilityFormula")}
           >
-            The headline viability index for opening your chosen business at the selected location. It starts from a logistic (S-curve) function of the <strong>population-to-competitor ratio</strong> — specifically, how many people exist per competing business relative to a baseline of 2,000 people/competitor.
+            {t("appendix.feasibilityDesc")}
             <br /><br />
-            The raw base score is then adjusted by four factors:
             <ul style={{ margin: "8px 0 0 16px", lineHeight: 1.9 }}>
-              <li><strong>Competitor rating quality:</strong> For every 0.1 stars below 4.0, the score increases by 1.5 points. Low-rated competitors signal a gap you can fill.</li>
-              <li><strong>Competitor review count:</strong> A high average review count (entrenched competitors) penalises the score by up to −15 points.</li>
-              <li><strong>Price level:</strong> Competitors priced above 2/4 add up to +5 pts per level — room for affordable positioning. Below 2 subtracts points.</li>
-              <li><strong>Education proximity:</strong> Each university within 1 km of your pin adds +5 points (capped at +10). Relevant for F&B businesses that benefit from student foot traffic.</li>
+              <li>{t("appendix.ratingQuality")}</li>
+              <li>{t("appendix.competitorReviewCount")}</li>
+              <li>{t("appendix.priceLevel")}</li>
+              <li>{t("appendix.educationProximity")}</li>
             </ul>
             <br />
-            Finally, the score is <strong>multiplied</strong> by a district-level demographic factor:
+            {t("appendix.demographicFactor")}
             <ul style={{ margin: "0 0 0 16px", lineHeight: 1.9 }}>
-              <li>Most business types use the district's <strong>youth multiplier</strong> (based on % of 15–34 year-olds vs. the Amman average).</li>
-              <li>Gyms additionally weight by gender ratio (male/female) when a gender sub-type is selected.</li>
-              <li>Medical/pharmacy businesses use an <strong>elderly multiplier</strong> instead.</li>
+              <li>{t("appendix.youthMultiplier")}</li>
+              <li>{t("appendix.gymGenderWeight")}</li>
+              <li>{t("appendix.medicalElderlyMultiplier")}</li>
             </ul>
           </Term>
 
           <Term
-            name="Foot Traffic"
-            badge="0 – 100"
+            name={t("appendix.footTrafficTitle")}
+            badge={t("appendix.range0100")}
             badgeBg="var(--color-success)"
             badgeColor="var(--color-brand)"
-            formula="foot_traffic = min(population_density_per_km² / 20,000 × 100, 100)"
+            formula={t("appendix.footTrafficFormula")}
           >
-            A 0–100 proxy for the volume of potential customers in the area. Derived directly from the district's <strong>population density</strong> (people per km²). A density of 20,000 people/km² maps to the maximum score of 100.
+            {t("appendix.footTrafficDesc")}
             <br /><br />
-            It is one of two sub-bars shown inside the Feasibility Score card. It does not factor into the feasibility formula directly, but it is used to compute the Demand Signal.
+            {t("appendix.footTrafficNote")}
           </Term>
 
           <Term
-            name="Demand Signal"
-            badge="0 – 100"
+            name={t("appendix.demandSignalTitle")}
+            badge={t("appendix.range0100")}
             badgeBg="var(--color-success)"
             badgeColor="var(--color-brand)"
-            formula="demand = min(foot_traffic × 0.75 + edu_bonus, 100)   edu_bonus = min(uni_count × 8, 25)"
+            formula={t("appendix.demandSignalFormula")}
           >
-            An estimate of <strong>demand strength</strong> that combines general footfall with student-driven demand. Foot traffic contributes 75% of the signal; each nearby university adds 8 points (capped at +25). A high Demand Signal alongside high Market Saturation indicates a contested but active market.
+            {t("appendix.demandSignalDesc")}
           </Term>
 
           <Term
-            name="Market Saturation"
+            name={t("appendix.marketSatTitle")}
             badge="0 – 100%"
             badgeBg="#fee2e2"
             badgeColor="#991b1b"
-            formula="saturation = min(competitor_density_per_km² / 50 × 100, 100)"
+            formula={t("appendix.marketSatFormula")}
           >
-            How crowded the market is, expressed as a percentage of a benchmark threshold of <strong>50 similar businesses per km²</strong>. At 50/km², the market is considered fully saturated (100%). Below 35% is considered low-risk; above 60% is saturated territory.
+            {t("appendix.marketSatDesc")}
             <br /><br />
-            Note: saturation reflects the <em>density</em> of competitors (per km² of your scan area), not the raw count. A large scan radius naturally produces a lower density than a tight radius with the same number of businesses.
+            {t("appendix.marketSatNote")}
           </Term>
         </Section>
       </div>
@@ -250,38 +238,38 @@ export default function AppendixPage() {
       {/* ── Competitor metrics ── */}
       <div className="fade-in fade-in-3">
         <Section
-          title="Competitor Metrics"
+          title={t("appendix.competitorMetrics")}
           icon={<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="var(--color-brand)" strokeWidth={2}><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>}
         >
-          <Term name="Competitor Count" badge="raw number">
-            Total number of similar businesses found within your scan radius. Filtered by your chosen business type via the Google Places <code>type</code> field. For restaurants and cafés with a sub-type selected, the list is further filtered using <strong>Talabat category matching</strong> — cross-referencing competitor names against Talabat's Amman restaurant database via fuzzy matching (≥85% confidence threshold). If Talabat returns zero results for that cuisine, the system falls back to keyword search.
+          <Term name={t("appendix.competitorCount")} badge={t("appendix.competitorCountBadge")}>
+            {t("appendix.competitorCountDesc")}
           </Term>
 
-          <Term name="Average Rating" badge="1 – 5 stars">
-            The simple mean of all Google Maps star ratings across the competitors found. A low average (e.g. below 3.8) indicates the existing options are underperforming — an opportunity to capture market share with higher quality. A high average (e.g. above 4.3) signals entrenched, well-regarded competitors.
+          <Term name={t("appendix.avgRatingTitle")} badge={t("appendix.avgRatingBadge")}>
+            {t("appendix.avgRatingDesc")}
           </Term>
 
-          <Term name="Average Price Level" badge="1 – 4">
-            The mean of Google Places <code>price_level</code> values across competitors.
+          <Term name={t("appendix.avgPriceLevelTitle")} badge={t("appendix.avgPriceLevelBadge")}>
+            {t("appendix.avgPriceLevelDesc")}
             <ul style={{ margin: "8px 0 0 16px", lineHeight: 1.9 }}>
-              <li><strong>1</strong> — Inexpensive (budget)</li>
-              <li><strong>2</strong> — Moderate</li>
-              <li><strong>3</strong> — Expensive</li>
-              <li><strong>4</strong> — Very expensive</li>
+              <li><strong>1</strong> — {t("appendix.priceInexpensive")}</li>
+              <li><strong>2</strong> — {t("appendix.priceModerate")}</li>
+              <li><strong>3</strong> — {t("appendix.priceExpensive")}</li>
+              <li><strong>4</strong> — {t("appendix.priceVeryExpensive")}</li>
             </ul>
-            A high average price level suggests competitors are premium — a potential opening for an affordable alternative. A low average may signal price pressure in the market. Not all Google Places listings have a price level set, so this average is computed only from listings that do.
+            {t("appendix.avgPriceLevelNote")}
           </Term>
 
-          <Term name="Competitor Density" badge="businesses / km²" formula="density = total_competitors / (π × radius_km²)">
-            The number of competitors divided by the area of your scan circle. This is the primary input into the Market Saturation calculation. A larger radius covers more area, so raw competitor counts are not directly comparable across scans — density normalises for this.
+          <Term name={t("appendix.compDensityTitle")} badge={t("appendix.compDensityBadge")} formula={t("appendix.compDensityFormula")}>
+            {t("appendix.compDensityDesc")}
           </Term>
 
-          <Term name="Threat Level (competitor list)">
-            Each competitor in the list is individually classified:
+          <Term name={t("appendix.threatLevelTitle")}>
+            {t("appendix.threatLevelDesc")}
             <ul style={{ margin: "8px 0 0 16px", lineHeight: 1.9 }}>
-              <li><strong style={{ color: "#dc2626" }}>High</strong> — rating ≥ 4.3 AND more than 100 reviews. Established, well-rated, and popular. Hardest to displace.</li>
-              <li><strong style={{ color: "#d97706" }}>Medium</strong> — rating ≥ 3.8 AND more than 20 reviews. Reasonably good but not dominant.</li>
-              <li><strong style={{ color: "#687280" }}>Low</strong> — everything else. Vulnerable to a well-executed offering.</li>
+              <li><strong style={{ color: "#dc2626" }}>{t("appendix.threatHigh")}</strong> — {t("appendix.threatHighDesc")}</li>
+              <li><strong style={{ color: "#d97706" }}>{t("appendix.threatMedium")}</strong> — {t("appendix.threatMediumDesc")}</li>
+              <li><strong style={{ color: "#687280" }}>{t("appendix.threatLow")}</strong> — {t("appendix.threatLowDesc")}</li>
             </ul>
           </Term>
         </Section>
@@ -290,27 +278,27 @@ export default function AppendixPage() {
       {/* ── Demographics ── */}
       <div className="fade-in fade-in-4">
         <Section
-          title="Area Demographics"
+          title={t("appendix.areaDemographics")}
           icon={<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="var(--color-brand)" strokeWidth={2}><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>}
         >
-          <Term name="District">
-            Amman is divided into administrative sub-districts. Your pin's coordinates are matched to the correct district using boundary polygons. If coordinates fall outside all defined boundaries (e.g. edge-of-city pins), the system assigns the nearest district by centroid distance. Each district carries census-derived demographic data.
+          <Term name={t("appendix.districtTitle")}>
+            {t("appendix.districtDesc")}
           </Term>
 
-          <Term name="Population Density" badge="people / km²">
-            The total district population divided by the district's geographic area in km². Used directly to compute Foot Traffic. Districts with higher density (e.g. dense city-centre areas) produce a higher foot traffic score.
+          <Term name={t("appendix.popDensityTitle")} badge={t("appendix.popDensityBadge")}>
+            {t("appendix.popDensityDesc")}
           </Term>
 
-          <Term name="Youth Market" badge="% of population">
-            The percentage of the district's population aged 15–34, sourced from Jordan's national census data. This is the primary customer demographic for most F&B, fitness, and lifestyle businesses. A higher youth percentage leads to a higher youth multiplier applied to the Feasibility Score.
+          <Term name={t("appendix.youthMarketTitle")} badge={t("appendix.youthMarketBadge")}>
+            {t("appendix.youthMarketDesc")}
           </Term>
 
-          <Term name="Youth Rank">
-            A comparative ranking of the district's youth concentration relative to all other Amman districts. Rank 1 = highest youth concentration in the city. Used to contextualise whether this district is a youth hotspot or more mixed.
+          <Term name={t("appendix.youthRankTitle")}>
+            {t("appendix.youthRankDesc")}
           </Term>
 
-          <Term name="Education Hubs" badge="count within 1 km">
-            The number of accredited universities or colleges within 1 km of your pin. Verified against a curated whitelist of Jordanian higher-education institutions (both English and Arabic names) to exclude false positives. Each confirmed university adds up to +8 points to the Demand Signal (capped at +25 total), and contributes +5 to the raw Feasibility Score (capped at +10).
+          <Term name={t("appendix.eduHubsTitle")} badge={t("appendix.eduHubsBadge")}>
+            {t("appendix.eduHubsDesc")}
           </Term>
         </Section>
       </div>
@@ -318,38 +306,38 @@ export default function AppendixPage() {
       {/* ── Badge thresholds ── */}
       <div className="fade-in fade-in-4">
         <Section
-          title="Badge Thresholds"
+          title={t("appendix.badgeThresholds")}
           icon={<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="var(--color-brand)" strokeWidth={2}><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>}
         >
           <p style={{ fontFamily: "var(--font-body)", fontSize: "13px", color: "var(--color-text)", marginBottom: "16px", lineHeight: 1.6 }}>
-            Every metric card shows a badge summarising the result at a glance. Here are the exact thresholds used.
+            {t("appendix.badgeThresholdsDesc")}
           </p>
 
           <div style={{ marginBottom: "18px" }}>
             <div style={{ fontFamily: "var(--font-body)", fontSize: "11px", fontWeight: 700, color: "var(--color-text)", letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: "8px" }}>
-              Feasibility Score
+              {t("appendix.feasibilityScoreLabel")}
             </div>
-            <BadgeRow label="Strong"   color="var(--color-brand)" bg="var(--color-success)" threshold="≥ 75 / 100" meaning="The location has strong fundamentals — healthy demand, limited quality competition, or favourable demographics." />
-            <BadgeRow label="Moderate" color="var(--color-dark)"  bg="var(--color-accent)"  threshold="55 – 74 / 100" meaning="Viable but competitive. Success will depend on differentiation and execution." />
-            <BadgeRow label="Weak"     color="#991b1b"             bg="#fee2e2"               threshold="< 55 / 100" meaning="High competition, low demand, or poor demographics for this business type at this location." />
+            <BadgeRow label={t("appendix.strong")}   color="var(--color-brand)" bg="var(--color-success)" threshold={t("appendix.strongThreshold")} meaning={t("appendix.strongMeaning")} />
+            <BadgeRow label={t("appendix.moderate")} color="var(--color-dark)"  bg="var(--color-accent)"  threshold={t("appendix.moderateThreshold")} meaning={t("appendix.moderateMeaning")} />
+            <BadgeRow label={t("appendix.weak")}     color="#991b1b"             bg="#fee2e2"               threshold={t("appendix.weakThreshold")} meaning={t("appendix.weakMeaning")} />
           </div>
 
           <div style={{ marginBottom: "18px" }}>
             <div style={{ fontFamily: "var(--font-body)", fontSize: "11px", fontWeight: 700, color: "var(--color-text)", letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: "8px" }}>
-              Competitor Density (count)
+              {t("appendix.compDensityLabel")}
             </div>
-            <BadgeRow label="Low"      color="var(--color-brand)" bg="var(--color-success)" threshold="≤ 10 competitors" meaning="Few direct competitors within the radius — relatively open market." />
-            <BadgeRow label="Moderate" color="var(--color-dark)"  bg="var(--color-accent)"  threshold="11 – 30 competitors" meaning="Normal competitive environment. Quality and positioning matter." />
-            <BadgeRow label="High"     color="#991b1b"             bg="#fee2e2"               threshold="> 30 competitors" meaning="Crowded space. Requires strong differentiation to stand out." />
+            <BadgeRow label={t("appendix.lowLabel")}      color="var(--color-brand)" bg="var(--color-success)" threshold={t("appendix.lowThreshold")} meaning={t("appendix.lowMeaning")} />
+            <BadgeRow label={t("appendix.moderate")} color="var(--color-dark)"  bg="var(--color-accent)"  threshold={t("appendix.moderateCompThreshold")} meaning={t("appendix.moderateCompMeaning")} />
+            <BadgeRow label={t("appendix.highLabel")}     color="#991b1b"             bg="#fee2e2"               threshold={t("appendix.highThreshold")} meaning={t("appendix.highMeaning")} />
           </div>
 
           <div>
             <div style={{ fontFamily: "var(--font-body)", fontSize: "11px", fontWeight: 700, color: "var(--color-text)", letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: "8px" }}>
-              Market Saturation (%)
+              {t("appendix.marketSatLabel")}
             </div>
-            <BadgeRow label="Low Risk"  color="var(--color-brand)" bg="var(--color-success)" threshold="≤ 35%" meaning="Market has room — competitor density is well below the saturation benchmark." />
-            <BadgeRow label="Moderate"  color="var(--color-dark)"  bg="var(--color-accent)"  threshold="36 – 60%" meaning="Getting crowded but not saturated. A strong concept can still win here." />
-            <BadgeRow label="Saturated" color="#991b1b"             bg="#fee2e2"               threshold="> 60%" meaning="Dense competition relative to area. Very hard to succeed without a clear niche." />
+            <BadgeRow label={t("appendix.lowRiskLabel")}  color="var(--color-brand)" bg="var(--color-success)" threshold={t("appendix.lowRiskThreshold")} meaning={t("appendix.lowRiskMeaning")} />
+            <BadgeRow label={t("appendix.moderate")}  color="var(--color-dark)"  bg="var(--color-accent)"  threshold={t("appendix.moderateSatThreshold")} meaning={t("appendix.moderateSatMeaning")} />
+            <BadgeRow label={t("appendix.saturatedLabel")} color="#991b1b"             bg="#fee2e2"               threshold={t("appendix.saturatedThreshold")} meaning={t("appendix.saturatedMeaning")} />
           </div>
         </Section>
       </div>
@@ -357,37 +345,12 @@ export default function AppendixPage() {
       {/* ── Data sources ── */}
       <div className="fade-in fade-in-4" style={{ paddingBottom: "28px" }}>
         <Section
-          title="Data Sources"
+          title={t("appendix.dataSources")}
           icon={<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="var(--color-brand)" strokeWidth={2}><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>}
         >
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
-            {[
-              {
-                name: "Google Places API",
-                detail: "Competitor discovery — names, addresses, ratings, review counts, price levels, opening hours, and websites. Results are paginated up to 60 listings per query and cached for 1 hour.",
-              },
-              {
-                name: "Talabat Restaurant Database",
-                detail: "A curated dataset of Amman restaurants with their cuisine categories, used to filter Google Places results by sub-type (e.g. Sushi, Burgers). Matched using RapidFuzz token-set-ratio with an 85% confidence threshold.",
-              },
-              {
-                name: "Amman District Census Data",
-                detail: "District-level population data for Amman's sub-districts, including total population, age breakdowns (youth 15–34, elderly 60+), and gender ratios. Used for Foot Traffic, Demand Signal, and the demographic multiplier in the Feasibility Score.",
-              },
-              {
-                name: "Jordanian Universities Whitelist",
-                detail: "A manually curated list of accredited Jordanian universities in both English and Arabic, used to validate nearby-education results from Google Places and exclude non-academic false positives.",
-              },
-              {
-                name: "Google Gemini 2.5 Flash",
-                detail: "AI analysis model used to generate the plain-language insights panel. Receives the full structured scan result and returns a business-consultant-style summary, risk list, and differentiation suggestions.",
-              },
-              {
-                name: "Firebase / Firestore",
-                detail: "User authentication and cloud storage for saved reports. Reports are stored per user in the saved_reports collection with full scan results, scores, and AI analysis text.",
-              },
-            ].map((s) => (
-              <div key={s.name} style={{
+            {dataSources.map((s, i) => (
+              <div key={i} style={{
                 padding: "14px 16px", borderRadius: "var(--radius-md)",
                 background: "rgba(63,125,88,.04)", border: "1px solid rgba(63,125,88,.12)",
               }}>

@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import InputPanel      from "../components/scan/InputPanel";
 import MapContainer    from "../components/scan/MapContainer";
 import ResultPanel     from "../components/scan/ResultPanel";
@@ -13,6 +14,7 @@ import { saveReport as firestoreSaveReport } from "../services/dbService"; // Us
 export default function ScanPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
   const { comparePin, comparePicking } = useLocationAnalysis();
 
   // After picking Location B on map, navigate back to compare page
@@ -42,10 +44,10 @@ export default function ScanPage() {
         {/* Map header */}
         <div className="fade-in" style={{ flexShrink: 0 }}>
           <h2 style={{ fontFamily: "var(--font-display)", fontSize: "19px", fontWeight: 700, color: "var(--color-dark)", letterSpacing: "-0.3px", marginBottom: "2px" }}>
-            Target Location
+            {t("scan.targetLocation")}
           </h2>
           <p style={{ fontFamily: "var(--font-body)", fontSize: "12px", color: "var(--color-text)" }}>
-            Click the map to drop a pin and define your analysis zone
+            {t("scan.clickMapWarning")}
           </p>
         </div>
 

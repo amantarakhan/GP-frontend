@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useLocationAnalysis } from "../../hooks/useLocationAnalysis";
 
 // ── Inline markdown renderer ──────────────────────────────────────────────────
@@ -194,10 +195,11 @@ const THINKING_STEPS = [
 ];
 
 function ThinkingIndicator() {
+  const { t } = useTranslation();
   const [step, setStep] = React.useState(0);
   React.useEffect(() => {
-    const t = setInterval(() => setStep((s) => (s + 1) % THINKING_STEPS.length), 1800);
-    return () => clearInterval(t);
+    const ti = setInterval(() => setStep((s) => (s + 1) % THINKING_STEPS.length), 1800);
+    return () => clearInterval(ti);
   }, []);
   return (
     <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "20px" }}>
@@ -212,7 +214,7 @@ function ThinkingIndicator() {
         ))}
       </div>
       <span style={{ fontFamily: "var(--font-body)", fontSize: "12px", color: "var(--color-brand)", fontWeight: 600 }}>
-        {THINKING_STEPS[step]}
+        {(t("ai.thinkingSteps", { returnObjects: true }))[step]}
       </span>
       <style>{`@keyframes aiBounce { 0%,80%,100%{transform:translateY(0);opacity:.4} 40%{transform:translateY(-5px);opacity:1} }`}</style>
     </div>
@@ -245,6 +247,7 @@ export default function AiInsightsPanel() {
     aiAnalysis, aiError, runAiAnalysis, results,
   } = useLocationAnalysis();
 
+  const { t } = useTranslation();
   const [btnHov,   setBtnHov]   = useState(false);
   const [retryHov, setRetryHov] = useState(false);
 
@@ -284,7 +287,7 @@ export default function AiInsightsPanel() {
           {/* Title + Generated badge */}
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <span style={{ fontFamily: "var(--font-body)", fontSize: "13px", fontWeight: 700, color: "var(--color-dark)" }}>
-              AI Market Insights
+              {t("ai.title")}
             </span>
             {hasAiResults && (
               <span style={{
@@ -294,7 +297,7 @@ export default function AiInsightsPanel() {
                 letterSpacing: "0.8px", textTransform: "uppercase",
                 border: "1px solid rgba(63,125,88,.2)",
               }}>
-                Generated
+                {t("ai.generated")}
               </span>
             )}
           </div>
@@ -302,7 +305,7 @@ export default function AiInsightsPanel() {
           {/* Subtitle */}
           {hasAiResults && (
             <span style={{ fontFamily: "var(--font-body)", fontSize: "11px", color: "var(--color-text)" }}>
-              Analysis for {results?.districtName ?? "your location"}
+              {t("ai.analysisFor", { district: results?.districtName ?? "your location" })}
             </span>
           )}
         </div>
@@ -333,14 +336,14 @@ export default function AiInsightsPanel() {
                   <polyline points="23,4 23,11 16,11"/><polyline points="1,20 1,13 8,13"/>
                   <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 11M1 13l4.64 4.36A9 9 0 0 0 20.49 15"/>
                 </svg>
-                Regenerate
+                {t("ai.regenerate")}
               </>
             ) : (
               <>
                 <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
                   <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/>
                 </svg>
-                Get AI Suggestions
+                {t("ai.getAiSuggestions")}
               </>
             )}
           </button>
@@ -352,10 +355,10 @@ export default function AiInsightsPanel() {
         <div style={{ padding: "22px 20px" }}>
           <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "18px" }}>
             {[
-              { icon: "🎯", label: "Market Risks"         },
-              { icon: "🚀", label: "Growth Opportunities" },
-              { icon: "⚡", label: "Differentiation Tips" },
-              { icon: "📊", label: "Competitor Insights"  },
+              { icon: "🎯", label: t("ai.chips.marketRisks")         },
+              { icon: "🚀", label: t("ai.chips.growthOpportunities") },
+              { icon: "⚡", label: t("ai.chips.differentiationTips") },
+              { icon: "📊", label: t("ai.chips.competitorInsights")  },
             ].map((chip) => (
               <div key={chip.label} style={{
                 display: "flex", alignItems: "center", gap: "6px",
@@ -387,11 +390,10 @@ export default function AiInsightsPanel() {
             </div>
             <div>
               <div style={{ fontFamily: "var(--font-body)", fontSize: "13px", fontWeight: 600, color: "var(--color-dark)", marginBottom: "5px" }}>
-                Ready to generate strategic insights
+                {t("ai.readyToGenerate")}
               </div>
               <div style={{ fontFamily: "var(--font-body)", fontSize: "12px", color: "var(--color-text)", lineHeight: 1.65, maxWidth: "480px" }}>
-                Click <strong style={{ color: "var(--color-brand)" }}>Get AI Suggestions</strong> to receive
-                an AI-powered market analysis with specific risks and differentiation strategies tailored to your scan results.
+                {t("ai.getAiDesc")}
               </div>
             </div>
           </div>
