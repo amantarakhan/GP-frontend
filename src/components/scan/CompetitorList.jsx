@@ -104,10 +104,9 @@ export default function CompetitorList() {
           {visible.map((c, i) => {
             const s         = STATUS_STYLES[c.status] ?? STATUS_STYLES.low;
             const isOpen    = expandedId === c.id;
-            const dayKeys   = ["sunday","monday","tuesday","wednesday","thursday","friday","saturday"];
-            const todayKey  = dayKeys[new Date().getDay()];
-            const todayDay  = t(`competitors.days.${todayKey}`);
-            const todayHours = c.hours.find((h) => h.startsWith(todayDay));
+            const dayNames  = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+            const todayEn   = dayNames[new Date().getDay()];
+            const todayHours = c.hours.find((h) => h.startsWith(todayEn));
 
             return (
               <div key={c.id}>
@@ -196,17 +195,17 @@ export default function CompetitorList() {
                         {t("competitors.todaysHours")}
                       </div>
                       <div style={{ fontFamily: "var(--font-body)", fontSize: "12px", color: "var(--color-dark)" }}>
-                        {todayHours ? todayHours.replace(`${todayDay}: `, "") : "Hours not available"}
+                        {todayHours ? todayHours.replace(`${todayEn}: `, "") : t("competitors.hoursNotAvailable")}
                       </div>
                     </div>
 
                     {/* Reviews */}
                     <div>
                       <div style={{ fontFamily: "var(--font-body)", fontSize: "10px", color: "var(--color-text)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: "4px" }}>
-                        Reviews
+                        {t("competitors.reviews")}
                       </div>
                       <div style={{ fontFamily: "var(--font-body)", fontSize: "12px", color: "var(--color-dark)" }}>
-                        {c.reviews != null ? `${c.reviews.toLocaleString()} reviews` : "No data"}
+                        {c.reviews != null ? `${c.reviews.toLocaleString()} ${t("competitors.reviewsCount")}` : t("competitors.noData")}
                       </div>
                     </div>
 
@@ -214,7 +213,7 @@ export default function CompetitorList() {
                     {c.phone && (
                       <div>
                         <div style={{ fontFamily: "var(--font-body)", fontSize: "10px", color: "var(--color-text)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: "4px" }}>
-                          Phone
+                          {t("competitors.phone")}
                         </div>
                         <div style={{ fontFamily: "var(--font-body)", fontSize: "12px", color: "var(--color-dark)" }}>
                           {c.phone}
@@ -226,7 +225,7 @@ export default function CompetitorList() {
                     {c.website && (
                       <div>
                         <div style={{ fontFamily: "var(--font-body)", fontSize: "10px", color: "var(--color-text)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: "4px" }}>
-                          Website
+                          {t("competitors.website")}
                         </div>
                         <a
                           href={c.website}
@@ -235,7 +234,7 @@ export default function CompetitorList() {
                           onClick={(e) => e.stopPropagation()}
                           style={{ fontFamily: "var(--font-body)", fontSize: "12px", color: "var(--color-brand)", textDecoration: "underline" }}
                         >
-                          Visit site
+                          {t("competitors.visitSite")}
                         </a>
                       </div>
                     )}
@@ -255,7 +254,7 @@ export default function CompetitorList() {
                   color: "var(--color-brand)", background: "none", border: "none", cursor: "pointer",
                 }}
               >
-                {showAll ? "Show less ↑" : `Show all ${competitors.length} competitors ↓`}
+                {showAll ? t("competitors.showLess") : t("competitors.showAll", { count: competitors.length })}
               </button>
             </div>
           )}
