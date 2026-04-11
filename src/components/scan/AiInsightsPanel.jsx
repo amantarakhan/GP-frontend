@@ -46,11 +46,20 @@ function classifyLine(line) {
 
   if (!endsWithColon || !isShort) return null;
 
+  // English keywords
   if (/specific risk|key risk|main risk|risks:|challenges:|concerns:|threats:/.test(plain))
     return "risks";
   if (/suggest|differentiat|strateg|concrete|positioning:|recommendations:/.test(plain))
     return "suggestions";
   if (/summary|overview|plain.language|assessment|opportunit|introduction/.test(plain))
+    return "summary";
+
+  // Arabic keywords
+  if (/مخاطر|تحديات|مخاوف|تهديدات/.test(plain))
+    return "risks";
+  if (/استراتيج|اقتراح|توصي|تميز|تمييز|فرص/.test(plain))
+    return "suggestions";
+  if (/ملخص|نظرة عامة|مقدمة|تقييم|خلاصة/.test(plain))
     return "summary";
 
   return null; // heading but unknown section
@@ -487,7 +496,7 @@ export default function AiInsightsPanel() {
                 alignItems: "flex-start",
               }}>
                 <SectionColumn
-                  title="Specific Risks"
+                  title={t("ai.specificRisks")}
                   accentColor="#dc2626"
                   headerBg="rgba(254,226,226,.7)"
                   borderColor="rgba(220,38,38,.18)"
@@ -500,7 +509,7 @@ export default function AiInsightsPanel() {
                   }
                 />
                 <SectionColumn
-                  title="Differentiation Strategies"
+                  title={t("ai.differentiationStrategies")}
                   accentColor="#3f7d58"
                   headerBg="rgba(209,250,229,.6)"
                   borderColor="rgba(63,125,88,.18)"
@@ -528,7 +537,7 @@ export default function AiInsightsPanel() {
                   <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
                 </svg>
                 <span style={{ fontFamily: "var(--font-body)", fontSize: "10.5px", color: "var(--color-text)", opacity: 0.7, lineHeight: 1.5 }}>
-                  AI-generated insights are for guidance only. Always validate with on-ground research.
+                  {t("ai.disclaimer")}
                 </span>
               </div>
               <button
@@ -547,7 +556,7 @@ export default function AiInsightsPanel() {
                   <polyline points="23,4 23,11 16,11"/><polyline points="1,20 1,13 8,13"/>
                   <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 11M1 13l4.64 4.36A9 9 0 0 0 20.49 15"/>
                 </svg>
-                Regenerate
+                {t("ai.regenerate")}
               </button>
             </div>
           </div>

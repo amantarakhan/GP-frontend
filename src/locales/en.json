@@ -26,7 +26,8 @@
     "savedReports": "Saved Reports",
     "settings": "Settings",
     "appendix": "Appendix",
-    "mainMenu": "Main Menu"
+    "mainMenu": "Main Menu",
+    "howToUse": "How to Use"
   },
 
   "businessTypes": {
@@ -319,7 +320,14 @@
     "reportSaved": "Report Saved!",
     "saveReport": "Save Report",
     "proTip": "Pro Tip",
-    "proTipText": "Click anywhere on the map to set your target location before running analysis."
+    "proTipText": "Click anywhere on the map to set your target location before running analysis.",
+    "resetScan": "Reset Scan",
+    "resetScanTitle": "Unsaved Scan",
+    "resetScanDesc": "Your current scan has not been saved. Would you like to save it to your reports before starting a new scan?",
+    "saveAndReset": "Save & Start New Scan",
+    "saving": "Saving…",
+    "discardAndReset": "Discard & Start New Scan",
+    "cancel": "Cancel"
   },
 
   "results": {
@@ -520,7 +528,7 @@
     "languageHint": "Choose the display language",
     "english": "English",
     "arabic": "العربية",
-    "dataPrivacy": "Data & Privacy",
+    "dataPrivacy": "Data and Privacy",
     "savedReportsLabel": "Saved Reports",
     "reportsStored": "{{count}} report{{s}} stored locally on this device",
     "exportJson": "Export JSON",
@@ -571,7 +579,7 @@
 
   "appendix": {
     "reference": "Reference",
-    "title": "Appendix & Methodology",
+    "title": "Appendix and Methodology",
     "subtitle": "Definitions for every metric shown in Localyze, and an explanation of how each score is calculated from real data. Click any term to expand its full explanation.",
     "howScanWorks": "How a Scan Works",
     "scanSteps": [
@@ -698,8 +706,7 @@
     "dataSources": "Data Sources",
     "dataSourceItems": [
       { "name": "Google Places API", "detail": "Competitor discovery — names, addresses, ratings, review counts, price levels, opening hours, and websites. Results are paginated up to 60 listings per query and cached for 1 hour." },
-      { "name": "Talabat Restaurant Database", "detail": "A curated dataset of Amman restaurants with their cuisine categories, used to filter Google Places results by sub-type (e.g. Sushi, Burgers). Matched using RapidFuzz token-set-ratio with an 85% confidence threshold." },
-      { "name": "Amman District Census Data", "detail": "District-level population data for Amman's sub-districts, including total population, age breakdowns (youth 15–34, elderly 60+), and gender ratios. Used for Foot Traffic, Demand Signal, and the demographic multiplier in the Feasibility Score." },
+{ "name": "Amman District Census Data", "detail": "District-level population data for Amman's sub-districts, including total population, age breakdowns (youth 15–34, elderly 60+), and gender ratios. Used for Foot Traffic, Demand Signal, and the demographic multiplier in the Feasibility Score." },
       { "name": "Jordanian Universities Whitelist", "detail": "A manually curated list of accredited Jordanian universities in both English and Arabic, used to validate nearby-education results from Google Places and exclude non-academic false positives." },
       { "name": "Google Gemini 2.5 Flash", "detail": "AI analysis model used to generate the plain-language insights panel. Receives the full structured scan result and returns a business-consultant-style summary, risk list, and differentiation suggestions." },
       { "name": "Firebase / Firestore", "detail": "User authentication and cloud storage for saved reports. Reports are stored per user in the saved_reports collection with full scan results, scores, and AI analysis text." }

@@ -187,6 +187,7 @@ export default function ResultPanel() {
 
 // ── InfoTooltip ───────────────────────────────────────────────────────────────
 function InfoTooltip({ content }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 

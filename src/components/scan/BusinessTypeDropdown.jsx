@@ -1,7 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { BUSINESS_TYPES } from "../../constants";
 
 export default function BusinessTypeDropdown({ value, onChange }) {
+  const { t } = useTranslation();
   const [open, setOpen]     = useState(false);
   const wrapRef             = useRef(null);
   const selected            = BUSINESS_TYPES.find((b) => b.value === value);
@@ -44,7 +46,7 @@ export default function BusinessTypeDropdown({ value, onChange }) {
             <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
             <circle cx="12" cy="9" r="2.5" />
           </svg>
-          {selected ? `${selected.emoji}  ${selected.label}` : "Select business type"}
+          {selected ? `${selected.emoji}  ${t(`businessTypes.${selected.value}`)}` : t("scan.selectBusinessType")}
         </div>
         <svg
           width="15" height="15" fill="none" viewBox="0 0 24 24"
@@ -98,7 +100,7 @@ export default function BusinessTypeDropdown({ value, onChange }) {
                 onMouseLeave={(e) => { if (!isSelected) e.currentTarget.style.background = "transparent"; }}
               >
                 <span style={{ fontSize:"16px" }}>{biz.emoji}</span>
-                {biz.label}
+                {t(`businessTypes.${biz.value}`)}
                 {isSelected && (
                   <svg style={{ marginLeft:"auto" }} width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="var(--color-brand)" strokeWidth={2.5}>
                     <polyline points="20,6 9,17 4,12" />

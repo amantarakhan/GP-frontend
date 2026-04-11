@@ -43,7 +43,7 @@ const STEPS = [
   },
   {
     id: "save",
-    title: "Save & Track Reports",
+    title: "Save and Track Reports",
     body: 'After running a scan, click "Save Report" in the top bar. Saved reports appear on your Dashboard and Reports page.',
     target: '[data-tutorial="save-report"]',
     placement: "bottom",

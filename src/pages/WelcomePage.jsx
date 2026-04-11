@@ -323,26 +323,6 @@ const FeatureCard = ({ icon, title, description, index }) => {
   );
 };
 
-// ─── Stat Badge ───────────────────────────────────────────────────────────────
-const StatBadge = ({ value, label }) => (
-  <div className="stat-badge" style={{
-    display: "flex", flexDirection: "column", alignItems: "center", gap: "5px",
-    padding: "22px 32px",
-    background: "rgba(255,255,255,0.06)",
-    border: "1px solid rgba(255,255,255,0.11)",
-    borderRadius: "18px", backdropFilter: "blur(10px)",
-  }}>
-    <span style={{
-      fontFamily: "var(--font-display)", fontSize: "2.1rem",
-      fontWeight: 800, color: "#FCFCFD", lineHeight: 1,
-    }}>{value}</span>
-    <span style={{
-      fontFamily: "var(--font-body)", fontSize: "0.75rem",
-      color: "rgba(252,252,253,0.6)", textTransform: "uppercase",
-      letterSpacing: "0.09em", fontWeight: 600,
-    }}>{label}</span>
-  </div>
-);
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // MAIN COMPONENT
@@ -1095,63 +1075,8 @@ const WelcomePage = () => {
           </div>
         </section>
 
-        {/* ════════════════════════════════════════
-            DARK STATS BAND
-        ════════════════════════════════════════ */}
-        <section
-          className="stats-band"
-          style={{
-            background: "linear-gradient(140deg, var(--color-dark) 0%, #162a1f 55%, var(--color-brand-dark) 100%)",
-            padding: "76px 5%", position: "relative", overflow: "hidden",
-          }}
-        >
-          <svg style={{
-            position: "absolute", inset: 0, width: "100%", height: "100%",
-            opacity: 0.05, pointerEvents: "none",
-          }}>
-            <defs>
-              <pattern id="dots2" x="0" y="0" width="24" height="24" patternUnits="userSpaceOnUse">
-                <circle cx="1.5" cy="1.5" r="1.5" fill="#fff" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#dots2)" />
-          </svg>
-          <div style={{
-            position: "absolute", top: "-60px", right: "8%",
-            width: "380px", height: "380px",
-            background: "radial-gradient(circle, rgba(63,125,88,0.22) 0%, transparent 70%)",
-            pointerEvents: "none",
-          }} />
-
-          <div style={{
-            maxWidth: "900px", margin: "0 auto",
-            display: "flex", flexDirection: "column",
-            alignItems: "center", gap: "44px", position: "relative",
-          }}>
-            <div style={{ textAlign: "center" }}>
-              <h2 style={{
-                fontFamily: "var(--font-display)",
-                fontSize: "clamp(1.5rem, 3vw, 2.2rem)",
-                fontWeight: 700, color: "#FCFCFD",
-                margin: "0 0 14px", letterSpacing: "-0.018em",
-              }}>{t("welcome.insightDriven")}</h2>
-              <p style={{
-                fontFamily: "var(--font-body)", fontSize: "0.95rem",
-                color: "rgba(252,252,253,0.62)", margin: 0,
-                maxWidth: "440px", lineHeight: 1.72,
-              }}>{t("welcome.insightDesc")}</p>
-            </div>
-            {/* Badges row — class added for responsive stacking */}
-            <div
-              className="stats-band-badges"
-              style={{ display: "flex", gap: "16px", flexWrap: "wrap", justifyContent: "center" }}
-            >
-              <StatBadge value="3×"        label={t("welcome.signalsAnalyzed")} />
-              <StatBadge value="Real-time" label={t("welcome.demandData")}      />
-              <StatBadge value="360°"      label={t("welcome.locationView")}    />
-            </div>
-          </div>
-        </section>
+        {/* Divider */}
+        <hr style={{ border: "none", borderTop: "1px solid rgba(0,0,0,0.08)", margin: 0 }} />
 
         {/* ════════════════════════════════════════
             ABOUT SECTION

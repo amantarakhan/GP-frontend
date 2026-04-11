@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useCallback } from "react";
 import { apiService } from "../services/apiService";
+import i18n from "i18next";
 
 const AnalysisContext = createContext(null);
 
@@ -73,7 +74,8 @@ export function AnalysisProvider({ children }) {
     setIsAiLoading(true);
     setAiError(null);
     try {
-      const analysisText = await apiService.analyzeResults(rawScanData);
+      const language = i18n.language?.startsWith("ar") ? "ar" : "en";
+      const analysisText = await apiService.analyzeResults(rawScanData, language);
       setAiAnalysis(analysisText);
       setHasAiResults(true);
     } catch (err) {

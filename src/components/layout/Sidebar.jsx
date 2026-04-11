@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { NAV_ITEMS } from "../../constants";
 import { useLocationAnalysis } from "../../hooks/useLocationAnalysis";
 import { apiService } from "../../services/apiService";
+import { useTutorialManager, TUTORIAL_IDS } from "../../context/TutorialContext";
 
 import globeIcon from "../../assets/logo2.png";
 import wordmark  from "../../assets/logo1.png";
@@ -57,6 +58,13 @@ const Icons = {
       <line x1="9" y1="7" x2="15" y2="7" />
       <line x1="9" y1="11" x2="15" y2="11" />
       <line x1="9" y1="15" x2="13" y2="15" />
+    </svg>
+  ),
+  howToUse: (
+    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3" />
+      <line x1="12" y1="17" x2="12.01" y2="17" strokeWidth={2.5} strokeLinecap="round" />
     </svg>
   ),
 };
@@ -161,6 +169,7 @@ export default function Sidebar({ expanded, setExpanded }) {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { hasResults } = useLocationAnalysis();
+  const { requestTutorial } = useTutorialManager();
   const location = useLocation();
   const [reportCount, setReportCount] = useState(0);
 
@@ -315,6 +324,38 @@ export default function Sidebar({ expanded, setExpanded }) {
             background: "rgba(255,255,255,.06)", flexShrink: 0,
           }}
         />
+
+        {/* ── How to Use ── */}
+        <div style={{ padding: expanded ? "4px 8px" : "4px 0", flexShrink: 0 }}>
+          <button
+            title={!expanded ? t("nav.howToUse") : undefined}
+            onClick={() => requestTutorial(TUTORIAL_IDS.ONBOARDING, 100)}
+            style={{
+              width:          expanded ? "100%" : "38px",
+              height:         "38px",
+              display:        "flex",
+              alignItems:     "center",
+              justifyContent: expanded ? "flex-start" : "center",
+              gap:            "11px",
+              padding:        expanded ? "0 12px" : "0",
+              borderRadius:   "10px",
+              border:         "none",
+              background:     "transparent",
+              color:          "#687280",
+              fontSize:       "13px",
+              fontFamily:     "var(--font-body)",
+              cursor:         "pointer",
+              transition:     "background .18s",
+              overflow:       "hidden",
+              whiteSpace:     "nowrap",
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = "rgba(255,255,255,.06)"}
+            onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+          >
+            <span style={{ flexShrink: 0, display: "flex", alignItems: "center" }}>{Icons.howToUse}</span>
+            {expanded && <span style={{ animation: "sbFadeIn .18s ease both" }}>{t("nav.howToUse")}</span>}
+          </button>
+        </div>
 
         {/* ── Appendix ── */}
         <div style={{ padding: expanded ? "4px 8px" : "4px 0", flexShrink: 0 }}>

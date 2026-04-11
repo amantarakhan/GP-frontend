@@ -136,11 +136,11 @@ export const apiService = {
    * @param {object} rawScanData - the raw response from /scan-location
    * @returns {string} - AI analysis markdown string
    */
-  async analyzeResults(rawScanData) {
+  async analyzeResults(rawScanData, language = "en") {
     const response = await fetch(`${SCAN_BASE_URL}/analyze`, {
       method:  "POST",
       headers: { "Content-Type": "application/json" },
-      body:    JSON.stringify({ scan_result: rawScanData }),
+      body:    JSON.stringify({ scan_result: rawScanData, language }),
     });
 
     if (!response.ok) {

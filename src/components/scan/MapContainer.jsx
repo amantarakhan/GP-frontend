@@ -1,11 +1,10 @@
-import React, { useCallback, useRef, useState, useEffect } from "react";
+import React, { useCallback, useRef, useEffect } from "react";
 import {
   GoogleMap,
   useJsApiLoader,
   Marker,
   Circle,
 } from "@react-google-maps/api";
-import { useTranslation } from "react-i18next";
 import { useLocationAnalysis } from "../../hooks/useLocationAnalysis";
 import { MOCK_COMPETITORS } from "../../constants";
 
@@ -16,7 +15,6 @@ const MAP_STYLES = [
   { elementType: "labels.text.fill",   stylers: [{ color: "#687280" }] },
   { featureType: "water",              elementType: "geometry",         stylers: [{ color: "#c8dde8" }] },
   { featureType: "water",              elementType: "labels.text.fill", stylers: [{ color: "#8aadbe" }] },
-  { featureType: "park",               elementType: "geometry",         stylers: [{ color: "#d1fae5" }] },
   { featureType: "road",               elementType: "geometry",         stylers: [{ color: "#ffffff" }] },
   { featureType: "road.arterial",      elementType: "geometry",         stylers: [{ color: "#f0ece0" }] },
   { featureType: "road.highway",       elementType: "geometry",         stylers: [{ color: "#e0dcd0" }] },
