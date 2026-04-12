@@ -16,6 +16,7 @@ import { useAnalysis } from "../../context/AnalysisContext";
 import { auth } from "../../firebase";
 import { saveReport as firestoreSaveReport } from "../../services/dbService";
 import { apiService } from "../../services/apiService";
+import { generatePDF } from "../../services/generatePDF";
 
 const PAGE_TITLES = {
   "/dashboard": "Dashboard",
@@ -27,10 +28,11 @@ export default function TopBar() {
   const { pathname } = useLocation();
   const navigate     = useNavigate();
   const { t } = useTranslation();
-  const { hasResults, results, pin, businessType, radius, aiAnalysis } = useAnalysis();
+  const { hasResults, results, pin, businessType, subType, radius, aiAnalysis } = useAnalysis();
 
   // ── Save button states ────────────────────────────────────────────────────
-  const [saveState, setSaveState] = useState("idle"); // "idle" | "saving" | "saved" | "error"
+  const [saveState,   setSaveState]   = useState("idle"); // "idle" | "saving" | "saved" | "error"
+  const [exportState, setExportState] = useState("idle"); // "idle" | "exporting"
 
   const PAGE_TITLES_I18N = {
     "/dashboard": t("nav.dashboard"),
@@ -191,21 +193,44 @@ export default function TopBar() {
 
           {/* Export */}
           <button
-            onClick={() => window.print()}
+            disabled={!hasResults || exportState === "exporting"}
+            onClick={async () => {
+              if (!hasResults || !results || !pin) return;
+              setExportState("exporting");
+              try {
+                generatePDF({ results, businessType, subType, radius, pin, aiAnalysis });
+              } finally {
+                setExportState("idle");
+              }
+            }}
             style={{
               display: "flex", alignItems: "center", gap: "6px",
               padding: "7px 14px", borderRadius: "8px",
               border: "1.5px solid var(--color-accent)",
-              background: "var(--color-card)", color: "var(--color-text)",
-              fontSize: "12px", fontWeight: 600, fontFamily: "var(--font-body)", cursor: "pointer",
+              background: "var(--color-card)",
+              color: hasResults ? "var(--color-text)" : "var(--color-text)",
+              fontSize: "12px", fontWeight: 600, fontFamily: "var(--font-body)",
+              cursor: hasResults ? "pointer" : "not-allowed",
+              opacity: hasResults ? 1 : 0.45,
+              transition: "opacity .2s",
             }}
           >
-            <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-              <polyline points="7,10 12,15 17,10"/>
-              <line x1="12" y1="15" x2="12" y2="3"/>
-            </svg>
-            {t("common.export")}
+            {exportState === "exporting" ? (
+              <span style={{
+                width: "11px", height: "11px",
+                border: "2px solid rgba(104,114,128,.3)",
+                borderTop: "2px solid var(--color-text)",
+                borderRadius: "50%", display: "inline-block",
+                animation: "topbarSpin .7s linear infinite",
+              }} />
+            ) : (
+              <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                <polyline points="7,10 12,15 17,10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+            )}
+            {exportState === "exporting" ? t("topbar.saving") : t("common.export")}
           </button>
 
           {/* Save Report — Firestore-powered */}
