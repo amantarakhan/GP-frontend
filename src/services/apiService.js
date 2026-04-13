@@ -44,7 +44,7 @@ export function normaliseResponse(raw, params) {
 
   return {
     // ── Core metrics ──────────────────────────────────────────────────────────
-    feasibility:  Math.round(feasibility_index),
+    feasibility:  feasibility_index != null ? Math.round(feasibility_index) : null,
     competitors:  total_competitors,
     saturation,
     footTraffic,
@@ -55,36 +55,40 @@ export function normaliseResponse(raw, params) {
     coverage:     `${areaSqKm} km²`,
 
     // ── Rich data for panels ──────────────────────────────────────────────────
-    avgRating:        rating_stats?.average?.toFixed(1) ?? "—",
-    avgPriceLevel:    price_level_stats?.average?.toFixed(1) ?? "—",
-    districtName:     district_profile?.district_name_en ?? "Unknown",
-    districtNameAr:   district_profile?.district_name_ar ?? "",
-    youthPercentage:  district_profile?.youth_percentage ?? null,
-    youthRank:        district_profile?.youth_rank ?? null,
-    totalPopulation:  district_profile?.total_population ?? null,
-    educationCount:   education_institutions_nearby?.count ?? 0,
-    educationList:    education_institutions_nearby?.institutions ?? [],
+    avgRating:          rating_stats?.average?.toFixed(1) ?? "—",
+    avgPriceLevel:      price_level_stats?.average?.toFixed(1) ?? "—",
+    districtName:       district_profile?.district_name_en ?? "Unknown",
+    districtNameAr:     district_profile?.district_name_ar ?? "",
+    youthPercentage:    district_profile?.youth_percentage ?? null,
+    youthRank:          district_profile?.youth_rank ?? null,
+    totalPopulation:    district_profile?.total_population ?? null,
+    elderlyPercentage:  district_profile?.elderly_percentage ?? null,
+    youthPopulation:    district_profile?.youth_population ?? null,
+    elderlyPopulation:  district_profile?.elderly_population ?? null,
+    maleRatio:          district_profile?.male_ratio ?? null,
+    femaleRatio:        district_profile?.female_ratio ?? null,
+    parentDistrict:     district_profile?.parent_district ?? null,
+    educationCount:     education_institutions_nearby?.count ?? 0,
+    educationList:      education_institutions_nearby?.institutions ?? [],
 
-    // ── Competitor list (raw from API) ────────────────────────────────────────
+    // ── Competitor list ───────────────────────────────────────────────────────
     competitorList: competitors.map((c, i) => ({
-      id:         i + 1,
-      name:       c.name,
-      address:    c.address,
-      phone:      c.phone,
-      rating:     c.rating,
-      priceLevel: c.price_level,
-      reviews:    c.user_total_ratings,
-      website:    c.website,
-      hours:      c.opening_hours ?? [],
-      location:   c.location,
-      // Derive threat level from rating + review count
-      status: deriveStatus(c.rating, c.user_total_ratings),
+      id:               i + 1,
+      name:             c.name,
+      address:          c.address,
+      rating:           c.rating,
+      priceLevel:       c.price_level,
+      reviews:          c.user_total_ratings,
+      location:         c.location,
+      onTalabat:        c.on_talabat ?? false,
+      talabatCategories: c.talabat_categories ?? [],
+      status:           deriveStatus(c.rating, c.user_total_ratings),
     })),
 
     // ── Scan metadata ─────────────────────────────────────────────────────────
-    scannedAt: new Date().toISOString(),
-    scanLat:   lat,
-    scanLng:   lng,
+    scannedAt:  new Date().toISOString(),
+    scanLat:    lat,
+    scanLng:    lng,
     scanRadius: radius_m,
   };
 }
@@ -101,16 +105,16 @@ export const apiService = {
   /**
    * Run a market scan.
    * Returns both the normalised UI data AND the raw API response.
-   * @param {{ businessType, category, radius, lat, lng }} params
+   * @param {{ businessType, subType, radius, lat, lng }} params
    * @returns {{ normalised: object, raw: object }}
    */
-  async runScan({ businessType, category, radius, lat, lng }) {
+  async runScan({ businessType, subType, radius, lat, lng }) {
     const url = new URL(`${SCAN_BASE_URL}/scan-location`);
     url.searchParams.set("lat",        lat);
     url.searchParams.set("lng",        lng);
     url.searchParams.set("radius",     radius);
     url.searchParams.set("place_type", businessType);
-    if (category?.trim()) url.searchParams.set("category", category.trim());
+    if (subType?.trim()) url.searchParams.set("sub_type", subType.trim());
 
     const response = await fetch(url.toString(), {
       method:  "GET",

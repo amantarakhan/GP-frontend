@@ -7,7 +7,7 @@ const AnalysisContext = createContext(null);
 export function AnalysisProvider({ children }) {
   // ── Form state ──────────────────────────────────────────────────────────────
   const [businessType, setBusinessType] = useState("");
-  const [category,     setCategory]     = useState("");
+  const [subType,      setSubType]      = useState("");
   const [radius,       setRadius]       = useState(750);
   const [location,     setLocation]     = useState("");
   const [pin,          setPin]          = useState(null);
@@ -55,7 +55,7 @@ export function AnalysisProvider({ children }) {
 
     try {
       const { normalised, raw } = await apiService.runScan({
-        businessType, category, radius,
+        businessType, subType, radius,
         lat: pin.lat, lng: pin.lng,
       });
       setResults(normalised);
@@ -67,7 +67,7 @@ export function AnalysisProvider({ children }) {
     } finally {
       setIsAnalyzing(false);
     }
-  }, [businessType, category, radius, pin]);
+  }, [businessType, subType, radius, pin]);
 
   const runAiAnalysis = useCallback(async () => {
     if (!rawScanData) return;
@@ -88,7 +88,7 @@ export function AnalysisProvider({ children }) {
 
   /**
    * Run a comparison scan for the second pin.
-   * Uses same businessType, category, radius as the primary scan.
+   * Uses same businessType, subType, radius as the primary scan.
    */
   const runCompareAnalysis = useCallback(async () => {
     if (!businessType || !comparePin) return;
@@ -99,7 +99,7 @@ export function AnalysisProvider({ children }) {
     try {
       const { normalised } = await apiService.runScan({
         businessType,
-        category,
+        subType,
         radius,
         lat: comparePin.lat,
         lng: comparePin.lng,
@@ -112,7 +112,7 @@ export function AnalysisProvider({ children }) {
     } finally {
       setIsComparing(false);
     }
-  }, [businessType, category, radius, comparePin]);
+  }, [businessType, subType, radius, comparePin]);
 
   const resetCompare = useCallback(() => {
     setComparePin(null);
@@ -166,7 +166,7 @@ export function AnalysisProvider({ children }) {
   const value = {
     // form
     businessType, setBusinessType,
-    category,     setCategory,
+    subType,      setSubType,
     radius,       setRadius,
     location,     setLocation,
     pin,          setPin,

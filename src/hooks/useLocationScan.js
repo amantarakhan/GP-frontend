@@ -29,10 +29,10 @@ export function useLocationScan() {
    *   lng:        number | string,
    *   radius:     number,
    *   place_type: string,   // matches the API param name exactly
-   *   category?:  string,   // optional
+   *   sub_type?:  string,   // optional
    * }} params
    */
-  const scan = useCallback(async ({ lat, lng, radius, place_type, category }) => {
+  const scan = useCallback(async ({ lat, lng, radius, place_type, sub_type }) => {
     // Guard: require coords and a place type
     if (!lat || !lng || !place_type) {
       setError("lat, lng, and place_type are required.");
@@ -49,8 +49,8 @@ export function useLocationScan() {
     url.searchParams.set("radius",     radius ?? 750);
     url.searchParams.set("place_type", place_type);
 
-    if (category && category.trim() !== "") {
-      url.searchParams.set("category", category.trim());
+    if (sub_type && sub_type.trim() !== "") {
+      url.searchParams.set("sub_type", sub_type.trim());
     }
 
     try {

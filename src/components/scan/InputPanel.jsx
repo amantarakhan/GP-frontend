@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocationAnalysis } from "../../hooks/useLocationAnalysis";
-import { getRadiusLabel, formatRadius, SUBCATEGORIES } from "../../constants";
+import { getRadiusLabel, formatRadius, SUBCATEGORIES, MAX_RADIUS } from "../../constants";
 import BusinessTypeDropdown from "./BusinessTypeDropdown";
 import { auth } from "../../firebase";
 import { saveReport as firestoreSaveReport } from "../../services/dbService";
@@ -54,7 +54,7 @@ function SubCategoryDropdown({ businessType, value, onChange }) {
           transition: "all .2s",
         }}
       >
-        <span>{selected ? t(`subcategories.${selected.value}`) : t("scan.selectCategory")}</span>
+        <span>{selected ? selected.label : t("scan.selectCategory")}</span>
         <svg width="15" height="15" fill="none" viewBox="0 0 24 24"
           stroke="var(--color-text)" strokeWidth={2.5}
           style={{ transform: open ? "rotate(180deg)" : "none", transition: "transform .2s", flexShrink: 0 }}>
@@ -90,7 +90,7 @@ function SubCategoryDropdown({ businessType, value, onChange }) {
                 onMouseEnter={(e) => { if (!isSelected) e.currentTarget.style.background = "rgba(63,125,88,.05)"; }}
                 onMouseLeave={(e) => { if (!isSelected) e.currentTarget.style.background = "transparent"; }}
               >
-                {t(`subcategories.${opt.value}`)}
+                {opt.label}
                 {isSelected && (
                   <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="var(--color-brand)" strokeWidth={2.5}>
                     <polyline points="20,6 9,17 4,12" />
@@ -108,7 +108,7 @@ function SubCategoryDropdown({ businessType, value, onChange }) {
 export default function InputPanel() {
   const {
     businessType, setBusinessType,
-    category,     setCategory,
+    subType,      setSubType,
     radius,       setRadius,
     location,     setLocation,
     pin,
@@ -126,7 +126,8 @@ export default function InputPanel() {
 
   React.useEffect(() => { setSaveState("idle"); }, [hasResults]);
 
-  const sliderPct = ((radius - 250) / (5000 - 250)) * 100;
+  const maxRadius = MAX_RADIUS[businessType] ?? 5000;
+  const sliderPct = ((radius - 250) / (maxRadius - 250)) * 100;
   const sliderBg  = `linear-gradient(to right, var(--color-brand) 0%, var(--color-brand) ${sliderPct}%, var(--color-accent) ${sliderPct}%, var(--color-accent) 100%)`;
 
   // canRun requires businessType (from hook) AND a pin on the map
@@ -167,7 +168,12 @@ export default function InputPanel() {
       {/* Business Type */}
       <div>
         <Label>{t("scan.businessType")}</Label>
-        <BusinessTypeDropdown value={businessType} onChange={(val) => { setBusinessType(val); setCategory(""); }} />
+        <BusinessTypeDropdown value={businessType} onChange={(val) => {
+          setBusinessType(val);
+          setSubType("");
+          const cap = MAX_RADIUS[val] ?? 5000;
+          if (radius > cap) setRadius(cap);
+        }} />
       </div>
 
       {/* Category */}
@@ -175,8 +181,8 @@ export default function InputPanel() {
         <Label>{t("scan.targetCategory")}</Label>
         <SubCategoryDropdown
           businessType={businessType}
-          value={category}
-          onChange={(val) => { setCategory(val); }}
+          value={subType}
+          onChange={(val) => { setSubType(val); }}
         />
       </div>
 
@@ -194,14 +200,14 @@ export default function InputPanel() {
           </div>
         </div>
         <input
-          type="range" min={250} max={5000} step={250}
+          type="range" min={250} max={maxRadius} step={250}
           value={radius}
           onChange={(e) => setRadius(Number(e.target.value))}
           style={{ width:"100%", background: sliderBg }}
         />
         <div style={{ display:"flex", justifyContent:"space-between", marginTop:"6px" }}>
           <span style={{ fontFamily:"monospace", fontSize:"10px", color:"var(--color-text)" }}>250m</span>
-          <span style={{ fontFamily:"monospace", fontSize:"10px", color:"var(--color-text)" }}>5 km</span>
+          <span style={{ fontFamily:"monospace", fontSize:"10px", color:"var(--color-text)" }}>{formatRadius(maxRadius)}</span>
         </div>
       </div>
 
