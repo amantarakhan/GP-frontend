@@ -92,7 +92,7 @@ const DotGrid = () => (
   </svg>
 );
 
-const Field = ({ label, icon, type="text", value, onChange, delay="0s", suffix }) => {
+const Field = ({ label, icon, type="text", value, onChange, delay="0s", suffix, onKeyDown }) => {
   const [focus, setFocus] = useState(false);
   const up = focus || value.length > 0;
   return (
@@ -118,6 +118,7 @@ const Field = ({ label, icon, type="text", value, onChange, delay="0s", suffix }
         <span style={{ color: focus ? "var(--color-brand)" : "rgba(63,125,88,.4)", marginRight:"10px", marginLeft:"2px", display:"flex", alignItems:"center", transition:"color .2s", flexShrink:0 }}>{icon}</span>
         <input type={type} value={value} onChange={onChange}
           onFocus={()=>setFocus(true)} onBlur={()=>setFocus(false)}
+          onKeyDown={onKeyDown}
           style={{ flex:1, border:"none", outline:"none", background:"transparent", fontFamily:"var(--font-body)", fontSize:"0.95rem", color:"var(--color-dark)", padding:"9px 0 10px", caretColor:"var(--color-brand)" }}
         />
         {suffix}
@@ -358,14 +359,14 @@ export default function LoginPage() {
                 {/* FIELDS */}
                 <div style={{ display:"flex", flexDirection:"column", gap:"26px", marginBottom:"16px" }}>
                   <div>
-                    <Field label={t("login.emailLabel")} icon={<Mail/>} type="email" value={email} onChange={e=>setEmail(e.target.value)} delay=".06s"/>
+                    <Field label={t("login.emailLabel")} icon={<Mail/>} type="email" value={email} onChange={e=>setEmail(e.target.value)} delay=".06s" onKeyDown={e=>e.key==="Enter"&&submit()}/>
                     <Err msg={errors.email}/>
                   </div>
                   <div>
                     <Field label={t("login.passwordLabel")} icon={<Lock/>}
                       type={showPw ? "text" : "password"}
                       value={password} onChange={e=>setPassword(e.target.value)}
-                      delay=".14s"
+                      delay=".14s" onKeyDown={e=>e.key==="Enter"&&submit()}
                       suffix={
                         <button type="button" onClick={()=>setShowPw(v=>!v)}
                           style={{ background:"none", border:"none", cursor:"pointer", padding:"0 0 0 8px", color:"var(--color-text)", opacity:.45, display:"flex", alignItems:"center", transition:"opacity .2s" }}

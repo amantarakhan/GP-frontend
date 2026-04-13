@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { createPortal } from "react-dom";
 import InputPanel      from "../components/scan/InputPanel";
@@ -143,11 +142,8 @@ function ResetModal({ onSaveAndReset, onResetOnly, onCancel, isSaving, t }) {
 
 // ── ScanPage ──────────────────────────────────────────────────────────────────
 export default function ScanPage() {
-  const navigate = useNavigate();
-  const location = useLocation();
   const { t } = useTranslation();
   const {
-    comparePin, comparePicking,
     hasResults, results, businessType, radius, pin, aiAnalysis,
     saveCurrentReport, resetAnalysis,
   } = useLocationAnalysis();
@@ -155,12 +151,7 @@ export default function ScanPage() {
   const [showResetModal, setShowResetModal] = useState(false);
   const [isSaving,       setIsSaving]       = useState(false);
 
-  // After picking Location B on map, navigate back to compare page
-  useEffect(() => {
-    if (comparePin && !comparePicking && location.state?.returnTo) {
-      navigate(location.state.returnTo, { replace: true });
-    }
-  }, [comparePin, comparePicking]);
+  // Navigation back to compare happens when user clicks "Run Comparison" in the banner
 
   // ── Helpers ─────────────────────────────────────────────────────────────────
   const handleResetClick = () => {

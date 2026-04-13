@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useLocationAnalysis } from "../../hooks/useLocationAnalysis";
 
@@ -296,6 +297,7 @@ function CompareSkeleton() {
 // ═══════════════════════════════════════════════════════════════════════════════
 export default function CompareModal() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const {
     compareMode,     setCompareMode,
     comparePicking,  setComparePicking,
@@ -308,6 +310,7 @@ export default function CompareModal() {
     pin,
     results,
     resetCompare,
+    radiusDisplay,
   } = useLocationAnalysis();
 
   const [animating, setAnimating] = useState(false);
@@ -321,16 +324,14 @@ export default function CompareModal() {
     }
   }, [compareMode]);
 
-  // When compare pin is set, animate banner back to full modal
-  useEffect(() => {
-    if (comparePin && !comparePicking) {
-      // Pin just dropped — trigger run automatically
-      runCompareAnalysis();
-    }
-  }, [comparePin, comparePicking]);
+  // Show picking banner, "ready" banner, or full modal
+  // (null when nothing compare-related is active)
+  if (!compareMode && !comparePicking && !comparePin) return null;
 
-  // Show picking banner even when compareMode is false (user came from /compare page)
-  if (!compareMode && !comparePicking) return null;
+  const handleRunComparison = () => {
+    runCompareAnalysis();
+    navigate("/compare");
+  };
 
   const winner = getOverallWinner(results, compareResults);
 
@@ -448,6 +449,93 @@ export default function CompareModal() {
               40%            { transform: scale(1.4);  opacity: 1;  }
             }
           `}</style>
+        </div>
+      </>
+    );
+  }
+
+  // ── Ready banner (pin dropped, user can adjust radius then run) ────────────
+  if (comparePin && !comparePicking && !compareMode) {
+    return (
+      <>
+        <style>{`
+          @keyframes readyBannerIn {
+            from { transform: translateY(100%); opacity: 0; }
+            to   { transform: translateY(0);    opacity: 1; }
+          }
+        `}</style>
+        <div style={{
+          position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 1000,
+          animation: "readyBannerIn .35s cubic-bezier(.34,1.56,.64,1) both",
+        }}>
+          <div style={{
+            margin: "0 20px 20px",
+            background: "rgba(15,15,25,.95)",
+            backdropFilter: "blur(20px)",
+            borderRadius: "16px",
+            border: "1px solid rgba(99,102,241,.4)",
+            padding: "16px 22px",
+            display: "flex", alignItems: "center",
+            justifyContent: "space-between", gap: "16px",
+            boxShadow: "0 -4px 40px rgba(99,102,241,.25), 0 8px 40px rgba(0,0,0,.3)",
+          }}>
+            {/* Left: info */}
+            <div style={{ display: "flex", alignItems: "center", gap: "14px", minWidth: 0 }}>
+              <div style={{
+                width: 40, height: 40, borderRadius: "12px", flexShrink: 0,
+                background: "linear-gradient(135deg,rgba(99,102,241,.3),rgba(99,102,241,.12))",
+                border: "1px solid rgba(99,102,241,.45)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#818cf8" strokeWidth={2}>
+                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+                  <circle cx="12" cy="9" r="2.5" fill="#818cf8"/>
+                </svg>
+              </div>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontFamily: "var(--font-body)", fontSize: "13.5px", fontWeight: 700, color: "#f1f5f9", marginBottom: "3px" }}>
+                  Location B ready — adjust radius if needed
+                </div>
+                <div style={{ fontFamily: "monospace", fontSize: "11px", color: "rgba(148,163,184,.75)", display: "flex", gap: "12px", flexWrap: "wrap" }}>
+                  <span>📍 {comparePin.lat}, {comparePin.lng}</span>
+                  <span style={{ color: "rgba(99,102,241,.9)", fontWeight: 600 }}>◎ {radiusDisplay} radius</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Right: actions */}
+            <div style={{ display: "flex", alignItems: "center", gap: "10px", flexShrink: 0 }}>
+              <button
+                onClick={() => { setComparePicking(true); setComparePin(null); }}
+                style={{
+                  fontFamily: "var(--font-body)", fontSize: "12px", fontWeight: 600,
+                  color: "rgba(148,163,184,.85)",
+                  background: "rgba(255,255,255,.06)", border: "1px solid rgba(255,255,255,.1)",
+                  borderRadius: "10px", padding: "9px 16px", cursor: "pointer", transition: "background .15s",
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,.11)"}
+                onMouseLeave={e => e.currentTarget.style.background = "rgba(255,255,255,.06)"}
+              >
+                ← Repick
+              </button>
+              <button
+                onClick={handleRunComparison}
+                style={{
+                  fontFamily: "var(--font-body)", fontSize: "13px", fontWeight: 700,
+                  color: "#fff",
+                  background: "linear-gradient(135deg,#6366f1,#4338ca)",
+                  border: "none", borderRadius: "10px", padding: "10px 22px",
+                  cursor: "pointer",
+                  boxShadow: "0 4px 18px rgba(99,102,241,.45)",
+                  transition: "transform .15s, box-shadow .15s",
+                }}
+                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 6px 22px rgba(99,102,241,.55)"; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 4px 18px rgba(99,102,241,.45)"; }}
+              >
+                Run Comparison →
+              </button>
+            </div>
+          </div>
         </div>
       </>
     );

@@ -1,5 +1,5 @@
-import React, { useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React from "react";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useLocationAnalysis } from "../hooks/useLocationAnalysis";
 /* eslint-disable react/prop-types */
@@ -138,6 +138,101 @@ function LocationCard({ letter, color, pin, results, isWinner }) {
   );
 }
 
+const STATUS_COLOR = { high: "#dc2626", medium: "#b45309", low: "#3f7d58" };
+
+function CompetitorColumn({ letter, color, competitors, t }) {
+  const [showAll, setShowAll] = React.useState(false);
+  const visible = showAll ? competitors : competitors.slice(0, 5);
+
+  return (
+    <div style={{
+      background: "var(--color-card)", borderRadius: "var(--radius-lg)",
+      border: `1px solid ${color}33`, overflow: "hidden",
+    }}>
+      {/* Header */}
+      <div style={{
+        display: "flex", alignItems: "center", gap: "8px",
+        padding: "13px 16px", borderBottom: "1px solid rgba(230,211,173,.4)",
+        background: `${color}08`,
+      }}>
+        <div style={{
+          width: 22, height: 22, borderRadius: "50%", background: color,
+          display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+        }}>
+          <span style={{ fontFamily: "var(--font-display)", fontSize: "10px", fontWeight: 700, color: "#fff" }}>{letter}</span>
+        </div>
+        <span style={{ fontFamily: "var(--font-body)", fontSize: "12px", fontWeight: 700, color, textTransform: "uppercase", letterSpacing: "1px" }}>
+          {t("compare.location", { letter })}
+        </span>
+        <span style={{
+          marginLeft: "auto", background: `${color}20`, color,
+          fontSize: "10px", fontWeight: 700, padding: "2px 8px",
+          borderRadius: "10px", fontFamily: "monospace",
+        }}>
+          {competitors.length}
+        </span>
+      </div>
+
+      {/* Rows */}
+      {competitors.length === 0 ? (
+        <div style={{ padding: "20px 16px", textAlign: "center", fontFamily: "var(--font-body)", fontSize: "12px", color: "var(--color-text)", opacity: .6 }}>
+          {t("compare.noCompetitors")}
+        </div>
+      ) : (
+        <>
+          {visible.map((c) => (
+            <div key={c.id} style={{
+              display: "flex", alignItems: "center", gap: "10px",
+              padding: "10px 16px", borderBottom: "1px solid rgba(230,211,173,.25)",
+            }}>
+              <div style={{
+                width: 30, height: 30, borderRadius: "8px", flexShrink: 0,
+                background: `linear-gradient(135deg,${color},${color}bb)`,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontFamily: "var(--font-display)", fontSize: "12px", fontWeight: 700, color: "#fff",
+              }}>
+                {c.name.charAt(0).toUpperCase()}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontFamily: "var(--font-body)", fontSize: "12px", fontWeight: 600, color: "var(--color-dark)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  {c.name}
+                </div>
+                <div style={{ fontFamily: "var(--font-body)", fontSize: "10.5px", color: "var(--color-text)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  {c.address}
+                </div>
+              </div>
+              {c.rating && (
+                <div style={{ display: "flex", alignItems: "center", gap: "3px", flexShrink: 0 }}>
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="var(--color-brand)">
+                    <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/>
+                  </svg>
+                  <span style={{ fontFamily: "monospace", fontSize: "10px", fontWeight: 700, color: "var(--color-dark)" }}>{c.rating.toFixed(1)}</span>
+                </div>
+              )}
+              <div style={{
+                width: 8, height: 8, borderRadius: "50%", flexShrink: 0,
+                background: STATUS_COLOR[c.status] ?? "#687280",
+              }} title={c.status} />
+            </div>
+          ))}
+          {competitors.length > 5 && (
+            <button
+              onClick={() => setShowAll(v => !v)}
+              style={{
+                width: "100%", padding: "10px", background: "none", border: "none",
+                fontFamily: "var(--font-body)", fontSize: "11.5px", fontWeight: 600,
+                color, cursor: "pointer",
+              }}
+            >
+              {showAll ? t("competitors.showLess") : t("competitors.showAll", { count: competitors.length })}
+            </button>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
 function CompareSkeleton() {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
@@ -156,12 +251,11 @@ function CompareSkeleton() {
 
 export default function ComparePage() {
   const navigate = useNavigate();
-  const location = useLocation();
   const { t } = useTranslation();
 
   const {
     comparePin,      setComparePin,
-    comparePicking,  setComparePicking,
+    setComparePicking,
     compareResults,
     hasCompareResults,
     isComparing,
@@ -173,11 +267,7 @@ export default function ComparePage() {
     hasResults,
   } = useLocationAnalysis();
 
-  useEffect(() => {
-    if (comparePin && !comparePicking) {
-      runCompareAnalysis();
-    }
-  }, [comparePin, comparePicking]);
+  // Compare is triggered manually via the "Run Comparison" button in CompareModal
 
   const winner = getOverallWinner(results, compareResults);
 
@@ -406,6 +496,26 @@ export default function ComparePage() {
                   </div>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* ── Competitor lists ── */}
+          {hasCompareResults && results?.competitorList?.length > 0 && (
+            <div className="fade-in fade-in-3" style={{
+              display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px",
+            }}>
+              <CompetitorColumn
+                letter="A"
+                color="#3f7d58"
+                competitors={results.competitorList}
+                t={t}
+              />
+              <CompetitorColumn
+                letter="B"
+                color="#6366f1"
+                competitors={compareResults?.competitorList ?? []}
+                t={t}
+              />
             </div>
           )}
 

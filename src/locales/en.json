@@ -461,7 +461,8 @@
     "sameTypeNote": "Same business type and radius used for both scans.",
     "clickMapSelect": "Click to go to the map and select a second location",
     "runComparison": "Run Comparison →",
-    "compareAnother": "Compare Another →"
+    "compareAnother": "Compare Another →",
+    "noCompetitors": "No competitors found"
   },
 
   "map": {
