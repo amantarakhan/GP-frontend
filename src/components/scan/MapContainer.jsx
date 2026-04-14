@@ -5,7 +5,6 @@ import {
   Marker,
 } from "@react-google-maps/api";
 import { useLocationAnalysis } from "../../hooks/useLocationAnalysis";
-import { MOCK_COMPETITORS } from "../../constants";
 
 // ── Map style ─────────────────────────────────────────────────────────────────
 const MAP_STYLES = [
@@ -40,12 +39,6 @@ const MAP_OPTIONS = {
 const CONTAINER_STYLE = { width: "100%", height: "100%" };
 const DEFAULT_CENTER  = { lat: 31.9454, lng: 35.9284 };
 
-const STATUS_COLOR = {
-  high:   "#dc2626",
-  medium: "#b45309",
-  low:    "#3f7d58",
-};
-
 const LIBRARIES = ["places"];
 
 export default function MapContainer() {
@@ -62,7 +55,6 @@ export default function MapContainer() {
   // prop-diffing bugs that leave stale circles/markers on the canvas.
   const circleRef            = useRef(null);
   const compareCircleRef     = useRef(null);
-  const competitorMarkersRef = useRef([]);
 
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY ?? "";
   const { isLoaded, loadError } = useJsApiLoader({
@@ -140,48 +132,6 @@ export default function MapContainer() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mapReady, comparePin?.lat, comparePin?.lng, radius]);
 
-  // ── Competitor markers (fully imperative) ───────────────────────────────────
-  useEffect(() => {
-    if (!mapReady || !mapRef.current) return;
-
-    // Clear previous markers
-    competitorMarkersRef.current.forEach(m => m.setMap(null));
-    competitorMarkersRef.current = [];
-
-    if (!pin) return;
-
-    const center = { lat: Number(pin.lat), lng: Number(pin.lng) };
-    MOCK_COMPETITORS.forEach((c, i) => {
-      const angle    = (i / MOCK_COMPETITORS.length) * 2 * Math.PI;
-      const dist     = (radius * 0.3 + (i % 3) * radius * 0.15) / 111000;
-      const position = {
-        lat: center.lat + dist * Math.cos(angle),
-        lng: center.lng + dist * Math.sin(angle),
-      };
-
-      const marker = new window.google.maps.Marker({
-        position,
-        map:   mapRef.current,
-        title: `${c.name} · ${c.type}`,
-        icon:  {
-          path:         window.google.maps.SymbolPath.CIRCLE,
-          scale:        6,
-          fillColor:    STATUS_COLOR[c.status] ?? "#687280",
-          fillOpacity:  0.85,
-          strokeColor:  "#ffffff",
-          strokeWeight: 1.5,
-        },
-      });
-      competitorMarkersRef.current.push(marker);
-    });
-
-    return () => {
-      competitorMarkersRef.current.forEach(m => m.setMap(null));
-      competitorMarkersRef.current = [];
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mapReady, pin?.lat, pin?.lng, radius]);
-
   // ── Map options (memoized to avoid style flash) ─────────────────────────────
   const mapOptions = useMemo(() => ({
     ...MAP_OPTIONS,
@@ -197,8 +147,6 @@ export default function MapContainer() {
     // Clean up all native overlays before map is destroyed
     if (circleRef.current)        { circleRef.current.setMap(null);        circleRef.current = null; }
     if (compareCircleRef.current) { compareCircleRef.current.setMap(null); compareCircleRef.current = null; }
-    competitorMarkersRef.current.forEach(m => m.setMap(null));
-    competitorMarkersRef.current = [];
     mapRef.current = null;
     setMapReady(false);
   }, []);
