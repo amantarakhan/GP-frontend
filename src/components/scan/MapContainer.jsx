@@ -1,12 +1,10 @@
-import React, { useCallback, useRef, useEffect } from "react";
+import React, { useCallback, useRef, useEffect, useMemo, useState } from "react";
 import {
   GoogleMap,
   useJsApiLoader,
   Marker,
-  Circle,
 } from "@react-google-maps/api";
 import { useLocationAnalysis } from "../../hooks/useLocationAnalysis";
-import { MOCK_COMPETITORS } from "../../constants";
 
 // ── Map style ─────────────────────────────────────────────────────────────────
 const MAP_STYLES = [
@@ -41,12 +39,6 @@ const MAP_OPTIONS = {
 const CONTAINER_STYLE = { width: "100%", height: "100%" };
 const DEFAULT_CENTER  = { lat: 31.9454, lng: 35.9284 };
 
-const STATUS_COLOR = {
-  high:   "#dc2626",
-  medium: "#b45309",
-  low:    "#3f7d58",
-};
-
 const LIBRARIES = ["places"];
 
 export default function MapContainer() {
@@ -56,7 +48,13 @@ export default function MapContainer() {
     comparePin,
   } = useLocationAnalysis();
 
-  const mapRef = useRef(null);
+  const mapRef              = useRef(null);
+  const [mapReady, setMapReady] = useState(false);
+
+  // Native overlay refs — managed imperatively to avoid @react-google-maps/api
+  // prop-diffing bugs that leave stale circles/markers on the canvas.
+  const circleRef            = useRef(null);
+  const compareCircleRef     = useRef(null);
 
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY ?? "";
   const { isLoaded, loadError } = useJsApiLoader({
@@ -64,29 +62,94 @@ export default function MapContainer() {
     libraries: LIBRARIES,
   });
 
-  const competitorPositions = MOCK_COMPETITORS.map((c, i) => {
-    const center = pin
-      ? { lat: Number(pin.lat), lng: Number(pin.lng) }
-      : DEFAULT_CENTER;
-    const angle = (i / MOCK_COMPETITORS.length) * 2 * Math.PI;
-    const dist  = (radius * 0.3 + (i % 3) * radius * 0.15) / 111000;
-    return {
-      ...c,
-      position: {
-        lat: center.lat + dist * Math.cos(angle),
-        lng: center.lng + dist * Math.sin(angle),
-      },
-    };
-  });
-
+  // ── Pan to new primary pin ──────────────────────────────────────────────────
   useEffect(() => {
     if (pin && mapRef.current) {
       mapRef.current.panTo({ lat: Number(pin.lat), lng: Number(pin.lng) });
     }
   }, [pin]);
 
-  const onLoad    = useCallback((map) => { mapRef.current = map; }, []);
-  const onUnmount = useCallback(() => { mapRef.current = null; }, []);
+  // ── Primary radius circle (fully imperative) ────────────────────────────────
+  useEffect(() => {
+    if (!mapReady || !mapRef.current) return;
+
+    // Remove old circle first
+    if (circleRef.current) {
+      circleRef.current.setMap(null);
+      circleRef.current = null;
+    }
+
+    if (!pin) return;
+
+    circleRef.current = new window.google.maps.Circle({
+      center:        { lat: Number(pin.lat), lng: Number(pin.lng) },
+      radius,
+      map:           mapRef.current,
+      strokeColor:   "#3f7d58",
+      strokeOpacity: 0.9,
+      strokeWeight:  1.8,
+      fillColor:     "#3f7d58",
+      fillOpacity:   0.09,
+    });
+
+    return () => {
+      if (circleRef.current) {
+        circleRef.current.setMap(null);
+        circleRef.current = null;
+      }
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mapReady, pin?.lat, pin?.lng, radius]);
+
+  // ── Compare radius circle (fully imperative) ────────────────────────────────
+  useEffect(() => {
+    if (!mapReady || !mapRef.current) return;
+
+    if (compareCircleRef.current) {
+      compareCircleRef.current.setMap(null);
+      compareCircleRef.current = null;
+    }
+
+    if (!comparePin) return;
+
+    compareCircleRef.current = new window.google.maps.Circle({
+      center:        { lat: Number(comparePin.lat), lng: Number(comparePin.lng) },
+      radius,
+      map:           mapRef.current,
+      strokeColor:   "#6366f1",
+      strokeOpacity: 0.9,
+      strokeWeight:  1.8,
+      fillColor:     "#6366f1",
+      fillOpacity:   0.09,
+    });
+
+    return () => {
+      if (compareCircleRef.current) {
+        compareCircleRef.current.setMap(null);
+        compareCircleRef.current = null;
+      }
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mapReady, comparePin?.lat, comparePin?.lng, radius]);
+
+  // ── Map options (memoized to avoid style flash) ─────────────────────────────
+  const mapOptions = useMemo(() => ({
+    ...MAP_OPTIONS,
+    draggableCursor: comparePicking ? "crosshair" : undefined,
+  }), [comparePicking]);
+
+  const onLoad = useCallback((map) => {
+    mapRef.current = map;
+    setMapReady(true);
+  }, []);
+
+  const onUnmount = useCallback(() => {
+    // Clean up all native overlays before map is destroyed
+    if (circleRef.current)        { circleRef.current.setMap(null);        circleRef.current = null; }
+    if (compareCircleRef.current) { compareCircleRef.current.setMap(null); compareCircleRef.current = null; }
+    mapRef.current = null;
+    setMapReady(false);
+  }, []);
 
   const onClick = useCallback((e) => {
     const lat = e.latLng.lat().toFixed(4);
@@ -142,56 +205,24 @@ export default function MapContainer() {
         mapContainerStyle={CONTAINER_STYLE}
         center={pinLatLng ?? DEFAULT_CENTER}
         zoom={13}
-        options={{
-          ...MAP_OPTIONS,
-          // Change cursor to crosshair in picking mode
-          draggableCursor: comparePicking ? "crosshair" : undefined,
-        }}
+        options={mapOptions}
         onClick={onClick}
         onLoad={onLoad}
         onUnmount={onUnmount}
       >
-        {/* ── Primary radius circle ── */}
-        {pinLatLng && (
-          <Circle
-            center={pinLatLng}
-            radius={radius}
-            options={{
-              strokeColor:   "#3f7d58",
-              strokeOpacity: 0.9,
-              strokeWeight:  1.8,
-              fillColor:     "#3f7d58",
-              fillOpacity:   0.09,
-            }}
-          />
-        )}
-
-        {/* ── Compare radius circle ── */}
-        {comparePinLL && (
-          <Circle
-            center={comparePinLL}
-            radius={radius}
-            options={{
-              strokeColor:   "#6366f1",
-              strokeOpacity: 0.9,
-              strokeWeight:  1.8,
-              fillColor:     "#6366f1",
-              fillOpacity:   0.09,
-            }}
-          />
-        )}
+        {/* Circles and competitor markers are managed imperatively via useEffect */}
 
         {/* ── Primary pin (green) ── */}
         {pinLatLng && (
           <Marker
             position={pinLatLng}
-            label={{
+            label={comparePinLL ? {
               text: "A",
               color: "#fff",
               fontWeight: "700",
               fontSize: "11px",
               fontFamily: "var(--font-body)",
-            }}
+            } : undefined}
             icon={{
               path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z",
               fillColor:    "#3f7d58",
@@ -227,22 +258,7 @@ export default function MapContainer() {
           />
         )}
 
-        {/* ── Competitor markers ── */}
-        {pinLatLng && competitorPositions.map((c) => (
-          <Marker
-            key={c.id}
-            position={c.position}
-            title={`${c.name} · ${c.type}`}
-            icon={{
-              path:         window.google.maps.SymbolPath.CIRCLE,
-              scale:        6,
-              fillColor:    STATUS_COLOR[c.status] ?? "#687280",
-              fillOpacity:  0.85,
-              strokeColor:  "#ffffff",
-              strokeWeight: 1.5,
-            }}
-          />
-        ))}
+        {/* Competitor markers are managed imperatively via useEffect */}
       </GoogleMap>
 
       {/* ── Picking mode: animated crosshair in center ── */}
