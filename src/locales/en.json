@@ -17,7 +17,8 @@
     "footer": "© {{year}} Localyze · Graduation project · All data illustrative.",
     "builtWith": "Built with precision",
     "viewAll": "View all →",
-    "vs": "VS"
+    "vs": "VS",
+    "analyst": "Analyst"
   },
 
   "nav": {
@@ -103,7 +104,8 @@
 
   "dashboard": {
     "overview": "Overview",
-    "welcomeBack": "Welcome back, Analyst",
+    "welcomeBack": "Welcome back, {{name}}",
+    "welcomeFirst": "Welcome, {{name}}",
     "hasScansSummary": "You have {{count}} saved scan{{s}}. Here's your activity summary.",
     "noScansYet": "Run your first scan to start building your market intelligence dashboard.",
     "savedReports": "Saved Reports",

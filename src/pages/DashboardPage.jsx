@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { apiService } from "../services/apiService";
 import { useAnalysis } from "../context/AnalysisContext";
 import { auth } from "../firebase";
-import { getUserProfile, getUserReports } from "../services/dbService";
+import { getUserProfile, getUserReports, updateUserProfile } from "../services/dbService";
 
 const SCORE_COLOR = (s) => s >= 75 ? "var(--color-brand)" : s >= 55 ? "#b45309" : "#dc2626";
 const SCORE_BG    = (s) => s >= 75 ? "var(--color-success)" : s >= 55 ? "var(--color-accent)" : "#fee2e2";
@@ -49,6 +49,7 @@ export default function DashboardPage() {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [userName, setUserName] = useState("");
+  const [isNewUser, setIsNewUser] = useState(false);
 
   const currentUser = auth.currentUser;
 
@@ -71,12 +72,14 @@ export default function DashboardPage() {
   useEffect(() => { fetchReports(); }, [fetchReports]);
 
   useEffect(() => {
-    if (currentUser) {
-      getUserProfile(currentUser.uid).then((profile) => {
-        const name = profile?.displayName || currentUser.displayName || "";
-        setUserName(name);
-      });
-    }
+    if (!currentUser) return;
+    getUserProfile(currentUser.uid).then((profile) => {
+      setUserName(profile?.displayName || currentUser.displayName || "");
+      if (!profile?.firstLoginDone) {
+        setIsNewUser(true);
+        updateUserProfile(currentUser.uid, { firstLoginDone: true });
+      }
+    });
   }, [currentUser]);
 
   // Normalize field names — Firestore uses feasibilityScore/competitorCount,
@@ -117,7 +120,9 @@ export default function DashboardPage() {
           fontFamily: "var(--font-display)", fontSize: "30px", fontWeight: 700,
           color: "var(--color-dark)", letterSpacing: "-0.5px", marginBottom: "8px",
         }}>
-          {t("dashboard.welcomeBack").replace("Analyst", userName || t("dashboard.welcomeBack").split(", ")[1] || "Analyst")}
+          {isNewUser
+            ? t("dashboard.welcomeFirst", { name: userName || t("common.analyst") })
+            : t("dashboard.welcomeBack",  { name: userName || t("common.analyst") })}
         </h1>
         <p style={{ fontFamily: "var(--font-body)", fontSize: "14px", color: "var(--color-text)", lineHeight: 1.6 }}>
           {totalScans > 0
