@@ -7,12 +7,16 @@ import { auth } from "../../firebase";
 import { saveReport as firestoreSaveReport } from "../../services/dbService";
 
 // ── Sub-category dropdown ─────────────────────────────────────────────────────
+const toSubKey = (v) =>
+  v.replace(/[^a-z0-9]+/gi, "_").replace(/^_+|_+$/g, "").toLowerCase();
+
 function SubCategoryDropdown({ businessType, value, onChange }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const wrapRef = useRef(null);
   const options = businessType ? (SUBCATEGORIES[businessType] ?? []) : [];
   const selected = options.find((o) => o.value === value);
+  const optLabel = (opt) => t(`subTypes.${toSubKey(opt.value)}`, { defaultValue: opt.label });
 
   useEffect(() => {
     function handler(e) {
@@ -54,7 +58,7 @@ function SubCategoryDropdown({ businessType, value, onChange }) {
           transition: "all .2s",
         }}
       >
-        <span>{selected ? selected.label : t("scan.selectCategory")}</span>
+        <span>{selected ? optLabel(selected) : t("scan.selectCategory")}</span>
         <svg width="15" height="15" fill="none" viewBox="0 0 24 24"
           stroke="var(--color-text)" strokeWidth={2.5}
           style={{ transform: open ? "rotate(180deg)" : "none", transition: "transform .2s", flexShrink: 0 }}>
@@ -90,7 +94,7 @@ function SubCategoryDropdown({ businessType, value, onChange }) {
                 onMouseEnter={(e) => { if (!isSelected) e.currentTarget.style.background = "rgba(63,125,88,.05)"; }}
                 onMouseLeave={(e) => { if (!isSelected) e.currentTarget.style.background = "transparent"; }}
               >
-                {opt.label}
+                {optLabel(opt)}
                 {isSelected && (
                   <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="var(--color-brand)" strokeWidth={2.5}>
                     <polyline points="20,6 9,17 4,12" />

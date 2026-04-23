@@ -143,93 +143,115 @@ const DotGrid = () => (
 );
 
 // ─── Floating glass card 1 — High Foot Traffic pill ──────────────────────────
-const FloatingTrafficPill = () => (
-  <div style={{
-    position: "absolute", top: "10%", left: "-6%",
-    background: "rgba(255,255,255,0.93)",
-    backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)",
-    border: "1px solid rgba(230,211,173,.65)",
-    borderRadius: "999px", padding: "11px 18px",
-    display: "flex", alignItems: "center", gap: "10px",
-    boxShadow: "0 8px 32px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06)",
-    animation: "float 6s ease-in-out infinite",
-    animationDelay: "0s",
-    zIndex: 4, whiteSpace: "nowrap",
-  }}>
-    <span style={{
-      width: 9, height: 9, borderRadius: "50%",
-      background: "var(--color-brand)", flexShrink: 0,
-      display: "inline-block",
-      animation: "pulse 2s ease-in-out infinite",
-    }} />
-    <span style={{
-      fontFamily: "var(--font-body)", fontSize: "0.8rem",
-      fontWeight: 700, color: "var(--color-dark)", letterSpacing: "0.01em",
-    }}>High Foot Traffic Detected</span>
-    <span style={{
-      fontFamily: "var(--font-body)", fontSize: "0.72rem",
-      fontWeight: 700, color: "var(--color-brand)",
-      background: "rgba(63,125,88,0.1)",
-      borderRadius: "999px", padding: "2px 9px",
-    }}>+38%</span>
-  </div>
-);
+const FloatingTrafficPill = () => {
+  const { t } = useTranslation();
+  const isRTL = typeof document !== "undefined" &&
+                document.documentElement.getAttribute("dir") === "rtl";
+  return (
+    <div style={{
+      position: "absolute", top: "10%",
+      [isRTL ? "right" : "left"]: "-6%",
+      background: "rgba(255,255,255,0.93)",
+      backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)",
+      border: "1px solid rgba(230,211,173,.65)",
+      borderRadius: "999px", padding: "11px 18px",
+      display: "flex", alignItems: "center", gap: "10px",
+      boxShadow: "0 8px 32px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06)",
+      animation: "float 6s ease-in-out infinite",
+      animationDelay: "0s",
+      zIndex: 4, whiteSpace: "nowrap",
+    }}>
+      <span style={{
+        width: 9, height: 9, borderRadius: "50%",
+        background: "var(--color-brand)", flexShrink: 0,
+        display: "inline-block",
+        animation: "pulse 2s ease-in-out infinite",
+      }} />
+      <span style={{
+        fontFamily: "var(--font-body)", fontSize: "0.8rem",
+        fontWeight: 700, color: "var(--color-dark)", letterSpacing: "0.01em",
+      }}>{t("welcome.highFootTraffic")}</span>
+      <span style={{
+        fontFamily: "var(--font-body)", fontSize: "0.72rem",
+        fontWeight: 700, color: "var(--color-brand)",
+        background: "rgba(63,125,88,0.1)",
+        borderRadius: "999px", padding: "2px 9px",
+      }}>+38%</span>
+    </div>
+  );
+};
 
 // ─── Floating glass card 2 — Feasibility Score ───────────────────────────────
-const FloatingScoreCard = () => (
-  <div style={{
-    position: "absolute", bottom: "10%", right: "2%",
-    background: "rgba(255,255,255,0.93)",
-    backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)",
-    border: "1px solid rgba(230,211,173,.65)",
-    borderRadius: "18px", padding: "18px 22px", width: "210px",
-    boxShadow: "0 8px 32px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06)",
-    animation: "float 6s ease-in-out infinite",
-    animationDelay: "1.5s",
-    zIndex: 4,
-  }}>
+const FloatingScoreCard = () => {
+  const { t } = useTranslation();
+  const isRTL = typeof document !== "undefined" &&
+                document.documentElement.getAttribute("dir") === "rtl";
+  return (
     <div style={{
-      display: "flex", alignItems: "center",
-      justifyContent: "space-between", marginBottom: "10px",
-    }}>
-      <span style={{
-        fontFamily: "var(--font-body)", fontSize: "0.7rem",
-        fontWeight: 700, color: "var(--color-text)",
-        letterSpacing: "0.05em", textTransform: "uppercase",
-      }}>Feasibility Score</span>
-      <IconTrend />
-    </div>
-    <div style={{
-      fontFamily: "var(--font-display)", fontSize: "2rem",
-      fontWeight: 800, color: "var(--color-dark)",
-      lineHeight: 1, marginBottom: "13px",
-    }}>
-      82
-      <span style={{
-        fontSize: "0.95rem", color: "var(--color-text)",
-        fontFamily: "var(--font-body)", fontWeight: 600,
-      }}>%</span>
-    </div>
-    <div style={{
-      height: "7px", borderRadius: "999px",
-      background: "rgba(63,125,88,0.1)", overflow: "hidden",
+      position: "absolute", bottom: "10%",
+      [isRTL ? "left" : "right"]: "2%",
+      background: "rgba(255,255,255,0.93)",
+      backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)",
+      border: "1px solid rgba(230,211,173,.65)",
+      borderRadius: "18px", padding: "18px 22px", width: "210px",
+      boxShadow: "0 8px 32px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06)",
+      animation: "float 6s ease-in-out infinite",
+      animationDelay: "1.5s",
+      zIndex: 4,
     }}>
       <div style={{
-        width: "82%", height: "100%", borderRadius: "999px",
-        background: "linear-gradient(90deg, var(--color-brand) 0%, var(--color-brand-dark) 100%)",
-      }} />
+        display: "flex", alignItems: "center",
+        justifyContent: "space-between", marginBottom: "10px",
+      }}>
+        <span style={{
+          fontFamily: "var(--font-body)", fontSize: "0.7rem",
+          fontWeight: 700, color: "var(--color-text)",
+          letterSpacing: "0.05em", textTransform: "uppercase",
+        }}>{t("welcome.feasibilityScoreLabel")}</span>
+        <IconTrend />
+      </div>
+      <div style={{
+        fontFamily: "var(--font-display)", fontSize: "2rem",
+        fontWeight: 800, color: "var(--color-dark)",
+        lineHeight: 1, marginBottom: "13px",
+      }}>
+        82
+        <span style={{
+          fontSize: "0.95rem", color: "var(--color-text)",
+          fontFamily: "var(--font-body)", fontWeight: 600,
+        }}>%</span>
+      </div>
+      <div style={{
+        height: "7px", borderRadius: "999px",
+        background: "rgba(63,125,88,0.1)", overflow: "hidden",
+      }}>
+        <div style={{
+          width: "82%", height: "100%", borderRadius: "999px",
+          background: "linear-gradient(90deg, var(--color-brand) 0%, var(--color-brand-dark) 100%)",
+        }} />
+      </div>
+      <p style={{
+        fontFamily: "var(--font-body)", fontSize: "0.7rem",
+        color: "var(--color-brand-dark)", margin: "9px 0 0", fontWeight: 600,
+      }}>{t("welcome.strongOpportunity")}</p>
     </div>
-    <p style={{
-      fontFamily: "var(--font-body)", fontSize: "0.7rem",
-      color: "var(--color-brand-dark)", margin: "9px 0 0", fontWeight: 600,
-    }}>Strong opportunity signal</p>
-  </div>
-);
+  );
+};
 
 // ─── Floating glass card 3 — Competitor breakdown ────────────────────────────
-const FloatingCompCard = () => (
+const FloatingCompCard = () => {
+  const { t } = useTranslation();
+  const isRTL = typeof document !== "undefined" &&
+                document.documentElement.getAttribute("dir") === "rtl";
+  const items = [
+    { label: t("welcome.coffeeShops"), count: 4, pct: 40 },
+    { label: t("welcome.bakeries"),    count: 2, pct: 20 },
+    { label: t("welcome.restaurants"), count: 9, pct: 90 },
+  ];
+  return (
   <div style={{
-    position: "absolute", top: "40%", right: "-4%",
+    position: "absolute", top: "40%",
+    [isRTL ? "left" : "right"]: "-4%",
     transform: "translateY(-50%)",
     background: "rgba(255,255,255,0.93)",
     backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)",
@@ -244,12 +266,8 @@ const FloatingCompCard = () => (
       fontFamily: "var(--font-body)", fontSize: "0.67rem", fontWeight: 700,
       color: "var(--color-text)", textTransform: "uppercase",
       letterSpacing: "0.07em", margin: "0 0 10px",
-    }}>Nearby Competitors</p>
-    {[
-      { label: "Coffee Shops", count: 4,  pct: 40 },
-      { label: "Bakeries",     count: 2,  pct: 20 },
-      { label: "Restaurants",  count: 9,  pct: 90 },
-    ].map(({ label, count, pct }) => (
+    }}>{t("welcome.nearbyCompetitors")}</p>
+    {items.map(({ label, count, pct }) => (
       <div key={label} style={{ marginBottom: "8px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
           <span style={{
@@ -273,7 +291,8 @@ const FloatingCompCard = () => (
       </div>
     ))}
   </div>
-);
+  );
+};
 
 // ─── Feature Card ─────────────────────────────────────────────────────────────
 const FeatureCard = ({ icon, title, description, index }) => {

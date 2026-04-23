@@ -39,7 +39,61 @@
     "gym": "Gym",
     "salon": "Salon & Beauty",
     "medical": "Medical / Dental",
-    "grocery": "Grocery / Supermarket"
+    "grocery": "Grocery / Supermarket",
+    "clothing_store": "Clothing Store",
+    "beauty_salon": "Salon & Beauty",
+    "grocery_or_supermarket": "Grocery / Supermarket",
+    "pharmacy": "Pharmacy",
+    "clinic": "Medical Clinic",
+    "hospital": "Hospital",
+    "dentist": "Dentist"
+  },
+
+  "subTypes": {
+    "specialty_coffee": "Specialty Coffee",
+    "arabic_coffee": "Arabic Coffee",
+    "cafe_desserts": "Cafe & Desserts",
+    "juice_bar": "Juice Bar",
+    "bubble_tea": "Bubble Tea",
+    "tea_house": "Tea House",
+    "arabic": "Arabic",
+    "jordanian": "Jordanian",
+    "lebanese": "Lebanese",
+    "syrian": "Syrian",
+    "italian": "Italian",
+    "pizza": "Pizza",
+    "pasta": "Pasta",
+    "burgers": "Burgers",
+    "fast_food": "Fast Food",
+    "american": "American",
+    "sushi": "Sushi",
+    "japanese": "Japanese",
+    "chinese": "Chinese",
+    "asian": "Asian",
+    "indian": "Indian",
+    "turkish": "Turkish",
+    "grills": "Grills",
+    "shawarma": "Shawarma",
+    "mandi": "Mandi",
+    "kebab": "Kebab",
+    "seafood": "Seafood",
+    "healthy": "Healthy",
+    "keto": "Keto",
+    "breakfast": "Breakfast",
+    "desserts": "Desserts",
+    "bakery": "Bakery",
+    "clothing": "Clothing",
+    "women_s_clothing": "Women's Clothing",
+    "shoes": "Shoes",
+    "sportswear": "Sportswear",
+    "department_store": "Department Store",
+    "mixed": "Mixed (Men & Women)",
+    "women": "Women Only",
+    "men": "Men Only",
+    "hair_salon": "Hair Salon",
+    "nail_salon": "Nail Salon",
+    "spa": "Spa",
+    "barber": "Barber"
   },
 
   "subcategories": {
@@ -130,6 +184,13 @@
   "welcome": {
     "heroTitle": "Find the Perfect Spot for Your Next",
     "niches": ["Business.", "Café.", "Boutique.", "Gym.", "Restaurant."],
+    "highFootTraffic": "High Foot Traffic Detected",
+    "feasibilityScoreLabel": "Feasibility Score",
+    "strongOpportunity": "Strong opportunity signal",
+    "nearbyCompetitors": "Nearby Competitors",
+    "coffeeShops": "Coffee Shops",
+    "bakeries": "Bakeries",
+    "restaurants": "Restaurants",
     "heroDesc": "Localyze aggregates foot traffic patterns, competitor density, and real-time demand signals into one clear answer — before you sign the lease.",
     "searchPlaceholder": "Enter a city, neighborhood, or address...",
     "analyzeArea": "Analyze Area",
@@ -348,6 +409,17 @@
     "low": "Low",
     "high": "High",
     "competitorTooltip": "The total number of same-type businesses found within your search radius. Lower count = less competition = higher opportunity.",
+    "feasibilityTooltipBody": "Measures how viable this location is for your business. Calculated from the population-to-competitor ratio using a logistic curve, then adjusted for competitor quality (low ratings = opportunity), price gaps, nearby universities, and district youth or elderly concentration.",
+    "feasibilityTooltipScale": "≥75 = Strong · 55–74 = Moderate · <55 = Weak",
+    "competitorDensityTooltipHead": "Competitor Density",
+    "competitorDensityTooltipBody": "Total similar businesses found via Google Places within your chosen radius, filtered by business type. For restaurants and cafés, Talabat listings are cross-referenced to filter by cuisine.",
+    "competitorDensityTooltipRating": "Avg Rating",
+    "competitorDensityTooltipRatingBody": "is the mean Google star rating (1–5) — a low average signals a quality gap.",
+    "competitorDensityTooltipPrice": "Avg Price Level",
+    "competitorDensityTooltipPriceBody": "is 1 (budget) to 4 (expensive).",
+    "saturationTooltipBody": "How crowded the market is relative to a benchmark of 50 businesses/km². Formula: competitor density ÷ 50 × 100, capped at 100%.",
+    "saturationTooltipScale": "≤35% = Low Risk · 36–60% = Moderate · >60% = Saturated.",
+    "saturationTooltipYouth": "Youth Market % shows ages 15–34 in this district from Jordan census data.",
     "avgRating": "Avg Rating",
     "avgPriceLevel": "Avg Price Lvl",
     "marketSaturation": "Market Saturation",
@@ -548,31 +620,33 @@
     "steps": [
       {
         "title": "Welcome to Localyze!",
-        "body": "Localyze helps you analyze market viability for any business location in Amman. This quick tour will show you everything you need to get started."
+        "body": "Localyze helps you analyze market viability for any business location. This quick tour will highlight the key parts of the interface."
       },
       {
         "title": "Navigate the App",
-        "body": "Use the sidebar on the left to move between sections: Dashboard for your overview, Scan to analyze locations, Reports to review saved scans, and Appendix for methodology details."
+        "body": "Use the sidebar to move between sections: Dashboard, Scan, Reports, Compare, and Appendix."
       },
       {
-        "title": "Run a Market Scan",
-        "body": "In the Scan page, choose a business type and search radius, then click anywhere on the map to drop your pin. Hit \"Run Analysis\" to get your market report instantly."
+        "title": "Start a New Scan",
+        "body": "Click \"New Scan\" to open the analysis page where you can pick a business type, set a radius, and drop a pin on the map."
       },
       {
-        "title": "Read Your Results",
-        "body": "After scanning you'll see three key metrics: Feasibility Score (overall viability), Competitor Density (how many rivals are nearby), and Market Saturation (how crowded the market is)."
+        "title": "Your Activity at a Glance",
+        "body": "The dashboard shows aggregate stats across all your saved reports — feasibility averages, competitor counts, and saturation."
       },
       {
-        "title": "Get AI-Powered Insights",
-        "body": "Click \"Get AI Suggestions\" to generate a strategic analysis powered by Gemini AI — covering market risks, growth opportunities, and differentiation strategies tailored to your scan."
+        "title": "Save and Track Reports",
+        "body": "After running a scan, click \"Save Report\" in the top bar. Saved reports appear on your Dashboard and Reports page."
       },
       {
-        "title": "Save & Track Reports",
-        "body": "Click \"Save Report\" in the scan panel after any analysis. All saved reports appear on your Dashboard and Reports page so you can compare locations over time."
+        "title": "Ready to Go!",
+        "body": "That's it! Click the button below to start your first scan. Happy analyzing!"
       }
     ],
     "stepOf": "Step {{current}} of {{total}}",
     "skipTutorial": "Skip tutorial",
+    "back": "Back",
+    "next": "Next",
     "getStarted": "Get Started",
     "sidebarDashboard": "Dashboard",
     "sidebarScan": "Scan",

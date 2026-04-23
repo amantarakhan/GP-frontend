@@ -67,7 +67,7 @@ export default function ResultPanel() {
           tooltip={
             <span>
               <strong style={{ color: "#e6d3ad" }}>{t("results.feasibilityTooltip")}</strong><br />
-              Measures how viable this location is for your business. Calculated from the population-to-competitor ratio using a logistic curve, then adjusted for competitor quality (low ratings = opportunity), price gaps, nearby universities, and district youth or elderly concentration. <strong style={{ color: "#e6d3ad" }}>≥75 = Strong · 55–74 = Moderate · &lt;55 = Weak</strong>
+              {t("results.feasibilityTooltipBody")} <strong style={{ color: "#e6d3ad" }}>{t("results.feasibilityTooltipScale")}</strong>
             </span>
           }
         >
@@ -91,8 +91,8 @@ export default function ResultPanel() {
           iconColor="var(--color-accent)"
           tooltip={
             <span>
-              <strong style={{ color: "#e6d3ad" }}>Competitor Density</strong><br />
-              Total similar businesses found via Google Places within your chosen radius, filtered by business type. For restaurants and cafés, Talabat listings are cross-referenced to filter by cuisine. <strong style={{ color: "#e6d3ad" }}>Avg Rating</strong> is the mean Google star rating (1–5) — a low average signals a quality gap. <strong style={{ color: "#e6d3ad" }}>Avg Price Level</strong> is 1 (budget) to 4 (expensive).
+              <strong style={{ color: "#e6d3ad" }}>{t("results.competitorDensityTooltipHead")}</strong><br />
+              {t("results.competitorDensityTooltipBody")} <strong style={{ color: "#e6d3ad" }}>{t("results.competitorDensityTooltipRating")}</strong> {t("results.competitorDensityTooltipRatingBody")} <strong style={{ color: "#e6d3ad" }}>{t("results.competitorDensityTooltipPrice")}</strong> {t("results.competitorDensityTooltipPriceBody")}
             </span>
           }
         >
@@ -116,8 +116,8 @@ export default function ResultPanel() {
           iconColor="var(--color-text)"
           tooltip={
             <span>
-              <strong style={{ color: "#e6d3ad" }}>Market Saturation (0–100%)</strong><br />
-              How crowded the market is relative to a benchmark of 50 businesses/km². Formula: <em>competitor density ÷ 50 × 100</em>, capped at 100%. <strong style={{ color: "#e6d3ad" }}>≤35% = Low Risk · 36–60% = Moderate · &gt;60% = Saturated.</strong> Youth Market % shows ages 15–34 in this district from Jordan census data.
+              <strong style={{ color: "#e6d3ad" }}>{t("results.saturationTooltip")}</strong><br />
+              {t("results.saturationTooltipBody")} <strong style={{ color: "#e6d3ad" }}>{t("results.saturationTooltipScale")}</strong> {t("results.saturationTooltipYouth")}
             </span>
           }
         >
@@ -256,7 +256,7 @@ function MetricCard({ icon, label, description, badge, badgeBg, badgeColor, icon
           </div>
           <div style={{ fontFamily: "var(--font-body)", fontSize: "11px", color: "var(--color-text)" }}>{description}</div>
         </div>
-        <span style={{ background: badgeBg, color: badgeColor, fontSize: "10px", fontWeight: 700, padding: "3px 8px", borderRadius: "20px", fontFamily: "var(--font-body)", whiteSpace: "nowrap", flexShrink: 0, marginLeft: "8px" }}>
+        <span style={{ background: badgeBg, color: badgeColor, fontSize: "10px", fontWeight: 700, padding: "3px 8px", borderRadius: "20px", fontFamily: "var(--font-body)", whiteSpace: "nowrap", flexShrink: 0, marginInlineStart: "8px" }}>
           {badge}
         </span>
       </div>

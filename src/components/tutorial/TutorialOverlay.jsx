@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { auth } from "../../firebase";
 import { useTutorialManager, TUTORIAL_IDS } from "../../context/TutorialContext";
 
@@ -10,52 +11,15 @@ const ARROW  = 8;    // tooltip arrow size
 const OVERLAY_RGBA = "rgba(0, 0, 0, 0.72)";
 
 // ── Steps ────────────────────────────────────────────────────────────────────
+// Titles and bodies come from i18n (`tutorial.steps[i]`); structural fields
+// (target, placement, route) stay here in code.
 const STEPS = [
-  {
-    id: "welcome",
-    title: "Welcome to Localyze!",
-    body: "Localyze helps you analyze market viability for any business location. This quick tour will highlight the key parts of the interface.",
-    target: '[data-tutorial="welcome-header"]',
-    placement: "bottom",
-    route: "/dashboard",
-  },
-  {
-    id: "sidebar",
-    title: "Navigate the App",
-    body: "Use the sidebar to move between sections: Dashboard, Scan, Reports, Compare, and Appendix.",
-    target: '[data-tutorial="sidebar"]',
-    placement: "right",
-  },
-  {
-    id: "scan-nav",
-    title: "Start a New Scan",
-    body: 'Click "New Scan" to open the analysis page where you can pick a business type, set a radius, and drop a pin on the map.',
-    target: '[data-tutorial="nav-scan"]',
-    placement: "right",
-  },
-  {
-    id: "dashboard-stats",
-    title: "Your Activity at a Glance",
-    body: "The dashboard shows aggregate stats across all your saved reports — feasibility averages, competitor counts, and saturation.",
-    target: '[data-tutorial="stat-grid"]',
-    placement: "bottom",
-    route: "/dashboard",
-  },
-  {
-    id: "save",
-    title: "Save and Track Reports",
-    body: 'After running a scan, click "Save Report" in the top bar. Saved reports appear on your Dashboard and Reports page.',
-    target: '[data-tutorial="save-report"]',
-    placement: "bottom",
-  },
-  {
-    id: "cta",
-    title: "Ready to Go!",
-    body: "That's it! Click the button below to start your first scan. Happy analyzing!",
-    target: '[data-tutorial="start-scan-btn"]',
-    placement: "top",
-    route: "/dashboard",
-  },
+  { id: "welcome",         target: '[data-tutorial="welcome-header"]', placement: "bottom", route: "/dashboard" },
+  { id: "sidebar",         target: '[data-tutorial="sidebar"]',        placement: "right" },
+  { id: "scan-nav",        target: '[data-tutorial="nav-scan"]',       placement: "right" },
+  { id: "dashboard-stats", target: '[data-tutorial="stat-grid"]',      placement: "bottom", route: "/dashboard" },
+  { id: "save",            target: '[data-tutorial="save-report"]',    placement: "bottom" },
+  { id: "cta",             target: '[data-tutorial="start-scan-btn"]', placement: "top",    route: "/dashboard" },
 ];
 
 // ── Build an SVG path string for clip-path ───────────────────────────────────
@@ -133,9 +97,17 @@ function computeTooltipPos(rect, placement, tw, th) {
 }
 
 // ── Arrow ────────────────────────────────────────────────────────────────────
+// In RTL, "right" placement positions the tooltip to the visual *left* of the
+// target (because right→left in document flow). Swap the arrow accordingly.
 function Arrow({ placement }) {
   const s = { position: "absolute", width: 0, height: 0, borderStyle: "solid" };
   const A = ARROW;
+  const isRTL = typeof document !== "undefined" &&
+                document.documentElement.getAttribute("dir") === "rtl";
+  let p = placement;
+  if (isRTL && p === "right") p = "left";
+  else if (isRTL && p === "left") p = "right";
+
   const props = {
     right:  { top: "50%", left: -A, transform: "translateY(-50%)",
               borderWidth: `${A}px ${A}px ${A}px 0`,
@@ -150,11 +122,12 @@ function Arrow({ placement }) {
               borderWidth: `0 ${A}px ${A}px ${A}px`,
               borderColor: "transparent transparent var(--color-card) transparent" },
   };
-  return <div style={{ ...s, ...(props[placement] || props.bottom) }} />;
+  return <div style={{ ...s, ...(props[p] || props.bottom) }} />;
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
 export default function TutorialOverlay() {
+  const { t } = useTranslation();
   const [step, setStep]         = useState(0);
   const [exiting, setExiting]   = useState(false);
   const [rect, setRect]         = useState(null);   // target bounding rect
@@ -162,6 +135,8 @@ export default function TutorialOverlay() {
   const [ttSize, setTtSize]     = useState({ w: 320, h: 220 });
   const navigate = useNavigate();
   const location = useLocation();
+  const stepTitle = (i) => t(`tutorial.steps.${i}.title`);
+  const stepBody  = (i) => t(`tutorial.steps.${i}.body`);
 
   const { activeTutorial, hasCompletedOnboarding, requestTutorial, completeTutorial } =
     useTutorialManager();
@@ -336,7 +311,7 @@ export default function TutorialOverlay() {
             color: "var(--color-brand)", letterSpacing: 2.5,
             textTransform: "uppercase", marginBottom: 8,
           }}>
-            Step {step + 1} of {STEPS.length}
+            {t("tutorial.stepOf", { current: step + 1, total: STEPS.length })}
           </div>
 
           <h2 style={{
@@ -344,14 +319,14 @@ export default function TutorialOverlay() {
             color: "var(--color-dark)", letterSpacing: -0.3,
             margin: 0, marginBottom: 8,
           }}>
-            {cur.title}
+            {stepTitle(step)}
           </h2>
 
           <p style={{
             fontFamily: "var(--font-body)", fontSize: 13,
             color: "var(--color-text)", lineHeight: 1.65, margin: 0,
           }}>
-            {cur.body}
+            {stepBody(step)}
           </p>
 
           {/* Dots */}
@@ -377,7 +352,7 @@ export default function TutorialOverlay() {
                 cursor: "pointer", padding: "6px 4px", opacity: .7,
               }}
             >
-              Skip tutorial
+              {t("tutorial.skipTutorial")}
             </button>
 
             <div style={{ display: "flex", gap: 8 }}>
@@ -388,7 +363,7 @@ export default function TutorialOverlay() {
                   border: "1px solid rgba(63,125,88,.2)", borderRadius: "var(--radius-md)",
                   padding: "8px 14px", cursor: "pointer",
                 }}>
-                  Back
+                  {t("tutorial.back")}
                 </button>
               )}
 
@@ -401,9 +376,13 @@ export default function TutorialOverlay() {
                 boxShadow: "0 4px 14px rgba(63,125,88,.32)",
                 display: "flex", alignItems: "center", gap: 6,
               }}>
-                {isLast ? "Get Started" : "Next"}
+                {isLast ? t("tutorial.getStarted") : t("tutorial.next")}
                 <svg width="13" height="13" fill="none" viewBox="0 0 24 24"
-                     stroke="currentColor" strokeWidth={2.5}>
+                     stroke="currentColor" strokeWidth={2.5}
+                     style={{
+                       transform: !isLast && document.documentElement.getAttribute("dir") === "rtl"
+                         ? "scaleX(-1)" : "none",
+                     }}>
                   {isLast
                     ? <polyline points="20,6 9,17 4,12" />
                     : <path d="M5 12h14M12 5l7 7-7 7" />}

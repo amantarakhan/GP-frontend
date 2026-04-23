@@ -127,7 +127,7 @@ export function AnalysisProvider({ children }) {
   const resetAnalysis = useCallback(() => {
     // form
     setBusinessType("");
-    setCategory("");
+    setSubType("");
     setRadius(750);
     setLocation("");
     setPin(null);

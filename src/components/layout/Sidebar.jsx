@@ -112,14 +112,16 @@ function NavItem({ item, expanded }) {
     >
       {({ isActive }) => (
         <>
-          {/* Active accent bar */}
+          {/* Active accent bar — uses logical inset so it flips in RTL */}
           {isActive && expanded && (
             <span
               className="sidebar-active-bar"
               style={{
-                position: "absolute", left: 0, top: "50%",
+                position: "absolute", insetInlineStart: 0, top: "50%",
                 transform: "translateY(-50%)", width: "3px", height: "54%",
-                background: "var(--color-brand)", borderRadius: "0 3px 3px 0",
+                background: "var(--color-brand)",
+                borderStartStartRadius: 0, borderEndStartRadius: 0,
+                borderStartEndRadius: "3px", borderEndEndRadius: "3px",
               }}
             />
           )}

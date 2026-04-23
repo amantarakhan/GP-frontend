@@ -21,10 +21,10 @@ export const BUSINESS_TYPES = [
   { value: "gym",                     label: "Gym",                    emoji: "💪" },
   { value: "beauty_salon",            label: "Salon & Beauty",         emoji: "💇" },
   { value: "grocery_or_supermarket",  label: "Grocery / Supermarket",  emoji: "🛒" },
-  { value: "pharmacy",                label: "Pharmacy",               emoji: "+" },
-  { value: "clinic",                  label: "Medical Clinic",         emoji: "+" },
-  { value: "hospital",                label: "Hospital",               emoji: "+" },
-  { value: "dentist",                 label: "Dentist",                emoji: "+" },
+  { value: "pharmacy",                label: "Pharmacy",               emoji: "💊" },
+  { value: "clinic",                  label: "Medical Clinic",         emoji: "🩺" },
+  { value: "hospital",                label: "Hospital",               emoji: "🏥" },
+  { value: "dentist",                 label: "Dentist",                emoji: "🦷" },
 ];
 
 // ── Sub-categories per business type ─────────────────────────────────────────

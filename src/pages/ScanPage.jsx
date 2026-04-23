@@ -228,7 +228,7 @@ export default function ScanPage() {
           {/* Reset / New Scan button */}
           <button
             onClick={handleResetClick}
-            title="Reset current scan"
+            title={t("scan.resetScan")}
             style={{
               display:        "flex",
               alignItems:     "center",
