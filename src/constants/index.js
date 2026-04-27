@@ -22,7 +22,7 @@ export const BUSINESS_TYPES = [
   { value: "beauty_salon",            label: "Salon & Beauty",         emoji: "💇" },
   { value: "grocery_or_supermarket",  label: "Grocery / Supermarket",  emoji: "🛒" },
   { value: "pharmacy",                label: "Pharmacy",               emoji: "💊" },
-  { value: "clinic",                  label: "Medical Clinic",         emoji: "🩺" },
+  { value: "medical_clinic",                  label: "Medical Clinic",         emoji: "🩺" },
   { value: "hospital",                label: "Hospital",               emoji: "🏥" },
   { value: "dentist",                 label: "Dentist",                emoji: "🦷" },
 ];
@@ -86,7 +86,7 @@ export const SUBCATEGORIES = {
   ],
   grocery_or_supermarket: [],
   pharmacy:  [],
-  clinic:    [],
+  medical_clinic:    [],
   hospital:  [],
   dentist:   [],
 };
@@ -97,7 +97,7 @@ export const MAX_RADIUS = {
   cafe:                   1000,
   gym:                    2000,
   pharmacy:               1000,
-  clinic:                 1500,
+  medical_clinic:                 1500,
   hospital:               3000,
   supermarket:            1500,
   bakery:                 1000,
