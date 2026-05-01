@@ -25,6 +25,7 @@ export const BUSINESS_TYPES = [
   { value: "medical_clinic",                  label: "Medical Clinic",         emoji: "🩺" },
   { value: "hospital",                label: "Hospital",               emoji: "🏥" },
   { value: "dentist",                 label: "Dentist",                emoji: "🦷" },
+  { value: "veterinary_care",         label: "Veterinary Care",        emoji: "🐾" },
 ];
 
 // ── Sub-categories per business type ─────────────────────────────────────────
@@ -89,6 +90,7 @@ export const SUBCATEGORIES = {
   medical_clinic:    [],
   hospital:  [],
   dentist:   [],
+  veterinary_care: [],
 };
 
 // ── Max scan radius per place_type (mirrors backend MAX_RADIUS exactly) ──────
@@ -105,6 +107,7 @@ export const MAX_RADIUS = {
   beauty_salon:           1000,
   dentist:                1500,
   grocery_or_supermarket: 1500,
+  veterinary_care:        1500,
 };
 
 // ── Radius labels ────────────────────────────────────────────────────────────
