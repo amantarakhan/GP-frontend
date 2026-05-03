@@ -1,13 +1,3 @@
-/**
- * TopBar.jsx
- *
- * Changes from original:
- *  - "Save Report" button now calls dbService.saveReport() to persist to Firestore.
- *  - Shows "Saving…" spinner state while the async write is in flight.
- *  - Falls back gracefully to the local apiService.saveReport() if no auth user
- *    is present (so the app still works when logged out).
- *  - All existing inline styles and emerald-glass theme preserved exactly.
- */
 
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";

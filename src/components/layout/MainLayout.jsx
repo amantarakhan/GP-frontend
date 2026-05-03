@@ -43,7 +43,8 @@ export default function MainLayout() {
             overflowX:  "hidden",
             background: "var(--color-dash-bg)",
           }}>
-            <Outlet />
+
+            <Outlet /> 
           </main>
         </div>
       </div>

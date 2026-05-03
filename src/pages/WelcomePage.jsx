@@ -505,15 +505,12 @@ const WelcomePage = () => {
             />
           </div>
 
-          {/* Spacer — class added for responsive shrink */}
-          <div className="nav-logo-spacer" style={{ width: "180px", flexShrink: 0 }} />
+          <div style={{ width: "180px", flexShrink: 0 }} />
 
           <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-            {/* About link — hidden on mobile */}
             <a
               href="#about"
               onClick={scrollToAbout}
-              className="nav-learn-link"
               style={{
                 fontFamily: "var(--font-body)", fontSize: "0.875rem",
                 fontWeight: 500, color: "var(--color-text)",
@@ -524,12 +521,10 @@ const WelcomePage = () => {
               onMouseLeave={e => { e.target.style.color = "var(--color-text)"; e.target.style.background = "transparent"; }}
             >{t("welcome.about")}</a>
 
-            {/* Log In — hidden on mobile */}
             <button
               onClick={() => navigate("/login")}
               onMouseEnter={() => setLoginHovered(true)}
               onMouseLeave={() => setLoginHovered(false)}
-              className="nav-login-btn"
               style={{
                 fontFamily: "var(--font-body)", fontSize: "0.875rem", fontWeight: 500,
                 color: loginHovered ? "var(--color-dark)" : "var(--color-text)",
@@ -907,9 +902,7 @@ const WelcomePage = () => {
                 </div>
               </div>
 
-              {/* Connector arrow 1 — class added to hide on mobile */}
               <div
-                className="pipeline-arrow-connector"
                 style={{
                   display: "flex", alignItems: "center", justifyContent: "center",
                   padding: "0 16px", flexShrink: 0,
@@ -971,9 +964,7 @@ const WelcomePage = () => {
                 </div>
               </div>
 
-              {/* Connector arrow 2 — class added to hide on mobile */}
               <div
-                className="pipeline-arrow-connector"
                 style={{
                   display: "flex", alignItems: "center", justifyContent: "center",
                   padding: "0 16px", flexShrink: 0,

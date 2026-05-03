@@ -134,13 +134,13 @@ function NavItem({ item, expanded }) {
             {Icons[item.id]}
           </span>
 
-          {/* Label + badge — shown when expanded, tiny label always present for tab-bar */}
-          {expanded ? (
+          {/* Label + badge — shown only when expanded */}
+          {expanded && (
             <span style={{
               display: "flex", alignItems: "center", flex: 1, gap: "8px",
               animation: "sbFadeIn .18s ease both",
             }}>
-              <span className="sidebar-label" style={{ flex: 1 }}>{item.label}</span>
+              <span style={{ flex: 1 }}>{item.label}</span>
               {item.badge && (
                 <span style={{
                   background: "rgba(63,125,88,.22)", color: "var(--color-brand)",
@@ -150,14 +150,6 @@ function NavItem({ item, expanded }) {
                   {item.badge}
                 </span>
               )}
-            </span>
-          ) : (
-            /* Tiny label rendered for the mobile tab-bar (hidden on desktop via CSS) */
-            <span
-              className="sidebar-label"
-              style={{ display: "none", fontSize: "9px", fontWeight: 600 }}
-            >
-              {item.label}
             </span>
           )}
         </>

@@ -46,7 +46,8 @@
     "pharmacy": "صيدلية",
     "medical_clinic": "عيادة طبية",
     "hospital": "مستشفى",
-    "dentist": "عيادة أسنان"
+    "dentist": "عيادة أسنان",
+    "veterinary_care": "بيطري"
   },
 
   "subTypes": {

@@ -46,7 +46,8 @@
     "pharmacy": "Pharmacy",
     "medical_clinic": "Medical Clinic",
     "hospital": "Hospital",
-    "dentist": "Dentist"
+    "dentist": "Dentist",
+    "veterinary_care": "Vet"
   },
 
   "subTypes": {

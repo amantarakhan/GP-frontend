@@ -8,43 +8,6 @@ import logo      from "../assets/logo.png";
 import logo1     from "../assets/logo1.png";
 import globeHero from "../assets/logo2.png";
 
-const KEYFRAMES = `
-  @keyframes logo-float {
-    0%,100% { transform: translateY(0px); }
-    50%     { transform: translateY(-10px); }
-  }
-  @keyframes rotate-cw {
-    from { transform: translate(-50%, -50%) rotate(0deg); }
-    to   { transform: translate(-50%, -50%) rotate(360deg); }
-  }
-  @keyframes rotate-ccw {
-    from { transform: translateY(-50%) rotate(0deg); }
-    to   { transform: translateY(-50%) rotate(-360deg); }
-  }
-  @keyframes aura-breathe {
-    0%,100% { transform: translate(-50%,-50%) scale(1);    opacity: .10; }
-    50%     { transform: translate(-50%,-50%) scale(1.10); opacity: .18; }
-  }
-  @keyframes btn-glow {
-    0%,100% { box-shadow: 0 8px 28px rgba(63,125,88,.38), 0 0 0 0    rgba(63,125,88,0); }
-    50%     { box-shadow: 0 14px 44px rgba(63,125,88,.56), 0 0 0 10px rgba(63,125,88,.06); }
-  }
-  @keyframes portal-in {
-    from { opacity: 0; transform: translateY(28px) scale(.97); }
-    to   { opacity: 1; transform: translateY(0)    scale(1); }
-  }
-  @keyframes field-rise {
-    from { opacity: 0; transform: translateY(14px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes success-bloom {
-    0%  { opacity: 0; transform: scale(.5) rotate(-15deg); }
-    70% { transform: scale(1.12) rotate(3deg); }
-    100%{ opacity: 1; transform: scale(1)  rotate(0deg); }
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-`;
-
 const Mail = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
@@ -211,7 +174,6 @@ export default function LoginPage() {
 
   return (
     <>
-      <style>{KEYFRAMES}</style>
       <div style={{ minHeight:"100vh", width:"100%", background:"var(--color-app-bg)", fontFamily:"var(--font-body)", overflowX:"hidden", display:"flex", flexDirection:"column" }}>
 
         {/* NAV */}
