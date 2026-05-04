@@ -189,3 +189,28 @@ export async function deleteReport(userId, reportId) {
   if (!reportId) throw new Error("deleteReport: reportId is required");
   await deleteDoc(doc(db, "users", userId, "saved_reports", reportId));
 }
+
+/**
+ * Save a location comparison to users/{userId}/saved_comparisons.
+ *
+ * @param {string} userId
+ * @param {object} payload — { businessType, pinA, pinB, resultsA, resultsB, winner }
+ * @returns {Promise<string>} Firestore doc ID
+ */
+export async function saveComparison(userId, payload) {
+  if (!userId) throw new Error("saveComparison: userId is required");
+
+  const data = clean({
+    ...payload,
+    timestamp: serverTimestamp(),
+    date: new Date().toLocaleDateString("en-US", {
+      month: "short", day: "numeric", year: "numeric",
+    }),
+  });
+
+  const ref = await addDoc(
+    collection(db, "users", userId, "saved_comparisons"),
+    data
+  );
+  return ref.id;
+}

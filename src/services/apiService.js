@@ -57,7 +57,7 @@ export function normaliseResponse(raw, params) {
     // ── Rich data for panels ──────────────────────────────────────────────────
     avgRating:          rating_stats?.average?.toFixed(1) ?? "—",
     avgPriceLevel:      price_level_stats?.average?.toFixed(1) ?? "—",
-    districtName:       district_profile?.district_name_en ?? "Unknown",
+    districtName:       district_profile?.district_name_en || "Outside Amman",
     districtNameAr:     district_profile?.district_name_ar ?? "",
     youthPercentage:    district_profile?.youth_percentage ?? null,
     youthRank:          district_profile?.youth_rank ?? null,

@@ -45,7 +45,6 @@
     "grocery_or_supermarket": "Grocery / Supermarket",
     "pharmacy": "Pharmacy",
     "medical_clinic": "Medical Clinic",
-    "hospital": "Hospital",
     "dentist": "Dentist",
     "veterinary_care": "Vet"
   },
@@ -152,7 +151,7 @@
 
   "radius": {
     "walking": "Walking",
-    "neighborhood": "Neighborhood",
+    "local": "Local",
     "district": "District",
     "cityZone": "City Zone"
   },
@@ -193,7 +192,7 @@
     "bakeries": "Bakeries",
     "restaurants": "Restaurants",
     "heroDesc": "Localyze aggregates foot traffic patterns, competitor density, and real-time demand signals into one clear answer — before you sign the lease.",
-    "searchPlaceholder": "Enter a city, neighborhood, or address...",
+    "searchPlaceholder": "Enter a city or address...",
     "analyzeArea": "Analyze Area",
     "trySuggestions": "Try \"Downtown Amman\", \"Sweifieh\", or \"Al Abdali\"",
     "learnMore": "Learn more about Localyze",
@@ -385,6 +384,7 @@
     "saveReport": "Save Report",
     "proTip": "Pro Tip",
     "proTipText": "Click anywhere on the map to set your target location before running analysis.",
+    "compareLocation": "Compare Location",
     "resetScan": "Reset Scan",
     "resetScanTitle": "Unsaved Scan",
     "resetScanDesc": "Your current scan has not been saved. Would you like to save it to your reports before starting a new scan?",
@@ -529,6 +529,8 @@
     "area": "Area",
     "analysis": "Analysis",
     "sideBySideDesc": "Side-by-side market analysis — find your best location.",
+    "saveComparison": "Save Comparison",
+    "comparisonSaved": "Comparison Saved",
     "resetComparison": "Reset Comparison",
     "noScanYet": "No scan results yet",
     "noScanDesc": "Run a scan first to set Location A, then come back to compare.",
@@ -683,7 +685,7 @@
       },
       {
         "title": "AI insights (optional)",
-        "desc": "The full scan result is sent to Gemini 2.5 Flash with a structured business-consultant prompt. It returns a plain-language summary, key risks, and differentiation suggestions — all grounded in the actual competitor names and numbers from your scan."
+        "desc": "The full scan result is sent to an AI model with a structured business-consultant prompt. It returns a plain-language summary, key risks, and differentiation suggestions — all grounded in the actual competitor names and numbers from your scan."
       }
     ],
     "scoreMetrics": "Score Metrics",
@@ -786,8 +788,8 @@
       { "name": "Google Places API", "detail": "Competitor discovery — names, addresses, ratings, review counts, price levels, opening hours, and websites. Results are paginated up to 60 listings per query and cached for 1 hour." },
 { "name": "Amman District Census Data", "detail": "District-level population data for Amman's sub-districts, including total population, age breakdowns (youth 15–34, elderly 60+), and gender ratios. Used for Foot Traffic, Demand Signal, and the demographic multiplier in the Feasibility Score." },
       { "name": "Jordanian Universities Whitelist", "detail": "A manually curated list of accredited Jordanian universities in both English and Arabic, used to validate nearby-education results from Google Places and exclude non-academic false positives." },
-      { "name": "Google Gemini 2.5 Flash", "detail": "AI analysis model used to generate the plain-language insights panel. Receives the full structured scan result and returns a business-consultant-style summary, risk list, and differentiation suggestions." },
-      { "name": "Firebase / Firestore", "detail": "User authentication and cloud storage for saved reports. Reports are stored per user in the saved_reports collection with full scan results, scores, and AI analysis text." }
+      { "name": "AI-Enabled Insights", "detail": "AI analysis used to generate the plain-language insights panel. Receives the full structured scan result and returns a business-consultant-style summary, risk list, and differentiation suggestions." },
+      { "name": "Cloud Storage", "detail": "User authentication and cloud storage for saved reports. Reports are stored per user with full scan results, scores, and AI analysis text." }
     ]
   }
 }

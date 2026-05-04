@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import i18n from "i18next";
 import { useLocationAnalysis } from "../../hooks/useLocationAnalysis";
 import { getRadiusLabel, formatRadius, SUBCATEGORIES, MAX_RADIUS } from "../../constants";
 import BusinessTypeDropdown from "./BusinessTypeDropdown";
@@ -130,9 +131,11 @@ export default function InputPanel() {
 
   React.useEffect(() => { setSaveState("idle"); }, [hasResults]);
 
-  const maxRadius = MAX_RADIUS[businessType] ?? 5000;
-  const sliderPct = ((radius - 250) / (maxRadius - 250)) * 100;
-  const sliderBg  = `linear-gradient(to right, var(--color-brand) 0%, var(--color-brand) ${sliderPct}%, var(--color-accent) ${sliderPct}%, var(--color-accent) 100%)`;
+  const maxRadius  = MAX_RADIUS[businessType] ?? 5000;
+  const sliderPct  = ((radius - 250) / (maxRadius - 250)) * 100;
+  const isRTL      = i18n.language?.startsWith("ar");
+  const gradDir    = isRTL ? "to left" : "to right";
+  const sliderBg   = `linear-gradient(${gradDir}, var(--color-brand) 0%, var(--color-brand) ${sliderPct}%, var(--color-accent) ${sliderPct}%, var(--color-accent) 100%)`;
 
   // canRun requires businessType (from hook) AND a pin on the map
   const readyToRun = canRun && Boolean(pin);
@@ -330,8 +333,8 @@ export default function InputPanel() {
               const uid = auth.currentUser?.uid;
               if (uid && results) {
                 await firestoreSaveReport(uid, {
-                  title:        `${businessType.charAt(0).toUpperCase() + businessType.slice(1)} — ${results.districtName}`,
-                  location:     results.districtName,
+                  title:        `${businessType.charAt(0).toUpperCase() + businessType.slice(1)} — ${results.districtName || "Outside Amman"}`,
+                  location:     results.districtName || "Outside Amman",
                   date:         new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
                   score:        results.feasibility,
                   competitors:  results.competitors,

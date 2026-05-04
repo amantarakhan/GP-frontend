@@ -2,8 +2,9 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "../firebase";
-import { createUserProfile } from "../services/dbService";
+import { createUserProfile, getUserProfile } from "../services/dbService";
 import { useTranslation } from "react-i18next";
+import i18n from "../i18n";
 import logo      from "../assets/logo.png";
 import logo1     from "../assets/logo1.png";
 import globeHero from "../assets/logo2.png";
@@ -146,7 +147,9 @@ export default function LoginPage() {
     setFirebaseError("");
     setLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const cred = await signInWithEmailAndPassword(auth, email, password);
+      const profile = await getUserProfile(cred.user.uid).catch(() => null);
+      if (profile?.preferredLanguage) i18n.changeLanguage(profile.preferredLanguage);
       setDone(true);
       setTimeout(() => navigate("/dashboard"), 1600);
     } catch (err) {
@@ -163,6 +166,8 @@ export default function LoginPage() {
     try {
       const cred = await signInWithPopup(auth, googleProvider);
       await createUserProfile(cred.user);
+      const profile = await getUserProfile(cred.user.uid).catch(() => null);
+      if (profile?.preferredLanguage) i18n.changeLanguage(profile.preferredLanguage);
       setDone(true);
       setTimeout(() => navigate("/dashboard"), 1600);
     } catch (err) {

@@ -177,7 +177,7 @@ export default function ResultPanel() {
 
       {/* ── Bottom stat strip ── */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "14px" }}>
-        <StatsCard icon="pin"   label={t("results.district")}    value={districtName || t("results.unknown")} />
+        <StatsCard icon="pin"   label={t("results.district")}    value={districtName || "Outside Amman"} />
         <StatsCard icon="data"  label={t("results.dataPoints")} value={dataPoints} />
         <StatsCard icon="globe" label={t("results.coverage")}    value={coverage} />
       </div>
