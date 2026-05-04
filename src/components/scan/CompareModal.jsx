@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useLocationAnalysis } from "../../hooks/useLocationAnalysis";
+import { useAnalysis } from "../../context/AnalysisContext";
 
 // ── Metric config ─────────────────────────────────────────────────────────────
 const METRICS = [
@@ -311,7 +311,7 @@ export default function CompareModal() {
     results,
     resetCompare,
     radiusDisplay,
-  } = useLocationAnalysis();
+  } = useAnalysis();
 
   const [animating, setAnimating] = useState(false);
 

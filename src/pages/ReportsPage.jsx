@@ -18,7 +18,6 @@ import { auth } from "../firebase";
 import {
   getUserReports,
   deleteReport   as firestoreDeleteReport,
-  saveReport     as firestoreSaveReport,
 } from "../services/dbService";
 import { apiService } from "../services/apiService";
 
@@ -183,7 +182,7 @@ function ReportSkeleton() {
 export default function ReportsPage() {
   const navigate  = useNavigate();
   const { t } = useTranslation();
-  const { hasResults, results, pin, businessType, radius, aiAnalysis } = useAnalysis();
+  const { hasResults, saveCurrentReport } = useAnalysis();
 
   const [reports,   setReports]   = useState([]);
   const [search,    setSearch]    = useState("");
@@ -239,33 +238,11 @@ export default function ReportsPage() {
   };
 
   // ── Save current scan ─────────────────────────────────────────────────────
-  const buildPayload = () => {
-    if (!results || !pin) return null;
-    return {
-      title:       `${businessType.charAt(0).toUpperCase() + businessType.slice(1)} — ${results.districtName}`,
-      location:    results.districtName,
-      date:        new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-      score:       results.feasibility,
-      competitors: results.competitors,
-      saturation:  results.saturation,
-      status:      results.feasibility >= 75 ? "strong" : results.feasibility >= 55 ? "moderate" : "weak",
-      businessType, lat: pin.lat, lng: pin.lng, radius,
-      fullResults: results,
-      aiAnalysis:  aiAnalysis ?? null,
-    };
-  };
-
   const handleSaveCurrent = async () => {
-    if (saveState === "saving") return;
-    const payload = buildPayload();
-    if (!payload) return;
+    if (saveState === "saving" || !hasResults) return;
     setSaveState("saving");
     try {
-      if (currentUser) {
-        await firestoreSaveReport(currentUser.uid, payload);
-      } else {
-        apiService.saveReport(payload);
-      }
+      await saveCurrentReport();
       setSaveState("saved");
       await fetchReports(); // refresh list
       setTimeout(() => setSaveState("idle"), 2500);

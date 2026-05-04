@@ -4,7 +4,7 @@
  * Local storage is used for report persistence (no /reports endpoint yet).
  */
 
-const SCAN_BASE_URL = "https://localyze.onrender.com";
+const SCAN_BASE_URL = import.meta.env.VITE_API_URL ?? "https://localyze.onrender.com";
 
 // ── Response normaliser ───────────────────────────────────────────────────────
 // Maps the real API shape to what the UI components expect.

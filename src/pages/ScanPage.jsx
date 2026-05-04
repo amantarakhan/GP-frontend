@@ -7,9 +7,7 @@ import ResultPanel     from "../components/scan/ResultPanel";
 import CompetitorList  from "../components/scan/CompetitorList";
 import AiInsightsPanel from "../components/scan/AiInsightsPanel";
 import CompareModal    from "../components/scan/CompareModal";
-import { useLocationAnalysis } from "../hooks/useLocationAnalysis";
-import { auth } from "../firebase";
-import { saveReport as firestoreSaveReport } from "../services/dbService";
+import { useAnalysis } from "../context/AnalysisContext";
 
 // ── Reset Confirmation Modal ───────────────────────────────────────────────────
 function ResetModal({ onSaveAndReset, onResetOnly, onCancel, isSaving, t }) {
@@ -143,17 +141,11 @@ function ResetModal({ onSaveAndReset, onResetOnly, onCancel, isSaving, t }) {
 // ── ScanPage ──────────────────────────────────────────────────────────────────
 export default function ScanPage() {
   const { t } = useTranslation();
-  const {
-    hasResults, results, businessType, radius, pin, aiAnalysis,
-    saveCurrentReport, resetAnalysis,
-  } = useLocationAnalysis();
+  const { hasResults, saveCurrentReport, resetAnalysis } = useAnalysis();
 
   const [showResetModal, setShowResetModal] = useState(false);
   const [isSaving,       setIsSaving]       = useState(false);
 
-  // Navigation back to compare happens when user clicks "Run Comparison" in the banner
-
-  // ── Helpers ─────────────────────────────────────────────────────────────────
   const handleResetClick = () => {
     if (hasResults) {
       setShowResetModal(true);
@@ -162,30 +154,10 @@ export default function ScanPage() {
     }
   };
 
-  const buildReport = () => ({
-    title:       `${businessType.charAt(0).toUpperCase() + businessType.slice(1)} — ${results.districtName}`,
-    location:    results.districtName,
-    date:        new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-    score:       results.feasibility,
-    competitors: results.competitors,
-    saturation:  results.saturation,
-    status:      results.feasibility >= 75 ? "strong" : results.feasibility >= 55 ? "moderate" : "weak",
-    businessType,
-    lat:         pin?.lat,
-    lng:         pin?.lng,
-    radius,
-    fullResults: results,
-    aiAnalysis:  aiAnalysis ?? null,
-  });
-
   const handleSaveAndReset = async () => {
     setIsSaving(true);
     try {
-      saveCurrentReport(); // localStorage (sidebar badge)
-      const uid = auth.currentUser?.uid;
-      if (uid && results) {
-        await firestoreSaveReport(uid, buildReport());
-      }
+      await saveCurrentReport();
     } finally {
       setIsSaving(false);
       setShowResetModal(false);

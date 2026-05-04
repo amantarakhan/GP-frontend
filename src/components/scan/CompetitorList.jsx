@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useLocationAnalysis } from "../../hooks/useLocationAnalysis";
+import { useAnalysis } from "../../context/AnalysisContext";
 
 const STATUS_STYLES = {
   high:   { bg: "#fee2e2",              color: "#991b1b",            label: "High Threat"  },
@@ -35,7 +35,7 @@ function StarRating({ rating }) {
 
 export default function CompetitorList() {
   const { t } = useTranslation();
-  const { hasResults, results } = useLocationAnalysis();
+  const { hasResults, results } = useAnalysis();
   const [expanded,     setExpanded]     = useState(true);
   const [expandedId,   setExpandedId]   = useState(null);  // for detail row
   const [showAll,      setShowAll]      = useState(false);

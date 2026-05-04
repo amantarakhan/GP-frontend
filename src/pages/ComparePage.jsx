@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useLocationAnalysis } from "../hooks/useLocationAnalysis";
+import { useAnalysis } from "../context/AnalysisContext";
 /* eslint-disable react/prop-types */
 
 // ── Metric config (labels are i18n keys, resolved at render time) ────────────
@@ -265,7 +265,7 @@ export default function ComparePage() {
     results,
     resetCompare,
     hasResults,
-  } = useLocationAnalysis();
+  } = useAnalysis();
 
   // Compare is triggered manually via the "Run Comparison" button in CompareModal
 

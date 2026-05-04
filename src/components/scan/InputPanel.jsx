@@ -1,10 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { useLocationAnalysis } from "../../hooks/useLocationAnalysis";
+import { useAnalysis } from "../../context/AnalysisContext";
 import { getRadiusLabel, formatRadius, SUBCATEGORIES, MAX_RADIUS } from "../../constants";
 import BusinessTypeDropdown from "./BusinessTypeDropdown";
-import { auth } from "../../firebase";
-import { saveReport as firestoreSaveReport } from "../../services/dbService";
 
 // ── Sub-category dropdown ─────────────────────────────────────────────────────
 const toSubKey = (v) =>
@@ -120,10 +118,8 @@ export default function InputPanel() {
     runAnalysis,
     scanError,
     hasResults,
-    results,
-    aiAnalysis,
     saveCurrentReport,
-  } = useLocationAnalysis();
+  } = useAnalysis();
 
   const { t } = useTranslation();
   const [saveState, setSaveState] = React.useState("idle"); // idle | saving | saved
@@ -326,25 +322,7 @@ export default function InputPanel() {
             if (saveState !== "idle") return;
             setSaveState("saving");
             try {
-              saveCurrentReport(); // keep localStorage in sync (sidebar badge)
-              const uid = auth.currentUser?.uid;
-              if (uid && results) {
-                await firestoreSaveReport(uid, {
-                  title:        `${businessType.charAt(0).toUpperCase() + businessType.slice(1)} — ${results.districtName}`,
-                  location:     results.districtName,
-                  date:         new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-                  score:        results.feasibility,
-                  competitors:  results.competitors,
-                  saturation:   results.saturation,
-                  status:       results.feasibility >= 75 ? "strong" : results.feasibility >= 55 ? "moderate" : "weak",
-                  businessType,
-                  lat:          pin?.lat,
-                  lng:          pin?.lng,
-                  radius,
-                  fullResults:  results,
-                  aiAnalysis:   aiAnalysis ?? null,
-                });
-              }
+              await saveCurrentReport();
               setSaveState("saved");
               setTimeout(() => setSaveState("idle"), 2500);
             } catch {

@@ -1,5 +1,7 @@
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, { createContext, useContext, useState, useCallback, useMemo } from "react";
 import { apiService } from "../services/apiService";
+import { auth } from "../firebase";
+import { saveReport as firestoreSaveReport } from "../services/dbService";
 import i18n from "i18next";
 
 const AnalysisContext = createContext(null);
@@ -45,7 +47,6 @@ export function AnalysisProvider({ children }) {
     setHasAiResults(false);
     setAiError(null);
     setRawScanData(null);
-    // Reset compare too on new primary scan
     setComparePin(null);
     setCompareResults(null);
     setHasCompareResults(false);
@@ -86,10 +87,6 @@ export function AnalysisProvider({ children }) {
     }
   }, [rawScanData]);
 
-  /**
-   * Run a comparison scan for the second pin.
-   * Uses same businessType, subType, radius as the primary scan.
-   */
   const runCompareAnalysis = useCallback(async () => {
     if (!businessType || !comparePin) return;
     setIsComparing(true);
@@ -125,13 +122,11 @@ export function AnalysisProvider({ children }) {
   }, []);
 
   const resetAnalysis = useCallback(() => {
-    // form
     setBusinessType("");
     setSubType("");
     setRadius(750);
     setLocation("");
     setPin(null);
-    // results
     setResults(null);
     setHasResults(false);
     setIsAnalyzing(false);
@@ -143,9 +138,12 @@ export function AnalysisProvider({ children }) {
     resetCompare();
   }, [resetCompare]);
 
-  const saveCurrentReport = useCallback(() => {
+  // Single source of truth for saving a report.
+  // Always writes localStorage (sidebar badge stays accurate);
+  // also writes Firestore when the user is authenticated.
+  const saveCurrentReport = useCallback(async () => {
     if (!results || !pin) return null;
-    const report = {
+    const payload = {
       title:       `${businessType.charAt(0).toUpperCase() + businessType.slice(1)} — ${results.districtName}`,
       location:    results.districtName,
       date:        new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
@@ -160,22 +158,38 @@ export function AnalysisProvider({ children }) {
       fullResults: results,
       aiAnalysis:  aiAnalysis ?? null,
     };
-    return apiService.saveReport(report);
+
+    apiService.saveReport(payload);
+
+    const user = auth.currentUser;
+    if (user) {
+      await firestoreSaveReport(user.uid, payload);
+    }
+
+    return payload;
   }, [results, pin, businessType, radius, aiAnalysis]);
 
-  const value = {
-    // form
+  // ── Helpers (folded in from the former useLocationAnalysis hook) ────────────
+  const handleMapClick = useCallback(({ lat, lng }) => {
+    setPin({ lat, lng });
+    setLocation(`Lat: ${lat}, Lng: ${lng}`);
+  }, []);
+
+  const radiusDisplay =
+    radius < 1000 ? `${radius}m` : `${(radius / 1000).toFixed(1)} km`;
+
+  const canRun = Boolean(businessType);
+
+  // ── Memoised value: stable identity unless underlying state changes ─────────
+  const value = useMemo(() => ({
     businessType, setBusinessType,
     subType,      setSubType,
     radius,       setRadius,
     location,     setLocation,
     pin,          setPin,
-    // scan results
     isAnalyzing, hasResults, results, rawScanData, scanError,
-    // AI
     isAiLoading, hasAiResults, aiAnalysis, aiError,
     runAiAnalysis,
-    // compare
     comparePin,        setComparePin,
     compareResults,    setCompareResults,
     isComparing,       setIsComparing,
@@ -185,11 +199,22 @@ export function AnalysisProvider({ children }) {
     comparePicking,    setComparePicking,
     runCompareAnalysis,
     resetCompare,
-    // actions
     runAnalysis,
     resetAnalysis,
     saveCurrentReport,
-  };
+    handleMapClick,
+    radiusDisplay,
+    canRun,
+  }), [
+    businessType, subType, radius, location, pin,
+    isAnalyzing, hasResults, results, rawScanData, scanError,
+    isAiLoading, hasAiResults, aiAnalysis, aiError,
+    comparePin, compareResults, isComparing, hasCompareResults,
+    compareError, compareMode, comparePicking,
+    runAnalysis, runAiAnalysis, runCompareAnalysis, resetCompare,
+    resetAnalysis, saveCurrentReport, handleMapClick,
+    radiusDisplay, canRun,
+  ]);
 
   return (
     <AnalysisContext.Provider value={value}>

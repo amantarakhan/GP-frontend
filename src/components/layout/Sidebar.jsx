@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { NAV_ITEMS } from "../../constants";
-import { useLocationAnalysis } from "../../hooks/useLocationAnalysis";
+import { useAnalysis } from "../../context/AnalysisContext";
 import { apiService } from "../../services/apiService";
 import { useTutorialManager, TUTORIAL_IDS } from "../../context/TutorialContext";
 
@@ -162,7 +162,7 @@ function NavItem({ item, expanded }) {
 export default function Sidebar({ expanded, setExpanded }) {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { hasResults } = useLocationAnalysis();
+  const { hasResults } = useAnalysis();
   const { requestTutorial } = useTutorialManager();
   const location = useLocation();
   const [reportCount, setReportCount] = useState(0);

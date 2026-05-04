@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useLocationAnalysis } from "../../hooks/useLocationAnalysis";
+import { useAnalysis } from "../../context/AnalysisContext";
 
 // ── Inline markdown renderer ──────────────────────────────────────────────────
 function inlineFormat(text) {
@@ -254,7 +254,7 @@ export default function AiInsightsPanel() {
   const {
     hasResults, isAiLoading, hasAiResults,
     aiAnalysis, aiError, runAiAnalysis, results,
-  } = useLocationAnalysis();
+  } = useAnalysis();
 
   const { t } = useTranslation();
   const [btnHov,   setBtnHov]   = useState(false);

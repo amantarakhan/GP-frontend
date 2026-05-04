@@ -4,7 +4,7 @@ import {
   useJsApiLoader,
   Marker,
 } from "@react-google-maps/api";
-import { useLocationAnalysis } from "../../hooks/useLocationAnalysis";
+import { useAnalysis } from "../../context/AnalysisContext";
 
 // ── Map style ─────────────────────────────────────────────────────────────────
 const MAP_STYLES = [
@@ -46,7 +46,7 @@ export default function MapContainer() {
     pin, radius, handleMapClick,
     comparePicking, setComparePin, setComparePicking,
     comparePin,
-  } = useLocationAnalysis();
+  } = useAnalysis();
 
   const mapRef              = useRef(null);
   const [mapReady, setMapReady] = useState(false);

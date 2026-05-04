@@ -1,13 +1,13 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { useLocationAnalysis } from "../../hooks/useLocationAnalysis";
+import { useAnalysis } from "../../context/AnalysisContext";
 import ScoreRing from "../ui/ScoreRing";
 import StatsCard from "../ui/StatsCard";
 import SkeletonBlock from "../ui/SkeletonBlock";
 
 export default function ResultPanel() {
   const { t } = useTranslation();
-  const { hasResults, isAnalyzing, results } = useLocationAnalysis();
+  const { hasResults, isAnalyzing, results } = useAnalysis();
 
   if (isAnalyzing) {
     return (

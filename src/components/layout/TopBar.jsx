@@ -1,78 +1,32 @@
-
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAnalysis } from "../../context/AnalysisContext";
-import { auth } from "../../firebase";
-import { saveReport as firestoreSaveReport } from "../../services/dbService";
-import { apiService } from "../../services/apiService";
 import { generatePDF } from "../../services/generatePDF";
-
-const PAGE_TITLES = {
-  "/dashboard": "Dashboard",
-  "/scan":      "New Scan",
-  "/reports":   "Saved Reports",
-};
 
 export default function TopBar() {
   const { pathname } = useLocation();
   const navigate     = useNavigate();
   const { t } = useTranslation();
-  const { hasResults, results, pin, businessType, subType, radius, aiAnalysis } = useAnalysis();
+  const {
+    hasResults, results, pin, businessType, subType, radius, aiAnalysis,
+    saveCurrentReport,
+  } = useAnalysis();
 
-  // ── Save button states ────────────────────────────────────────────────────
   const [saveState,   setSaveState]   = useState("idle"); // "idle" | "saving" | "saved" | "error"
   const [exportState, setExportState] = useState("idle"); // "idle" | "exporting"
 
-  const PAGE_TITLES_I18N = {
+  const title = {
     "/dashboard": t("nav.dashboard"),
     "/scan":      t("nav.newScan"),
     "/reports":   t("nav.savedReports"),
-  };
-  const title = PAGE_TITLES_I18N[pathname] ?? "Localyze";
-
-  // ── Build the report payload (matches both local and Firestore schemas) ────
-  const buildReportPayload = () => {
-    if (!results || !pin) return null;
-    return {
-      title:       `${businessType.charAt(0).toUpperCase() + businessType.slice(1)} — ${results.districtName}`,
-      location:    results.districtName,
-      date:        new Date().toLocaleDateString("en-US", {
-        month: "short", day: "numeric", year: "numeric",
-      }),
-      score:       results.feasibility,
-      competitors: results.competitors,
-      saturation:  results.saturation,
-      status:      results.feasibility >= 75 ? "strong"
-                 : results.feasibility >= 55 ? "moderate"
-                 : "weak",
-      businessType,
-      lat:         pin.lat,
-      lng:         pin.lng,
-      radius,
-      fullResults: results,
-      aiAnalysis:  aiAnalysis ?? null,
-    };
-  };
+  }[pathname] ?? "Localyze";
 
   const handleSave = async () => {
-    if (saveState === "saving") return;         // debounce double-clicks
-    const payload = buildReportPayload();
-    if (!payload) return;
-
+    if (saveState === "saving" || !hasResults) return;
     setSaveState("saving");
-
     try {
-      const user = auth.currentUser;
-
-      if (user) {
-        // ── Authenticated: persist to Firestore ──────────────────────────
-        await firestoreSaveReport(user.uid, payload);
-      } else {
-        // ── Guest fallback: save to local storage via existing service ────
-        apiService.saveReport(payload);
-      }
-
+      await saveCurrentReport();
       setSaveState("saved");
       setTimeout(() => setSaveState("idle"), 2500);
     } catch (err) {
