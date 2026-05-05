@@ -23,7 +23,6 @@ export const BUSINESS_TYPES = [
   { value: "grocery_or_supermarket",  label: "Grocery / Supermarket",  emoji: "🛒" },
   { value: "pharmacy",                label: "Pharmacy",               emoji: "💊" },
   { value: "medical_clinic",                  label: "Medical Clinic",         emoji: "🩺" },
-  { value: "hospital",                label: "Hospital",               emoji: "🏥" },
   { value: "dentist",                 label: "Dentist",                emoji: "🦷" },
   { value: "veterinary_care",         label: "Veterinary Care",        emoji: "🐾" },
 ];
@@ -88,7 +87,6 @@ export const SUBCATEGORIES = {
   grocery_or_supermarket: [],
   pharmacy:  [],
   medical_clinic:    [],
-  hospital:  [],
   dentist:   [],
   veterinary_care: [],
 };
@@ -100,7 +98,6 @@ export const MAX_RADIUS = {
   gym:                    2000,
   pharmacy:               1000,
   medical_clinic:                 1500,
-  hospital:               3000,
   supermarket:            1500,
   bakery:                 1000,
   clothing_store:          800,
@@ -113,8 +110,8 @@ export const MAX_RADIUS = {
 // ── Radius labels ────────────────────────────────────────────────────────────
 export const RADIUS_LABELS = [
   { max: 500,  label: "Walking" },
-  { max: 1500, label: "Neighborhood" },
-  { max: 3000, label: "District" },
+  { max: 1000, label: "Local" },
+  { max: 2000, label: "District" },
   { max: 5000, label: "City Zone" },
 ];
 

@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAnalysis } from "../context/AnalysisContext";
+import { auth } from "../firebase";
+import { saveReport as firestoreSaveReport } from "../services/dbService";
 /* eslint-disable react/prop-types */
 
 // ── Metric config (labels are i18n keys, resolved at render time) ────────────
@@ -123,7 +125,7 @@ function LocationCard({ letter, color, pin, results, isWinner }) {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
           {[
             { label: t("compare.feasibility"), value: `${results.feasibility}%` },
-            { label: t("compare.district"),    value: results.districtName ?? "—" },
+            { label: t("compare.district"),    value: results.districtName || "Outside Amman" },
             { label: t("compare.competitors"), value: results.competitors },
             { label: t("compare.saturation"),  value: `${results.saturation}%` },
           ].map(({ label, value }) => (
@@ -269,6 +271,8 @@ export default function ComparePage() {
 
   // Compare is triggered manually via the "Run Comparison" button in CompareModal
 
+  const [saveState, setSaveState] = useState("idle"); // idle | saving | saved
+
   const winner = getOverallWinner(results, compareResults);
 
   const handlePickOnMap = () => {
@@ -279,6 +283,38 @@ export default function ComparePage() {
   const handleReset = () => {
     resetCompare();
     setComparePin(null);
+    setSaveState("idle");
+  };
+
+  const handleSaveComparison = async () => {
+    if (saveState !== "idle") return;
+    setSaveState("saving");
+    try {
+      const uid = auth.currentUser?.uid;
+      if (uid) {
+        const distA = results?.districtName || "Outside Amman";
+        const distB = compareResults?.districtName || "Outside Amman";
+        const bt    = results?.businessType ?? "";
+        await firestoreSaveReport(uid, {
+          title:       `Comparison: ${distA} vs ${distB}`,
+          location:    `${distA} vs ${distB}`,
+          businessType: bt,
+          date:        new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+          score:       Math.max(results?.feasibility ?? 0, compareResults?.feasibility ?? 0),
+          competitors: (results?.competitors ?? 0) + (compareResults?.competitors ?? 0),
+          saturation:  Math.round(((results?.saturation ?? 0) + (compareResults?.saturation ?? 0)) / 2),
+          status:      winner === "tie" ? "moderate" : "strong",
+          lat:         pin?.lat,
+          lng:         pin?.lng,
+          radius:      null,
+          fullResults: { type: "comparison", winner, pinA: pin, pinB: comparePin, resultsA: results, resultsB: compareResults },
+          aiAnalysis:  null,
+        });
+      }
+      setSaveState("saved");
+    } catch {
+      setSaveState("idle");
+    }
   };
 
   return (
@@ -308,19 +344,63 @@ export default function ComparePage() {
               {t("compare.sideBySideDesc")}
             </p>
           </div>
-          {(comparePin || hasCompareResults) && (
-            <button
-              onClick={handleReset}
-              style={{
-                fontFamily: "var(--font-body)", fontSize: "13px", fontWeight: 600,
-                color: "#dc2626", background: "rgba(220,38,38,.07)",
-                border: "1px solid rgba(220,38,38,.2)", borderRadius: "10px",
-                padding: "10px 20px", cursor: "pointer", marginTop: "6px",
-              }}
-            >
-              {t("compare.resetComparison")}
-            </button>
-          )}
+          <div style={{ display: "flex", gap: "10px", marginTop: "6px", flexWrap: "wrap" }}>
+            {hasCompareResults && (
+              <button
+                onClick={handleSaveComparison}
+                disabled={saveState !== "idle"}
+                style={{
+                  fontFamily: "var(--font-body)", fontSize: "13px", fontWeight: 700,
+                  color: saveState === "saved" ? "var(--color-brand)" : "#fff",
+                  background: saveState === "saved"
+                    ? "rgba(63,125,88,.1)"
+                    : "linear-gradient(135deg,var(--color-brand),var(--color-brand-dark))",
+                  border: saveState === "saved" ? "1.5px solid rgba(63,125,88,.35)" : "none",
+                  borderRadius: "10px", padding: "10px 20px", cursor: saveState !== "idle" ? "default" : "pointer",
+                  display: "flex", alignItems: "center", gap: "7px",
+                  boxShadow: saveState === "saved" ? "none" : "0 4px 14px rgba(63,125,88,.3)",
+                  opacity: saveState === "saving" ? 0.7 : 1,
+                  transition: "all .2s",
+                }}
+              >
+                {saveState === "saving" ? (
+                  <>
+                    <svg className="spin" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                    </svg>
+                    {t("scan.saving")}
+                  </>
+                ) : saveState === "saved" ? (
+                  <>
+                    <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><polyline points="20,6 9,17 4,12"/></svg>
+                    {t("compare.comparisonSaved")}
+                  </>
+                ) : (
+                  <>
+                    <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
+                      <polyline points="17,21 17,13 7,13 7,21"/>
+                      <polyline points="7,3 7,8 15,8"/>
+                    </svg>
+                    {t("compare.saveComparison")}
+                  </>
+                )}
+              </button>
+            )}
+            {(comparePin || hasCompareResults) && (
+              <button
+                onClick={handleReset}
+                style={{
+                  fontFamily: "var(--font-body)", fontSize: "13px", fontWeight: 600,
+                  color: "#dc2626", background: "rgba(220,38,38,.07)",
+                  border: "1px solid rgba(220,38,38,.2)", borderRadius: "10px",
+                  padding: "10px 20px", cursor: "pointer",
+                }}
+              >
+                {t("compare.resetComparison")}
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -484,14 +564,14 @@ export default function ComparePage() {
                   <div style={{ paddingTop: "22px", display: "grid", gridTemplateColumns: "1fr 120px 1fr", gap: "20px", alignItems: "center" }}>
                     <div style={{ textAlign: "right" }}>
                       <div style={{ fontFamily: "var(--font-body)", fontSize: "10px", fontWeight: 600, color: "var(--color-text)", textTransform: "uppercase", letterSpacing: "1.2px", marginBottom: "5px" }}>{t("compare.district")}</div>
-                      <div style={{ fontFamily: "var(--font-body)", fontSize: "15px", fontWeight: 600, color: "var(--color-dark)" }}>{results.districtName ?? "—"}</div>
+                      <div style={{ fontFamily: "var(--font-body)", fontSize: "15px", fontWeight: 600, color: "var(--color-dark)" }}>{results.districtName || "Outside Amman"}</div>
                     </div>
                     <div style={{ textAlign: "center" }}>
                       <span style={{ fontFamily: "var(--font-body)", fontSize: "10px", fontWeight: 600, color: "var(--color-text)", textTransform: "uppercase", letterSpacing: "1px" }}>{t("compare.area")}</span>
                     </div>
                     <div>
                       <div style={{ fontFamily: "var(--font-body)", fontSize: "10px", fontWeight: 600, color: "var(--color-text)", textTransform: "uppercase", letterSpacing: "1.2px", marginBottom: "5px" }}>{t("compare.district")}</div>
-                      <div style={{ fontFamily: "var(--font-body)", fontSize: "15px", fontWeight: 600, color: "var(--color-dark)" }}>{compareResults.districtName ?? "—"}</div>
+                      <div style={{ fontFamily: "var(--font-body)", fontSize: "15px", fontWeight: 600, color: "var(--color-dark)" }}>{compareResults.districtName || "Outside Amman"}</div>
                     </div>
                   </div>
                 </div>

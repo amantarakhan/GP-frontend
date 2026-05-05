@@ -141,7 +141,10 @@ function ResetModal({ onSaveAndReset, onResetOnly, onCancel, isSaving, t }) {
 // ── ScanPage ──────────────────────────────────────────────────────────────────
 export default function ScanPage() {
   const { t } = useTranslation();
-  const { hasResults, saveCurrentReport, resetAnalysis } = useAnalysis();
+  const {
+    hasResults, saveCurrentReport, resetAnalysis,
+    setComparePicking, comparePin, comparePicking,
+  } = useAnalysis();
 
   const [showResetModal, setShowResetModal] = useState(false);
   const [isSaving,       setIsSaving]       = useState(false);
@@ -197,45 +200,70 @@ export default function ScanPage() {
             </p>
           </div>
 
-          {/* Reset / New Scan button */}
-          <button
-            onClick={handleResetClick}
-            title={t("scan.resetScan")}
-            style={{
-              display:        "flex",
-              alignItems:     "center",
-              gap:            "6px",
-              padding:        "8px 14px",
-              borderRadius:   "var(--radius-md)",
-              border:         "1.5px solid rgba(230,211,173,.7)",
-              background:     "var(--color-card)",
-              color:          "var(--color-text)",
-              fontSize:       "12.5px",
-              fontWeight:     600,
-              fontFamily:     "var(--font-body)",
-              cursor:         "pointer",
-              flexShrink:     0,
-              transition:     "all .18s",
-              whiteSpace:     "nowrap",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = "rgba(63,125,88,.4)";
-              e.currentTarget.style.color = "var(--color-brand)";
-              e.currentTarget.style.background = "rgba(63,125,88,.06)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = "rgba(230,211,173,.7)";
-              e.currentTarget.style.color = "var(--color-text)";
-              e.currentTarget.style.background = "var(--color-card)";
-            }}
-          >
-            <svg width="13" height="13" fill="none" viewBox="0 0 24 24"
-                 stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="1,4 1,10 7,10"/>
-              <path d="M3.51 15a9 9 0 1 0 .49-4.9"/>
-            </svg>
-            {t("scan.resetScan")}
-          </button>
+          {/* Right-side actions */}
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
+            {/* Compare Location — visible after a scan, hidden while picking */}
+            {hasResults && !comparePin && !comparePicking && (
+              <button
+                onClick={() => setComparePicking(true)}
+                style={{
+                  display: "flex", alignItems: "center", gap: "6px",
+                  padding: "8px 14px", borderRadius: "var(--radius-md)",
+                  border: "1.5px solid rgba(99,102,241,.4)",
+                  background: "rgba(99,102,241,.07)",
+                  color: "#6366f1", fontSize: "12.5px", fontWeight: 700,
+                  fontFamily: "var(--font-body)", cursor: "pointer",
+                  transition: "all .18s", whiteSpace: "nowrap",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "rgba(99,102,241,.14)";
+                  e.currentTarget.style.borderColor = "rgba(99,102,241,.65)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "rgba(99,102,241,.07)";
+                  e.currentTarget.style.borderColor = "rgba(99,102,241,.4)";
+                }}
+              >
+                <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
+                  <line x1="18" y1="20" x2="18" y2="10"/>
+                  <line x1="12" y1="20" x2="12" y2="4"/>
+                  <line x1="6"  y1="20" x2="6"  y2="14"/>
+                </svg>
+                {t("scan.compareLocation")}
+              </button>
+            )}
+
+            {/* Reset / New Scan button */}
+            <button
+              onClick={handleResetClick}
+              title={t("scan.resetScan")}
+              style={{
+                display: "flex", alignItems: "center", gap: "6px",
+                padding: "8px 14px", borderRadius: "var(--radius-md)",
+                border: "1.5px solid rgba(230,211,173,.7)",
+                background: "var(--color-card)", color: "var(--color-text)",
+                fontSize: "12.5px", fontWeight: 600, fontFamily: "var(--font-body)",
+                cursor: "pointer", transition: "all .18s", whiteSpace: "nowrap",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = "rgba(63,125,88,.4)";
+                e.currentTarget.style.color = "var(--color-brand)";
+                e.currentTarget.style.background = "rgba(63,125,88,.06)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = "rgba(230,211,173,.7)";
+                e.currentTarget.style.color = "var(--color-text)";
+                e.currentTarget.style.background = "var(--color-card)";
+              }}
+            >
+              <svg width="13" height="13" fill="none" viewBox="0 0 24 24"
+                   stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="1,4 1,10 7,10"/>
+                <path d="M3.51 15a9 9 0 1 0 .49-4.9"/>
+              </svg>
+              {t("scan.resetScan")}
+            </button>
+          </div>
         </div>
 
         {/* Map */}

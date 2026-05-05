@@ -3,8 +3,9 @@ import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { NAV_ITEMS } from "../../constants";
 import { useAnalysis } from "../../context/AnalysisContext";
-import { apiService } from "../../services/apiService";
 import { useTutorialManager, TUTORIAL_IDS } from "../../context/TutorialContext";
+import { auth } from "../../firebase";
+import { getUserReports } from "../../services/dbService";
 
 import globeIcon from "../../assets/logo2.png";
 import wordmark  from "../../assets/logo1.png";
@@ -166,11 +167,20 @@ export default function Sidebar({ expanded, setExpanded }) {
   const { requestTutorial } = useTutorialManager();
   const location = useLocation();
   const [reportCount, setReportCount] = useState(0);
+  const [userName, setUserName] = useState("");
 
-  // Re-read count whenever the route changes (covers save → navigate back)
+  // Fetch report count from Firestore whenever route changes
   useEffect(() => {
-    setReportCount(apiService.getReports().length);
+    const uid = auth.currentUser?.uid;
+    if (!uid) return;
+    getUserReports(uid).then((r) => setReportCount(r.length)).catch(() => {});
   }, [location.pathname]);
+
+  // Get display name from Firebase Auth
+  useEffect(() => {
+    const user = auth.currentUser;
+    if (user) setUserName(user.displayName || user.email?.split("@")[0] || "");
+  }, []);
 
   const navLabelMap = {
     dashboard: t("nav.dashboard"),
@@ -221,7 +231,7 @@ export default function Sidebar({ expanded, setExpanded }) {
 
         {/* ── Logo ── */}
         <div
-          onClick={() => navigate("/")}
+          onClick={() => navigate("/dashboard")}
           style={{
             height:         "66px",
             padding:        "0 13px",
@@ -263,11 +273,6 @@ export default function Sidebar({ expanded, setExpanded }) {
                   display: "block",
                 }}
               />
-              <span style={{
-                fontFamily: "var(--font-body)", fontSize: "9px", fontWeight: 700,
-                color: "var(--color-brand)", letterSpacing: "2.5px",
-                textTransform: "uppercase", lineHeight: 1,
-              }}>Pro</span>
             </div>
           )}
         </div>
@@ -422,6 +427,7 @@ export default function Sidebar({ expanded, setExpanded }) {
         {/* ── User card ── */}
         <div
           className="sidebar-user-card"
+          onClick={() => navigate("/settings")}
           style={{
             margin: "4px 8px 16px",
             padding: expanded ? "10px 12px" : "10px 0",
@@ -438,7 +444,7 @@ export default function Sidebar({ expanded, setExpanded }) {
             display: "flex", alignItems: "center", justifyContent: "center",
             fontSize: "13px", fontWeight: 700, color: "var(--color-accent)",
             flexShrink: 0, fontFamily: "var(--font-display)",
-          }}>A</div>
+          }}>{userName ? userName[0].toUpperCase() : "?"}</div>
           {expanded && (
             <>
               <div style={{
@@ -448,9 +454,9 @@ export default function Sidebar({ expanded, setExpanded }) {
                 <div style={{
                   color: "#F5F2E1", fontSize: "13px", fontWeight: 600,
                   fontFamily: "var(--font-body)", overflow: "hidden", textOverflow: "ellipsis",
-                }}>{t("sidebar.analystPro")}</div>
+                }}>{userName || "—"}</div>
                 <div style={{ color: "#687280", fontSize: "11px", fontFamily: "var(--font-body)" }}>
-                  {t("sidebar.proPlanActive")}
+                  {auth.currentUser?.email || ""}
                 </div>
               </div>
               <span style={{ animation: "sbFadeIn .18s ease both", flexShrink: 0, display: "flex" }}>
